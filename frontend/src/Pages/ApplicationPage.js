@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Flex,
   VStack,
@@ -10,9 +10,6 @@ import {
 } from "@chakra-ui/react";
 
 const currentYear = new Date().getFullYear();
-const gradYears = Array.from({ length: 5 }, (_, i) => currentYear + i);
-const minYear = currentYear;
-const maxYear = currentYear + 4;
 const handleYearChange = (e) => {
   let value = parseInt(e.target.value);
   if (value < currentYear || value > currentYear + 5) {
@@ -22,49 +19,156 @@ const handleYearChange = (e) => {
 };
 
 const ApplicationPage = () => {
+  const [tcgReason, setTcgReason] = useState("");
+  const wordLimit = 500; // Set word limit
+
+  const handleTcgReasonChange = (e) => {
+    const words = e.target.value.split(/\s+/).filter((word) => word !== ""); // Count words
+    if (words.length <= wordLimit) {
+      setTcgReason(e.target.value);
+    }
+  };
+
   return (
-    <VStack spacing={4} align="stretch" maxW="500px" mx="auto" mt={10}>
-      {/* First Name */}
-      <Box>
-        <Text fontWeight="bold">First Name</Text>
-        <Input placeholder="Enter your first name" />
-      </Box>
+    <Box bg="white" color="black" minH="100vh" p={6}>
+      <VStack
+        spacing={5}
+        align="stretch"
+        maxW="700px"
+        mx="auto"
+        mt={10}
+        p={6}
+        border="2px solid"
+        borderColor="gray.300"
+        borderRadius="md"
+        boxShadow="lg"
+        bg="gray.50"
+      >
+        {/* First Name */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            First Name
+          </Text>
+          <Input
+            pl="10px"
+            placeholder="Enter your first name"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
-      {/* Last Name */}
-      <Box>
-        <Text fontWeight="bold">Last Name</Text>
-        <Input placeholder="Enter your last name" />
-      </Box>
+        {/* Last Name */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Last Name
+          </Text>
+          <Input
+            pl="10px"
+            placeholder="Enter your last name"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
-      {/* Graduation Year */}
-      <Box>
-        <Text fontWeight="bold">Graduation Year</Text>
-        <Input type="number" onBlur={handleYearChange} placeholder="YYYY" />
-      </Box>
+        {/* Graduation Year */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Graduation Year
+          </Text>
+          <Input
+            type="number"
+            pl="10px"
+            onBlur={handleYearChange}
+            placeholder="YYYY"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
-      {/* Major */}
-      <Box>
-        <Text fontWeight="bold">Major</Text>
-        <Input placeholder="Enter your major" />
-      </Box>
+        {/* Major */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Major
+          </Text>
+          <Input
+            placeholder="Enter your major"
+            pl="10px"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
-      {/* Why do you want to join TCG? */}
-      <Box>
-        <Text fontWeight="bold">Why do you want to join TCG?</Text>
-        <Textarea placeholder="Explain your interest in TCG..." />
-      </Box>
+        {/* Minor(s) */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Minor(s)
+          </Text>
+          <Input
+            placeholder="Enter your minor(s)"
+            pl="10px"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
-      {/* Upload Resume */}
-      <Box>
-        <Text fontWeight="bold">Upload Resume</Text>
-        <Input type="file" />
-      </Box>
+        {/* Why do you want to join TCG? */}
+        <Box>
+          <Text fontWeight="bold">Why do you want to join TCG?</Text>
+          <Textarea
+            placeholder="Explain your interest in TCG..."
+            value={tcgReason}
+            onChange={handleTcgReasonChange}
+            minH="150px"
+            pl={3}
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+          <Text
+            fontSize="sm"
+            color={
+              tcgReason.split(/\s+/).filter((word) => word !== "").length >=
+              wordLimit
+                ? "red.500"
+                : "gray.500"
+            }
+          >
+            {tcgReason.split(/\s+/).filter((word) => word !== "").length} /{" "}
+            {wordLimit} words
+          </Text>
+        </Box>
 
-      {/* Submit Button */}
-      <Button colorScheme="blue" size="lg">
-        Submit Application
-      </Button>
-    </VStack>
+        {/* Upload Resume */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload Resume
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
+        </Box>
+
+        {/* Submit Button */}
+        <Button colorScheme="blue" size="lg" w="full">
+          Submit Application
+        </Button>
+      </VStack>
+    </Box>
   );
 };
 

@@ -6,7 +6,7 @@ import ApplicationPage from "./Pages/ApplicationPage"
 const App = () => {
   return (
     <Provider> 
-      <Router>
+      <Router> 
         <Routes>
           <Route path="/" element={<ApplicationPage />} />
         </Routes>
