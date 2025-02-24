@@ -1,0 +1,34 @@
+.homepage-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    text-align: center;
+    width: 80%;
+    max-width: 800px;
+}
+
+.card h1 {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+
+.card p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.center-button {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
