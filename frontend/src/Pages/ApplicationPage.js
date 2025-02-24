@@ -20,7 +20,7 @@ const handleYearChange = (e) => {
 
 const ApplicationPage = () => {
   const [tcgReason, setTcgReason] = useState("");
-  const wordLimit = 500; // Set word limit
+  const wordLimit = 250; // Set word limit
 
   const handleTcgReasonChange = (e) => {
     const words = e.target.value.split(/\s+/).filter((word) => word !== ""); // Count words
