@@ -90,6 +90,20 @@ const ApplicationPage = () => {
             />
           </Stack>
 
+        {/* Upload Photo */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload A Photo of Yourself
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
+        </Box>
+        
           {/* Student Year */}
           <Stack>
             <Text fontWeight="bold" color="#222">What year are you? *</Text>
