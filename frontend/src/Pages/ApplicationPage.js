@@ -74,6 +74,20 @@ const ApplicationPage = () => {
           />
         </Box>
 
+        {/* Upload Photo */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload A Photo of Yourself
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
+        </Box>
+        
         {/* Graduation Year */}
         <Box>
           <Text fontWeight="bold" mb={1}>
@@ -147,6 +161,20 @@ const ApplicationPage = () => {
             {tcgReason.split(/\s+/).filter((word) => word !== "").length} /{" "}
             {wordLimit} words
           </Text>
+        </Box>
+
+        {/* Upload Transcript */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload Transcript
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
         </Box>
 
         {/* Upload Resume */}
