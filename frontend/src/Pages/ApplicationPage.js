@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Radio, RadioGroup } from "../components/ui/radio";
 import {
   Flex,
   VStack,
@@ -7,6 +8,7 @@ import {
   Button,
   Box,
   Text,
+  Stack,
 } from "@chakra-ui/react";
 
 const currentYear = new Date().getFullYear();
@@ -19,6 +21,8 @@ const handleYearChange = (e) => {
 };
 
 const ApplicationPage = () => {
+  const [appliedBefore, setAppliedBefore] = useState("");
+  const [candidateType, setCandidateType] = useState("");
   const [tcgReason, setTcgReason] = useState("");
   const wordLimit = 250; // Set word limit
 
@@ -87,7 +91,7 @@ const ApplicationPage = () => {
             borderColor="gray.400"
           />
         </Box>
-        
+
         {/* Graduation Year */}
         <Box>
           <Text fontWeight="bold" mb={1}>
@@ -135,6 +139,32 @@ const ApplicationPage = () => {
           />
         </Box>
 
+        {/* Have you applied to TCG before? */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Have you applied to TCG before?
+          </Text>
+          <RadioGroup onChange={setAppliedBefore} value={appliedBefore}>
+            <Stack direction="row">
+              <Radio value="yes">Yes</Radio>
+              <Radio value="no">No</Radio>
+            </Stack>
+          </RadioGroup>
+        </Box>
+
+        {/* Are you applying as a tech candidate or non-tech candidate? */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+          Are you applying as a tech candidate or non-tech candidate?
+          </Text>
+          <RadioGroup onChange={setAppliedBefore} value={appliedBefore}>
+            <Stack direction="row">
+              <Radio value="Tech">Yes</Radio>
+              <Radio value="Non-Tech">No</Radio>
+            </Stack>
+          </RadioGroup>
+        </Box>
+        
         {/* Why do you want to join TCG? */}
         <Box>
           <Text fontWeight="bold">Why do you want to join TCG?</Text>
