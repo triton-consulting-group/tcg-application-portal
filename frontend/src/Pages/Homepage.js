@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import AuthButton from "./AuthButton";
-import Modal from "./Modal";
+import AuthButton from "../AuthButton";
+import Modal from "../Modal";
 
 function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
