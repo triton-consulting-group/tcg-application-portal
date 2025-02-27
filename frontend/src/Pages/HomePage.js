@@ -1,23 +1,45 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Button, VStack, Heading } from "@chakra-ui/react";
+import React, { useState } from "react";
+import AuthButton from "../AuthButton";
+import Modal from "../Modal";
 
-const HomePage = () => {
-  const navigate = useNavigate();
+function HomePage() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-  return (
-    <Box textAlign="center" p={10}>
-      <Heading mb={6}>Welcome to the Portal</Heading>
-      <VStack spacing={4}>
-        <Button colorScheme="blue" size="lg" onClick={() => navigate("/application")}>
-          Go to Application Page
-        </Button>
-        <Button colorScheme="green" size="lg" onClick={() => navigate("/associate")}>
-          Go to Associate Page
-        </Button>
-      </VStack>
-    </Box>
-  );
-};
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    return (
+        <div className="homepage-container">
+            <div className="card">
+                <h1>Welcome to Triton Consulting Group</h1>
+                <p>Unlocking the next era of business</p>
+                
+                <div className="center-button">
+                    <button 
+                        className="apply-button" 
+                        onClick={openModal}
+                    >
+                        Apply Now
+                    </button>
+                </div>
+            </div>
+
+            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                <div className="modal-content">
+                    <h2>Sign in to Continue</h2>
+                    <p>Please sign in with your Google account to continue with your application.</p>
+                    <div className="modal-auth-button">
+                        <AuthButton onSuccessfulSignIn={closeModal} />
+                    </div>
+                </div>
+            </Modal>
+        </div>
+    );
+}
 
 export default HomePage;

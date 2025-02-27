@@ -8,7 +8,6 @@ import {
   Text, 
   Button, 
   Stack 
-  Stack,
 } from "@chakra-ui/react";
 
 const ApplicationPage = () => {
