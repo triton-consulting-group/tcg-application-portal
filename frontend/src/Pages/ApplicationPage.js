@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Radio, RadioGroup } from "../components/ui/radio";
 import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate for redirection
 import axios from "axios";
 import { 
@@ -7,9 +8,12 @@ import {
   Text, 
   Button, 
   Stack 
+  Stack,
 } from "@chakra-ui/react";
 
 const ApplicationPage = () => {
+  const [appliedBefore, setAppliedBefore] = useState("");
+  const [candidateType, setCandidateType] = useState("");
   const navigate = useNavigate(); // ✅ Initialize useNavigate
 
   const [formData, setFormData] = useState({
@@ -103,24 +107,23 @@ const ApplicationPage = () => {
             borderColor="gray.400"
           />
         </Box>
-        
-          {/* Student Year */}
-          <Stack>
-            <Text fontWeight="bold" color="#222">What year are you? *</Text>
-            <select 
-              value={formData.studentYear} 
-              onChange={(e) => setFormData({ ...formData, studentYear: e.target.value })} 
-              style={styles.input}
-              required
-            >
-              <option value="">Select your year</option>
-              <option value="1st">1st Year</option>
-              <option value="2nd">2nd Year</option>
-              <option value="3rd">3rd Year</option>
-              <option value="4th">4th Year</option>
-              <option value="5th+">5th Year or More</option>
-            </select>
-          </Stack>
+
+        {/* Graduation Year */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Graduation Year
+          </Text>
+          <Input
+            type="number"
+            pl="10px"
+            onBlur={handleYearChange}
+            placeholder="YYYY"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
 
           {/* Major */}
           <Stack>
@@ -134,6 +137,102 @@ const ApplicationPage = () => {
             />
           </Stack>
 
+        {/* Minor(s) */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Minor(s)
+          </Text>
+          <Input
+            placeholder="Enter your minor(s)"
+            pl="10px"
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+        </Box>
+
+        {/* Have you applied to TCG before? */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Have you applied to TCG before?
+          </Text>
+          <RadioGroup onChange={setAppliedBefore} value={appliedBefore}>
+            <Stack direction="row">
+              <Radio value="yes">Yes</Radio>
+              <Radio value="no">No</Radio>
+            </Stack>
+          </RadioGroup>
+        </Box>
+
+        {/* Are you applying as a tech candidate or non-tech candidate? */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+          Are you applying as a tech candidate or non-tech candidate?
+          </Text>
+          <RadioGroup onChange={setAppliedBefore} value={appliedBefore}>
+            <Stack direction="row">
+              <Radio value="Tech">Yes</Radio>
+              <Radio value="Non-Tech">No</Radio>
+            </Stack>
+          </RadioGroup>
+        </Box>
+        
+        {/* Why do you want to join TCG? */}
+        <Box>
+          <Text fontWeight="bold">Why do you want to join TCG?</Text>
+          <Textarea
+            placeholder="Explain your interest in TCG..."
+            value={tcgReason}
+            onChange={handleTcgReasonChange}
+            minH="150px"
+            pl={3}
+            border="2px solid"
+            borderColor="gray.400"
+            borderRadius="md"
+            _focus={{ borderColor: "blue.500" }}
+          />
+          <Text
+            fontSize="sm"
+            color={
+              tcgReason.split(/\s+/).filter((word) => word !== "").length >=
+              wordLimit
+                ? "red.500"
+                : "gray.500"
+            }
+          >
+            {tcgReason.split(/\s+/).filter((word) => word !== "").length} /{" "}
+            {wordLimit} words
+          </Text>
+        </Box>
+
+        {/* Upload Transcript */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload Transcript
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
+        </Box>
+
+        {/* Upload Resume */}
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            Upload Resume
+          </Text>
+          <Input
+            pt="5px"
+            pl="10px"
+            type="file"
+            border="2px solid"
+            borderColor="gray.400"
+          />
+        </Box>
           {/* Have You Applied Before? */}
           <Stack>
             <Text fontWeight="bold" color="#222">Have you applied to TCG before? *</Text>
