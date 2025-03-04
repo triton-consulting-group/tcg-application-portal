@@ -12,6 +12,9 @@ const Navbar = () => {
         </Link>
       </Box>
       <Box>
+        <Link as={RouterLink} to="/associate" marginRight="1.5rem" color="#20354a">
+          Associate View
+        </Link>
         <Link as={RouterLink} to="/application" marginRight="1.5rem" color="#20354a">
           Application
         </Link>

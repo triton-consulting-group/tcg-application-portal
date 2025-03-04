@@ -5,7 +5,7 @@ import ApplicationClosed from "./ApplicationComponents/ApplicationClosed";
 
 const ApplicationPage = () => {
   // For quick testing, hardcode which view you want to see
-  const testMode = "form"; // Change this to "form", "submitted", or "closed"
+  const testMode = "closed"; // Change this to "form", "submitted", or "closed"
   
   let content;
   if (testMode === "form") {

@@ -1,4 +1,3 @@
-//NOTE: This is the actual homepage, commented out until I have the .env file
 // import React, { useState } from "react";
 // import AuthButton from "../AuthButton";
 // import Modal from "../Modal";
