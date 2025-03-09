@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { auth, provider, signInWithPopup, signOut } from "./firebaseConfig";
+import { getAuth, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { provider } from "./firebaseConfig"; // ✅ Correct import
+
+const auth = getAuth(); // ✅ Get Firebase authentication instance
 
 export default function AuthButton({ onSuccessfulSignIn }) {
     const [user, setUser] = useState(null);
@@ -7,7 +10,7 @@ export default function AuthButton({ onSuccessfulSignIn }) {
 
     // Listen for auth state changes
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
         });
         
