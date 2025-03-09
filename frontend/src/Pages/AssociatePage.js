@@ -9,7 +9,10 @@ const AssociatePage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "ascending" });
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "ascending",
+  });
   const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
@@ -38,8 +41,10 @@ const AssociatePage = () => {
     let sortableItems = [...applications];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "ascending" ? -1 : 1;
-        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "ascending" ? 1 : -1;
+        if (a[sortConfig.key] < b[sortConfig.key])
+          return sortConfig.direction === "ascending" ? -1 : 1;
+        if (a[sortConfig.key] > b[sortConfig.key])
+          return sortConfig.direction === "ascending" ? 1 : -1;
         return 0;
       });
     }
@@ -49,13 +54,17 @@ const AssociatePage = () => {
   const filteredApplications = useMemo(() => {
     const lowerSearchTerm = searchTerm.toLowerCase();
     return sortedApplications.filter((app) =>
-      ["fullName", "major", "email"].some((key) => app[key]?.toLowerCase().includes(lowerSearchTerm))
+      ["fullName", "major", "email"].some((key) =>
+        app[key]?.toLowerCase().includes(lowerSearchTerm)
+      )
     );
   }, [searchTerm, sortedApplications]);
 
   const updateStatus = (applicationId, newStatus) => {
     axios
-      .put(`http://localhost:5002/api/applications/${applicationId}`, { status: newStatus })
+      .put(`http://localhost:5002/api/applications/${applicationId}`, {
+        status: newStatus,
+      })
       .then(() => {
         return axios.get("http://localhost:5002/api/applications"); // 🔹 Refetch all applications
       })
@@ -64,8 +73,6 @@ const AssociatePage = () => {
       })
       .catch((error) => console.error("❌ Error updating status:", error));
   };
-  
-  
 
   if (loading) return <p>Loading applications...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -76,33 +83,37 @@ const AssociatePage = () => {
 
       <div className="tab-container">
         <div className="tabs">
-          <button className={selectedTab === 0 ? "active" : ""} onClick={() => setSelectedTab(0)}>
+          <button
+            className={selectedTab === 0 ? "active" : ""}
+            onClick={() => setSelectedTab(0)}
+          >
             All Applications
           </button>
-          <button className={selectedTab === 1 ? "active" : ""} onClick={() => setSelectedTab(1)}>
+          <button
+            className={selectedTab === 1 ? "active" : ""}
+            onClick={() => setSelectedTab(1)}
+          >
             Application Phases
           </button>
         </div>
 
         {selectedTab === 0 ? (
-  <TableView
-    applications={filteredApplications}
-    setSelectedApplication={setSelectedApplication}
-    requestSort={requestSort}
-    sortConfig={sortConfig}
-    updateStatus={updateStatus}
-    setSearchTerm={setSearchTerm}
-    setSelectedImage={setSelectedImage}
-  />
-) : (
-  <PhasesView 
-    applications={applications} 
-    setSelectedApplication={setSelectedApplication}
-    setApplications={setApplications} // ✅ Pass setApplications to PhasesView
-  />
-)}
-
-
+          <TableView
+            applications={filteredApplications}
+            setSelectedApplication={setSelectedApplication}
+            requestSort={requestSort}
+            sortConfig={sortConfig}
+            updateStatus={updateStatus}
+            setSearchTerm={setSearchTerm}
+            setSelectedImage={setSelectedImage}
+          />
+        ) : (
+          <PhasesView
+            applications={applications}
+            setSelectedApplication={setSelectedApplication}
+            setApplications={setApplications} // ✅ Pass setApplications to PhasesView
+          />
+        )}
       </div>
 
       {selectedApplication && (
@@ -114,7 +125,10 @@ const AssociatePage = () => {
       )}
 
       {selectedImage && (
-        <ImageModal imageUrl={selectedImage} onClose={() => setSelectedImage(null)} />
+        <ImageModal
+          imageUrl={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
       )}
     </div>
   );
@@ -165,43 +179,60 @@ const TableView = ({
             <td>{app.appliedBefore}</td>
             <td>{app.candidateType}</td>
             <td>
-              <a href={`http://localhost:5002${app.resume || ""}`} target="_blank" rel="noopener noreferrer">
+              <a
+                href={`http://localhost:5002${app.resume || ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View Resume
               </a>
             </td>
             <td>
-              <a href={`http://localhost:5002${app.transcript || ""}`} target="_blank" rel="noopener noreferrer">
+              <a
+                href={`http://localhost:5002${app.transcript || ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 View Transcript
               </a>
             </td>
             <td>
               <img
-                src={`http://localhost:5002${app.image || "/default-profile.png"}`}
+                src={`http://localhost:5002${
+                  app.image || "/default-profile.png"
+                }`}
                 alt="Profile"
                 width="50"
                 height="50"
-                onClick={() => setSelectedImage(`http://localhost:5002${app.image}`)}
+                onClick={() =>
+                  setSelectedImage(`http://localhost:5002${app.image}`)
+                }
                 style={{ cursor: "pointer" }}
               />
             </td>
             <td>
-  {app.reason.length > 30 ? `${app.reason.substring(0, 30)}...` : app.reason}
-</td>
+              {app.reason.length > 30
+                ? `${app.reason.substring(0, 30)}...`
+                : app.reason}
+            </td>
 
             <td>
-  <select 
-    value={app.status} 
-    onChange={(e) => updateStatus(app._id, e.target.value)}
-  >
-    <option value="Under Review">Under Review</option>
-    <option value="Maybe">Maybe</option>
-    <option value="Accepted">Accepted</option>
-    <option value="Rejected">Rejected</option>
-  </select>
-</td>
+              <select
+                value={app.status}
+                onChange={(e) => updateStatus(app._id, e.target.value)}
+              >
+                <option value="Under Review">Under Review</option>
+                <option value="Maybe">Maybe</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </td>
 
             <td>
-              <button className="view-button" onClick={() => setSelectedApplication(app)}>
+              <button
+                className="view-button"
+                onClick={() => setSelectedApplication(app)}
+              >
                 View Application
               </button>
             </td>
@@ -216,77 +247,95 @@ const TableView = ({
 const ImageModal = ({ imageUrl, onClose }) => (
   <div className="modal-overlay">
     <div className="modal-content">
-      <button className="close-button" onClick={onClose}>×</button>
-      <img src={imageUrl} alt="Enlarged Profile" style={{ width: "100%", height: "auto" }} />
+      <button className="close-button" onClick={onClose}>
+        ×
+      </button>
+      <img
+        src={imageUrl}
+        alt="Enlarged Profile"
+        style={{ width: "100%", height: "auto" }}
+      />
     </div>
   </div>
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
 const ApplicationDetail = ({ application, onClose }) => (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="close-button" onClick={onClose}>×</button>
-        <h2>{application.fullName}'s Application</h2>
-        <img 
-          src={`http://localhost:5002${application.image}`} 
-          alt="Profile" 
-          width="100" 
-          height="100" 
-        />
-        <p><strong>Email:</strong> {application.email}</p>
-        <p><strong>Year:</strong> {application.studentYear}</p>
-        <p><strong>Major:</strong> {application.major}</p>
-        <p><strong>Reason for Applying:</strong> {application.reason}</p>  {/* ✅ Full essay shown here */}
-        <div style={{ marginTop: "10px" }}>
-          <a 
-            href={`http://localhost:5002${application.resume}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ marginRight: "15px" }}
-          >
-            View Resume
-          </a>
-          <a 
-            href={`http://localhost:5002${application.transcript}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            View Transcript
-          </a>
-        </div>
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <button className="close-button" onClick={onClose}>
+        ×
+      </button>
+      <h2>{application.fullName}'s Application</h2>
+      <img
+        src={`http://localhost:5002${application.image}`}
+        alt="Profile"
+        width="100"
+        height="100"
+      />
+      <p>
+        <strong>Email:</strong> {application.email}
+      </p>
+      <p>
+        <strong>Year:</strong> {application.studentYear}
+      </p>
+      <p>
+        <strong>Major:</strong> {application.major}
+      </p>
+      <p>
+        <strong>Reason for Applying:</strong> {application.reason}
+      </p>{" "}
+      {/* ✅ Full essay shown here */}
+      <div style={{ marginTop: "10px" }}>
+        <a
+          href={`http://localhost:5002${application.resume}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ marginRight: "15px" }}
+        >
+          View Resume
+        </a>
+        <a
+          href={`http://localhost:5002${application.transcript}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View Transcript
+        </a>
       </div>
     </div>
-  );
-  
-  
+  </div>
+);
+
 // 🟢 **PhasesView Component**
 const PhasesView = ({ applications, setSelectedApplication }) => {
-    return (
-      <div className="application-phases">
-        {["Under Review", "Maybe", "Accepted", "Rejected"].map((status) => (
-          <div key={status} className={`status-column ${status.toLowerCase().replace(" ", "-")}`}>
-            <h3>{status}</h3>
-            <div className="application-list">
-              {applications
-                .filter((app) => app.status === status) // ✅ Always uses updated applications
-                .map((app) => (
-                  <div key={app._id} className="application-card">
-                    <h4>{app.fullName}</h4>
-                    <button className="view-button" onClick={() => setSelectedApplication(app)}>
-                      View Full Application
-                    </button>
-                  </div>
-                ))}
-            </div>
+  return (
+    <div className="application-phases">
+      {["Under Review", "Maybe", "Accepted", "Rejected"].map((status) => (
+        <div
+          key={status}
+          className={`status-column ${status.toLowerCase().replace(" ", "-")}`}
+        >
+          <h3>{status}</h3>
+          <div className="application-list">
+            {applications
+              .filter((app) => app.status === status) // ✅ Always uses updated applications
+              .map((app) => (
+                <div key={app._id} className="application-card">
+                  <h4>{app.fullName}</h4>
+                  <button
+                    className="view-button"
+                    onClick={() => setSelectedApplication(app)}
+                  >
+                    View Full Application
+                  </button>
+                </div>
+              ))}
           </div>
-        ))}
-      </div>
-    );
-  };
-  
-  
-  
-  
-  
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default AssociatePage;
