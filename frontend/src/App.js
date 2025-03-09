@@ -1,7 +1,7 @@
 import React from "react";
 import { Provider } from "./components/ui/provider";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./Pages/Homepage";
+import Homepage from "./Pages/Home/Homepage";
 import ApplicationPage from "./Pages/ApplicationPage";
 import AssociatePage from "./Pages/AssociatePage";
 import SuccessPage from "./Pages/SuccessPage";
@@ -12,7 +12,7 @@ const App = () => {
       <Router> 
         <Routes>
           {/* 🏠 Home Page Route */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Homepage />} />
 
           {/* 📄 Application Page Route */}
           <Route path="/application" element={<ApplicationPage />} />
