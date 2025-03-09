@@ -39,7 +39,7 @@ The TCG Application Portal is a modern web application that provides a platform 
 1. Clone the repository:
 
 ```bash
-git clone [repository-url]
+git clone https://github.com/triton-consulting-group/tcg-application-portal
 cd tcg-application-portal
 ```
 
