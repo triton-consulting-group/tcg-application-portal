@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate for redirection
+import { useNavigate } from "react-router-dom";
+
+ // ✅ Import useNavigate for redirection
 import axios from "axios";
 import { 
   Box, 
@@ -50,6 +52,7 @@ const ApplicationPage = () => {
 
   return (
     <Box bg="gray.200" minH="100vh" p={6}>
+      
       <VStack
         spacing={5}
         align="stretch"

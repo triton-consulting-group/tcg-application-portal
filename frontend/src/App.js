@@ -1,7 +1,8 @@
 import React from "react";
 import { Provider } from "./components/ui/provider";
+import Navbar from "./components/ui/Navbar";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./Pages/HomePage";
+import HomePage from "./Pages/Home/Homepage";
 import ApplicationPage from "./Pages/ApplicationPage";
 import AssociatePage from "./Pages/AssociatePage";
 import SuccessPage from "./Pages/SuccessPage";
@@ -9,7 +10,8 @@ import SuccessPage from "./Pages/SuccessPage";
 const App = () => {
   return (
     <Provider> 
-      <Router> 
+      <Router>
+      <Navbar /> 
         <Routes>
           {/* 🏠 Home Page Route */}
           <Route path="/" element={<HomePage />} />
@@ -29,4 +31,7 @@ const App = () => {
   );
 }
 
+
+
 export default App;
+

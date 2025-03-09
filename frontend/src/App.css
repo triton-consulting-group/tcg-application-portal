@@ -13,17 +13,6 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
 .App-link {
   color: #61dafb;
 }
@@ -34,5 +23,82 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* New styles for your application */
+.app-container {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f5f5f5;
+}
+
+/* Homepage styles */
+.homepage-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  text-align: center;
+  width: 80%;
+  max-width: 800px;
+}
+
+.card h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.card p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* Button styles */
+.center-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.apply-button {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.apply-button:hover {
+  background-color: #3367D6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    padding: 30px 20px;
+    width: 90%;
+  }
+  
+  .card h1 {
+    font-size: 26px;
+  }
+  
+  .card p {
+    font-size: 16px;
   }
 }
