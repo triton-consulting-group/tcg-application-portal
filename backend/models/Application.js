@@ -14,9 +14,18 @@ const ApplicationSchema = new mongoose.Schema(
     image: { type: String, default: null },
     status: { 
       type: String, 
-      enum: ["Under Review", "Maybe", "Accepted", "Rejected"], 
+      enum: ["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"], 
       default: "Under Review" // ✅ Default status when an application is submitted
     },
+    statusHistory: [{
+      status: { 
+        type: String, 
+        enum: ["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"]
+      },
+      changedBy: { type: String, required: true }, // Admin email
+      changedAt: { type: Date, default: Date.now },
+      notes: { type: String } // Optional notes for the status change
+    }],
   },
   { timestamps: true }
 );

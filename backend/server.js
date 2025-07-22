@@ -21,6 +21,7 @@ try {
 // Import routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));
+app.use("/api/admin", require("./routes/admin"));
 app.use("/uploads", express.static("uploads"));
 
 

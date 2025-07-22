@@ -72,25 +72,108 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 🟢 Fetch application by email
+router.get("/email/:email", async (req, res) => {
+  try {
+    const { email } = req.params;
+    const application = await Application.findOne({ email: email });
+    
+    if (!application) {
+      return res.status(404).json({ error: "❌ No application found for this email." });
+    }
+    
+    res.json(application);
+  } catch (error) {
+    console.error("❌ Error fetching application by email:", error);
+    res.status(500).json({ error: "❌ Failed to fetch application." });
+  }
+});
+
+// 🟢 Update application by email
+router.put("/email/:email", upload.fields([
+  { name: "resume", maxCount: 1 },
+  { name: "transcript", maxCount: 1 },
+  { name: "image", maxCount: 1 },
+]), async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    // Find existing application
+    const existingApplication = await Application.findOne({ email: email });
+    
+    if (!existingApplication) {
+      return res.status(404).json({ error: "❌ No application found for this email." });
+    }
+
+    // Prepare update data
+    const updateData = {
+      fullName: req.body.fullName,
+      studentYear: req.body.studentYear,
+      major: req.body.major,
+      appliedBefore: req.body.appliedBefore,
+      candidateType: req.body.candidateType,
+      reason: req.body.reason,
+    };
+
+    // Handle file updates
+    if (req.files["resume"]) {
+      updateData.resume = `/uploads/${req.files["resume"][0].filename}`;
+    }
+    if (req.files["transcript"]) {
+      updateData.transcript = `/uploads/${req.files["transcript"][0].filename}`;
+    }
+    if (req.files["image"]) {
+      updateData.image = `/uploads/${req.files["image"][0].filename}`;
+    }
+
+    const updatedApplication = await Application.findOneAndUpdate(
+      { email: email },
+      updateData,
+      { new: true }
+    );
+
+    res.json({
+      message: "✅ Application updated successfully!",
+      application: updatedApplication,
+    });
+  } catch (error) {
+    console.error("❌ Error updating application:", error);
+    res.status(500).json({ error: "❌ Failed to update application." });
+  }
+});
+
 // 🟢 Update Application Status API
 router.put("/:id", async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, changedBy, notes } = req.body;
 
     // ✅ Validate allowed status values
-    if (!["Under Review", "Maybe", "Accepted", "Rejected"].includes(status)) {
+    if (!["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"].includes(status)) {
       return res.status(400).json({ error: "❌ Invalid status value" });
     }
 
-    const updatedApplication = await Application.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true } // ✅ Returns the updated document
-    );
-
-    if (!updatedApplication) {
+    // Find the current application to get the old status
+    const currentApplication = await Application.findById(req.params.id);
+    if (!currentApplication) {
       return res.status(404).json({ error: "❌ Application not found" });
     }
+
+    // Create status history entry
+    const statusHistoryEntry = {
+      status: status,
+      changedBy: changedBy || "Unknown Admin",
+      changedAt: new Date(),
+      notes: notes || ""
+    };
+
+    const updatedApplication = await Application.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status,
+        $push: { statusHistory: statusHistoryEntry }
+      },
+      { new: true } // ✅ Returns the updated document
+    );
 
     res.json(updatedApplication);
   } catch (error) {

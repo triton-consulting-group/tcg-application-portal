@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
+import { getAuth } from "firebase/auth";
 
 import Modal from "./Modal";
 import { 
@@ -10,15 +11,20 @@ import {
     Heading, 
     Text, 
     Flex, 
-    Image 
+    Image,
+    Input,
+    Alert
 } from "@chakra-ui/react";
 import logo from "../../assets/Images/TCGLogo.png"; // ✅ Corrected path
 
 
 function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [checkEmail, setCheckEmail] = useState("");
+    const [showCheckForm, setShowCheckForm] = useState(false);
 
     const navigate = useNavigate();
+    const auth = getAuth();
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -30,7 +36,18 @@ function HomePage() {
 
     const handleSuccessfulSignIn = () => {
         closeModal();
-        navigate('/application');
+        const user = auth.currentUser;
+        if (user && user.email) {
+            navigate(`/application?email=${encodeURIComponent(user.email)}`);
+        } else {
+            navigate('/application');
+        }
+    }
+
+    const handleCheckApplication = () => {
+        if (checkEmail.trim()) {
+            navigate(`/application?email=${encodeURIComponent(checkEmail.trim())}`);
+        }
     }
 
     return (
@@ -65,7 +82,56 @@ function HomePage() {
                     >
                         Apply Now
                     </Button>
+                    
+                    <Button 
+                        backgroundColor="#28a745" 
+                        color="white"
+                        _hover={{ backgroundColor: "#218838" }}
+                        size="lg" 
+                        onClick={() => setShowCheckForm(!showCheckForm)}
+                        height="50px"
+                        fontSize="lg"
+                        px={8}
+                    >
+                        Check My Application
+                    </Button>
+                    
+                    <Button 
+                        backgroundColor="#6c757d" 
+                        color="white"
+                        _hover={{ backgroundColor: "#5a6268" }}
+                        size="md" 
+                        onClick={() => navigate("/admin-login")}
+                        height="40px"
+                        fontSize="md"
+                        px={6}
+                    >
+                        Admin Login
+                    </Button>
                 </VStack>
+
+                {showCheckForm && (
+                    <Box mt={6} p={4} border="1px solid" borderColor="gray.200" borderRadius="md" bg="white">
+                        <Text mb={3} fontWeight="bold">Enter your email to check your application:</Text>
+                        <VStack spacing={3}>
+                            <Input
+                                type="email"
+                                placeholder="Enter your email address"
+                                value={checkEmail}
+                                onChange={(e) => setCheckEmail(e.target.value)}
+                                size="lg"
+                            />
+                            <Button 
+                                colorScheme="blue" 
+                                onClick={handleCheckApplication}
+                                isDisabled={!checkEmail.trim()}
+                                width="100%"
+                            >
+                                Check Application
+                            </Button>
+                        </VStack>
+                    </Box>
+                )}
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
                     <div className="modal-content">
                         <h2>Sign in to Continue</h2>

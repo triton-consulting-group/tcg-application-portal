@@ -25,7 +25,7 @@ const SuccessPage = () => {
       <Text mt={2} fontSize="sm" color="gray.500">
         Redirecting to confirmation page...
       </Text>
-      <Button onClick={() => navigate("./frontend/src/Pages/ApplicationComponents/ApplicationSubmitted")} mt={6} colorScheme="blue">
+      <Button onClick={() => navigate("/ApplicationComponents/ApplicationSubmitted")} mt={6} colorScheme="blue">
         Go to Application Submitted
       </Button>
     </Box>
