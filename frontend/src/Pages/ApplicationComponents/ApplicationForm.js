@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Radio, RadioGroup } from "../../components/ui/radio";
+import { Checkbox } from "../../components/ui/checkbox";
 import {
   Flex,
   VStack,
@@ -20,6 +21,9 @@ const handleYearChange = (e) => {
   }
 };
 
+// Case Night Date and Times
+const caseNightDate = "September 10th, 2025";
+
 const ApplicationForm = ({ onSubmissionSuccess }) => {
   const [appliedBefore, setAppliedBefore] = useState("");
   const [candidateType, setCandidateType] = useState("");
@@ -35,17 +39,17 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Here you would implement form validation and submission logic
     // For example:
     // 1. Validate all required fields
     // 2. Submit data to Firebase or your backend
     // 3. Handle success/error
-    
+
     try {
       // Simulate form submission
       console.log("Form submitted successfully!");
-      
+
       // Call the callback function to update parent state
       onSubmissionSuccess();
     } catch (error) {
@@ -171,7 +175,11 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
           <Text fontWeight="bold" mb={1}>
             Have you applied to TCG before?
           </Text>
-          <RadioGroup onChange={setAppliedBefore} value={appliedBefore} required>
+          <RadioGroup
+            onChange={setAppliedBefore}
+            value={appliedBefore}
+            required
+          >
             <Stack direction="row">
               <Radio value="yes">Yes</Radio>
               <Radio value="no">No</Radio>
@@ -184,17 +192,23 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
           <Text fontWeight="bold" mb={1}>
             Are you applying as a tech candidate or non-tech candidate?
           </Text>
-          <RadioGroup onChange={setCandidateType} value={candidateType} required>
+          <RadioGroup
+            onChange={setCandidateType}
+            value={candidateType}
+            required
+          >
             <Stack direction="row">
               <Radio value="Tech">Tech</Radio>
               <Radio value="Non-Tech">Non-Tech</Radio>
             </Stack>
           </RadioGroup>
         </Box>
-        
+
         {/* Why do you want to join TCG? */}
         <Box>
-          <Text fontWeight="bold">Why do you want to join TCG?</Text>
+          <Text fontWeight="bold">
+            Why do you want to join TCG? (250 words max)
+          </Text>
           <Textarea
             placeholder="Explain your interest in TCG..."
             value={tcgReason}
@@ -220,6 +234,30 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
             {wordLimit} words
           </Text>
         </Box>
+
+        {/* What is your availability for Case Night?
+        <Box>
+          <Text fontWeight="bold" mb={1}>
+            What is your availability for Case Night?
+          </Text>
+          <Stack>
+            <Checkbox.Root>
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>6:00 PM-7:00 PM</Checkbox.Label>
+            </Checkbox.Root>
+            <Checkbox.Root>
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>7:00 PM-8:00 PM</Checkbox.Label>
+            </Checkbox.Root>
+            <Checkbox.Root>
+              <Checkbox.HiddenInput />
+              <Checkbox.Control />
+              <Checkbox.Label>8:00 PM-9:00 PM</Checkbox.Label>
+            </Checkbox.Root>
+          </Stack>
+        </Box> */}
 
         {/* Upload Transcript */}
         <Box>
