@@ -18,7 +18,7 @@ const Navbar = () => {
       if (currentUser) {
         try {
           const response = await axios.get(`http://localhost:5002/api/auth/role/${currentUser.email}`);
-          setRole(response.data.role);
+          setRole(response.data.candidateType || "applicant");
         } catch (error) {
           console.error("Error fetching user role:", error);
         }
@@ -36,7 +36,8 @@ const Navbar = () => {
       setUser(result.user);
 
       const response = await axios.get(`http://localhost:5002/api/auth/role/${result.user.email}`);
-      setRole(response.data.role);
+      setRole(response.data.candidateType || "applicant");
+
 
       // Redirect user after login
       navigate("/");

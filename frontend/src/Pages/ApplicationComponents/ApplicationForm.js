@@ -203,8 +203,13 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
             </Stack>
           </RadioGroup>
         </Box>
+<<<<<<< Updated upstream
 
         {/* Why do you want to join TCG? */}
+=======
+        
+        {/* Why do you want to join TCG? (250 words max)*/}
+>>>>>>> Stashed changes
         <Box>
           <Text fontWeight="bold">
             Why do you want to join TCG? (250 words max)
