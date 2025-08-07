@@ -3,6 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
+const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 
 // 🟢 Set up Multer storage for file uploads
 const storage = multer.diskStorage({
@@ -14,6 +15,16 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+// 🟢 Get case night configuration
+router.get("/case-night-config", (req, res) => {
+  try {
+    res.json(CASE_NIGHT_CONFIG);
+  } catch (error) {
+    console.error("❌ Error fetching case night config:", error);
+    res.status(500).json({ error: "❌ Failed to fetch case night config." });
+  }
+});
 
 // 🟢 Handle application submission
 router.post(
@@ -42,6 +53,7 @@ router.post(
         appliedBefore: req.body.appliedBefore || "No",
         candidateType: req.body.candidateType || "Unknown",
         reason: req.body.reason || "",
+        caseNightPreferences: req.body.caseNightPreferences || [],
         status: "Under Review", // ✅ Default status when a new application is created
 
         resume: req.files["resume"] ? `/uploads/${req.files["resume"][0].filename}` : null,
@@ -113,6 +125,7 @@ router.put("/email/:email", upload.fields([
       appliedBefore: req.body.appliedBefore,
       candidateType: req.body.candidateType,
       reason: req.body.reason,
+      caseNightPreferences: req.body.caseNightPreferences,
     };
 
     // Handle file updates

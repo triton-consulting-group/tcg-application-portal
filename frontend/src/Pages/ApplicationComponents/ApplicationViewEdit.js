@@ -384,7 +384,7 @@ const ApplicationViewEdit = () => {
 
           {/* Why Join TCG? */}
           <Stack>
-            <Text fontWeight="bold" color="#222">Why do you want to join TCG? *</Text>
+            <Text fontWeight="bold" color="#222">Why do you want to join TCG?*</Text>
             <textarea 
               value={formData.reason} 
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })} 
