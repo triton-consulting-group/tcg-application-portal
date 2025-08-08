@@ -194,7 +194,7 @@ const ApplicationForm = ({ onSubmissionSuccess }) => {
         
         {/* Why do you want to join TCG? */}
         <Box>
-          <Text fontWeight="bold">Why do you want to join TCG?</Text>
+          <Text fontWeight="bold">Why do you want to join TCG? (250 words max)</Text>
           <Textarea
             placeholder="Explain your interest in TCG..."
             value={tcgReason}
