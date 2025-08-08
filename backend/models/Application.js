@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ApplicationSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true },
+    email: { type: String, required: true, index: true }, // Index for email lookups
     fullName: { type: String, required: true },
     studentYear: { type: String, required: true },
     major: { type: String, required: true },
@@ -15,7 +15,8 @@ const ApplicationSchema = new mongoose.Schema(
     status: { 
       type: String, 
       enum: ["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"], 
-      default: "Under Review" // ✅ Default status when an application is submitted
+      default: "Under Review", // ✅ Default status when a new application is submitted
+      index: true // Index for status filtering
     },
     statusHistory: [{
       status: { 
@@ -27,7 +28,15 @@ const ApplicationSchema = new mongoose.Schema(
       notes: { type: String } // Optional notes for the status change
     }],
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    // Compound index for common queries
+    indexes: [
+      { email: 1, status: 1 }, // For filtering by email and status
+      { status: 1, createdAt: -1 }, // For status-based queries with date sorting
+      { major: 1, status: 1 }, // For filtering by major and status
+    ]
+  }
 );
 
 module.exports = mongoose.model("Application", ApplicationSchema);

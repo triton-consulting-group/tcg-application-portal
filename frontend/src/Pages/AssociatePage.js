@@ -18,6 +18,8 @@ const AssociatePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [adminInfo, setAdminInfo] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [applicationsPerPage] = useState(30);
 
   useEffect(() => {
     // Check authentication state
@@ -58,8 +60,9 @@ const AssociatePage = () => {
 
   const fetchApplications = async () => {
     try {
-      const response = await axios.get("http://localhost:5002/api/applications");
-      setApplications(response.data);
+      // Use the backward-compatible endpoint to get all applications
+      const response = await axios.get("http://localhost:5002/api/applications/all");
+      setApplications(response.data || []);
       setLoading(false);
     } catch (error) {
       console.error("❌ Error fetching applications:", error);
@@ -99,6 +102,21 @@ const AssociatePage = () => {
     );
   }, [searchTerm, sortedApplications]);
 
+  // Pagination logic
+  const indexOfLastApplication = currentPage * applicationsPerPage;
+  const indexOfFirstApplication = indexOfLastApplication - applicationsPerPage;
+  const currentApplications = filteredApplications.slice(indexOfFirstApplication, indexOfLastApplication);
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / applicationsPerPage));
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const updateStatus = (applicationId, newStatus, notes = "") => {
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
     
@@ -109,10 +127,10 @@ const AssociatePage = () => {
         notes: notes
       })
       .then(() => {
-        return axios.get("http://localhost:5002/api/applications"); // 🔹 Refetch all applications
+        return axios.get("http://localhost:5002/api/applications/all"); // 🔹 Refetch all applications
       })
       .then((response) => {
-        setApplications(response.data); // 🔹 Update state with fresh data from the backend
+        setApplications(response.data || []);
       })
       .catch((error) => console.error("❌ Error updating status:", error));
   };
@@ -182,13 +200,18 @@ const AssociatePage = () => {
 
         {selectedTab === 0 ? (
           <TableView
-            applications={filteredApplications}
+            applications={currentApplications}
             setSelectedApplication={setSelectedApplication}
             requestSort={requestSort}
             sortConfig={sortConfig}
             updateStatus={updateStatus}
             setSearchTerm={setSearchTerm}
             setSelectedImage={setSelectedImage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalApplications={filteredApplications.length}
+            applicationsPerPage={applicationsPerPage}
+            onPageChange={handlePageChange}
           />
         ) : (
           <PhasesView
@@ -226,6 +249,11 @@ const TableView = ({
   updateStatus,
   setSearchTerm,
   setSelectedImage,
+  currentPage,
+  totalPages,
+  totalApplications,
+  applicationsPerPage,
+  onPageChange,
 }) => (
   <div className="all-applications">
     <div className="search-bar">
@@ -327,6 +355,74 @@ const TableView = ({
         ))}
       </tbody>
     </table>
+    
+    {/* Pagination Component */}
+    {totalApplications > 0 && (
+      <div className="pagination-container">
+        <div className="pagination-info">
+          Showing {((currentPage - 1) * applicationsPerPage) + 1} to {Math.min(currentPage * applicationsPerPage, totalApplications)} of {totalApplications} applications
+        </div>
+        
+        <div className="pagination-controls">
+          <button
+            onClick={() => onPageChange(1)}
+            disabled={currentPage === 1}
+            className="pagination-button"
+            title="Go to first page"
+          >
+            First
+          </button>
+          
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-button"
+          >
+            Previous
+          </button>
+          
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNumber;
+            if (totalPages <= 5) {
+              pageNumber = i + 1;
+            } else if (currentPage <= 3) {
+              pageNumber = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNumber = totalPages - 4 + i;
+            } else {
+              pageNumber = currentPage - 2 + i;
+            }
+            
+            return (
+              <button
+                key={pageNumber}
+                onClick={() => onPageChange(pageNumber)}
+                className={`pagination-button page-number ${currentPage === pageNumber ? 'active' : ''}`}
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
+          
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="pagination-button"
+          >
+            Next
+          </button>
+          
+          <button
+            onClick={() => onPageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className="pagination-button"
+            title="Go to last page"
+          >
+            Last
+          </button>
+        </div>
+      </div>
+    )}
   </div>
 );
 

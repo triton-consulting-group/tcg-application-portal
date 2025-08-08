@@ -3,6 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
+const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 
 // 🟢 Set up Multer storage for file uploads
 const storage = multer.diskStorage({
@@ -18,6 +19,7 @@ const upload = multer({ storage });
 // 🟢 Handle application submission
 router.post(
   "/",
+  applicationSubmissionLimiter, // Apply rate limiting
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
@@ -44,9 +46,9 @@ router.post(
         reason: req.body.reason || "",
         status: "Under Review", // ✅ Default status when a new application is created
 
-        resume: req.files["resume"] ? `/uploads/${req.files["resume"][0].filename}` : null,
-        transcript: req.files["transcript"] ? `/uploads/${req.files["transcript"][0].filename}` : null,
-        image: req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null,
+        resume: req.files && req.files["resume"] ? `/uploads/${req.files["resume"][0].filename}` : null,
+        transcript: req.files && req.files["transcript"] ? `/uploads/${req.files["transcript"][0].filename}` : null,
+        image: req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null,
       });
 
       await newApplication.save();
@@ -61,11 +63,60 @@ router.post(
   }
 );
 
-// 🟢 Fetch all applications
-router.get("/", async (req, res) => {
+// 🟢 Fetch all applications (backward compatible - returns array only)
+router.get("/all", generalApiLimiter, async (req, res) => {
   try {
-    const applications = await Application.find(); // Fetch all applications
+    const applications = await Application.find()
+      .sort({ createdAt: -1 })
+      .lean();
     res.json(applications);
+  } catch (error) {
+    console.error("❌ Error fetching all applications:", error);
+    res.status(500).json({ error: "❌ Failed to fetch applications." });
+  }
+});
+
+// 🟢 Fetch all applications with pagination
+router.get("/", generalApiLimiter, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const maxLimit = 200; // Maximum limit to prevent overload
+    
+    // Ensure limit doesn't exceed maximum
+    const actualLimit = Math.min(limit, maxLimit);
+    
+    // Calculate skip value for pagination
+    const skip = (page - 1) * actualLimit;
+    
+    // Get total count for pagination info
+    const totalApplications = await Application.countDocuments();
+    
+    // Fetch applications with pagination
+    const applications = await Application.find()
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(actualLimit)
+      .lean(); // Use lean() for better performance
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalApplications / actualLimit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+    
+    res.json({
+      applications,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalApplications,
+        applicationsPerPage: actualLimit,
+        hasNextPage,
+        hasPrevPage,
+        nextPage: hasNextPage ? page + 1 : null,
+        prevPage: hasPrevPage ? page - 1 : null
+      }
+    });
   } catch (error) {
     console.error("❌ Error fetching applications:", error);
     res.status(500).json({ error: "❌ Failed to fetch applications." });
@@ -73,7 +124,7 @@ router.get("/", async (req, res) => {
 });
 
 // 🟢 Fetch application by email
-router.get("/email/:email", async (req, res) => {
+router.get("/email/:email", generalApiLimiter, async (req, res) => {
   try {
     const { email } = req.params;
     const application = await Application.findOne({ email: email });
@@ -90,7 +141,7 @@ router.get("/email/:email", async (req, res) => {
 });
 
 // 🟢 Update application by email
-router.put("/email/:email", upload.fields([
+router.put("/email/:email", generalApiLimiter, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },
@@ -116,13 +167,13 @@ router.put("/email/:email", upload.fields([
     };
 
     // Handle file updates
-    if (req.files["resume"]) {
+    if (req.files && req.files["resume"]) {
       updateData.resume = `/uploads/${req.files["resume"][0].filename}`;
     }
-    if (req.files["transcript"]) {
+    if (req.files && req.files["transcript"]) {
       updateData.transcript = `/uploads/${req.files["transcript"][0].filename}`;
     }
-    if (req.files["image"]) {
+    if (req.files && req.files["image"]) {
       updateData.image = `/uploads/${req.files["image"][0].filename}`;
     }
 

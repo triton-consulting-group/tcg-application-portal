@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const Admin = require("../models/Admin");
-const User = require("../models/User");
-require("dotenv").config();
+const mongoose = require('mongoose');
+const Admin = require('../models/Admin');
+const User = require('../models/User');
+require('dotenv').config();
 
 const createSuperAdmin = async () => {
   try {
@@ -11,8 +11,8 @@ const createSuperAdmin = async () => {
 
     // Super admin details
     const superAdminData = {
-      email: "aprilrouhuang@gmail.com", // Change this to your desired admin email
-      name: "TCG Super Admin",
+      email: "canbrian59@gmail.com",
+      name: "Brian Can",
       role: "super_admin",
       permissions: {
         canViewApplications: true,
@@ -28,13 +28,25 @@ const createSuperAdmin = async () => {
     // Check if super admin already exists
     const existingAdmin = await Admin.findOne({ email: superAdminData.email });
     if (existingAdmin) {
-      console.log("Super admin already exists!");
-      return;
+      // Update to super_admin if not already
+      existingAdmin.role = "super_admin";
+      existingAdmin.name = superAdminData.name;
+      existingAdmin.permissions = superAdminData.permissions;
+      existingAdmin.isActive = true;
+      await existingAdmin.save();
+      console.log("Super admin updated successfully!");
+      console.log("Email:", superAdminData.email);
+      console.log("Role:", superAdminData.role);
+      console.log("Permissions:", superAdminData.permissions);
+    } else {
+      // Create super admin
+      const superAdmin = new Admin(superAdminData);
+      await superAdmin.save();
+      console.log("✅ Super admin created successfully!");
+      console.log("Email:", superAdminData.email);
+      console.log("Role:", superAdminData.role);
+      console.log("Permissions:", superAdminData.permissions);
     }
-
-    // Create super admin
-    const superAdmin = new Admin(superAdminData);
-    await superAdmin.save();
 
     // Also create user record
     await User.findOneAndUpdate(
@@ -46,11 +58,6 @@ const createSuperAdmin = async () => {
       },
       { upsert: true, new: true }
     );
-
-    console.log("✅ Super admin created successfully!");
-    console.log("Email:", superAdminData.email);
-    console.log("Role:", superAdminData.role);
-    console.log("Permissions:", superAdminData.permissions);
 
   } catch (error) {
     console.error("❌ Error creating super admin:", error);
