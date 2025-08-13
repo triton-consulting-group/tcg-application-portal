@@ -20,7 +20,10 @@ const ApplicationPage = () => {
     transcript: null, 
     image: null,
     reason: "",
+    caseNightPreferences: []
   });
+
+  const [caseNightConfig, setCaseNightConfig] = useState(null);
 
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
@@ -31,6 +34,19 @@ const ApplicationPage = () => {
       checkExistingApplication();
     }
   }, [emailParam]);
+
+  // Fetch case night configuration
+  useEffect(() => {
+    const fetchCaseNightConfig = async () => {
+      try {
+        const response = await axios.get("http://localhost:5002/api/applications/case-night-config");
+        setCaseNightConfig(response.data);
+      } catch (error) {
+        console.error("Error fetching case night config:", error);
+      }
+    };
+    fetchCaseNightConfig();
+  }, []);
 
   const checkExistingApplication = async () => {
     setCheckingExisting(true);
@@ -47,6 +63,15 @@ const ApplicationPage = () => {
 
   const handleFileChange = (e, fieldName) => {
     setFormData({ ...formData, [fieldName]: e.target.files[0] });
+  };
+
+  const handleCaseNightChange = (slotId) => {
+    setFormData({
+      ...formData,
+      caseNightPreferences: formData.caseNightPreferences.includes(slotId)
+        ? formData.caseNightPreferences.filter(id => id !== slotId)
+        : [...formData.caseNightPreferences, slotId]
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -289,7 +314,7 @@ const ApplicationPage = () => {
 
           {/* Why Join TCG? */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? (250 words max) *</p>
             <textarea 
               value={formData.reason} 
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })} 
@@ -297,6 +322,26 @@ const ApplicationPage = () => {
               required
             />
           </div>
+
+          {/* Case Night Availability */}
+          {caseNightConfig && (
+            <div style={{ marginBottom: "16px" }}>
+              <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What is your availability for Case Night? *</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {Object.entries(caseNightConfig.slots).map(([slotId, timeSlot]) => (
+                  <label key={slotId} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.caseNightPreferences.includes(slotId)}
+                      onChange={() => handleCaseNightChange(slotId)}
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    <span style={{ color: "#222" }}>{timeSlot}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button 

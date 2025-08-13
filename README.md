@@ -116,6 +116,69 @@ tcg-application-portal/
 └── README.md
 ```
 
+## Case Night Configuration
+
+The application includes a configurable case night system that allows easy modification of time slots and dates.
+
+### Modifying Case Night Times
+
+To change the case night time slots, edit the configuration file:
+
+**File:** `backend/config/caseNightConfig.js`
+
+```javascript
+const CASE_NIGHT_CONFIG = {
+  slots: {
+    A: "6:00 PM-7:00 PM",    // Change this time
+    B: "7:00 PM-8:00 PM",    // Change this time
+    C: "8:00 PM-9:00 PM"     // Change this time
+  },
+  maxCapacity: {
+    tech: 12,      // 3 groups of 4
+    nonTech: 12    // 3 groups of 4
+  },
+  date: "September 10th, 2025"  // Change this date
+};
+```
+
+### How It Works
+
+1. **Slot IDs**: The system uses simple IDs (A, B, C) internally for easy algorithm processing
+2. **Display Names**: The frontend shows human-readable times (e.g., "6:00 PM-7:00 PM")
+3. **Data Storage**: User preferences are stored as arrays of slot IDs (e.g., ["A", "C"])
+4. **API Endpoint**: The configuration is available via `GET /api/applications/case-night-config`
+
+### Adding More Time Slots
+
+To add additional time slots:
+
+1. Add a new entry to the `slots` object in `caseNightConfig.js`:
+   ```javascript
+   slots: {
+     A: "6:00 PM-7:00 PM",
+     B: "7:00 PM-8:00 PM", 
+     C: "8:00 PM-9:00 PM",
+     D: "9:00 PM-10:00 PM"  // New slot
+   }
+   ```
+
+2. Update the capacity limits if needed:
+   ```javascript
+   maxCapacity: {
+     tech: 16,      // Increased for 4 slots
+     nonTech: 16
+   }
+   ```
+
+### Case Night Date
+
+The case night date is currently hardcoded in the frontend. To change it:
+
+**File:** `frontend/src/Pages/ApplicationComponents/ApplicationForm.js` (line 19)
+```javascript
+const caseNightDate = "September 10th, 2025"; // Change this date
+```
+
 ## Contributing
 
 1. Fork the repository

@@ -16,11 +16,23 @@ const Navbar = () => {
       setUser(currentUser);
 
       if (currentUser) {
+        // First, try to register the user (this will create them if they don't exist)
+        try {
+          await axios.post("http://localhost:5002/api/auth/register", {
+            email: currentUser.email,
+            name: currentUser.displayName || ""
+          });
+        } catch (error) {
+          console.error("Error registering user:", error);
+        }
+
+        // Then get their role
         try {
           const response = await axios.get(`http://localhost:5002/api/auth/role/${currentUser.email}`);
-          setRole(response.data.role);
+          setRole(response.data.role || "applicant");
         } catch (error) {
           console.error("Error fetching user role:", error);
+          setRole("applicant"); // Default to applicant if role fetch fails
         }
       } else {
         setRole("applicant");
@@ -35,8 +47,24 @@ const Navbar = () => {
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
 
-      const response = await axios.get(`http://localhost:5002/api/auth/role/${result.user.email}`);
-      setRole(response.data.role);
+      // First, try to register the user (this will create them if they don't exist)
+      try {
+        await axios.post("http://localhost:5002/api/auth/register", {
+          email: result.user.email,
+          name: result.user.displayName || ""
+        });
+      } catch (error) {
+        console.error("Error registering user:", error);
+      }
+
+      // Then get their role
+      try {
+        const response = await axios.get(`http://localhost:5002/api/auth/role/${result.user.email}`);
+        setRole(response.data.role || "applicant");
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        setRole("applicant"); // Default to applicant if role fetch fails
+      }
 
       // Redirect user after login
       navigate("/");

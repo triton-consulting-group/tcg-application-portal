@@ -9,6 +9,10 @@ const ApplicationSchema = new mongoose.Schema(
     appliedBefore: { type: String, required: true }, 
     candidateType: { type: String, required: true },
     reason: { type: String, required: true },
+    caseNightPreferences: { 
+      type: [String], 
+      default: [] 
+    },
     resume: { type: String, default: null },
     transcript: { type: String, default: null },
     image: { type: String, default: null },
