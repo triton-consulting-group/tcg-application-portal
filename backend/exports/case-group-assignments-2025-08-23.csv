@@ -1,0 +1,629 @@
+Candidate Type,Time Slot,Group Number,Group ID,Applicant Name,Email,Major,Student Year,Applied Before,Status,Assigned At
+Non-Tech,6:00 PM-7:00 PM,1,A-1,"Olivia Miller",nontech7@test.com,"Communications",3rd,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,1,A-1,"Kevin Zhang",nontech4@test.com,"Finance",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,1,A-1,"Sophie Anderson",nontech3@test.com,"Psychology",4th,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,1,A-1,"Maria Garcia",nontech1@test.com,"Business Administration",3rd,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,2,A-2,"Hannah Wright",nontech9@test.com,"Sociology",4th,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,2,A-2,"Avery Scott",nontech11@test.com,"Public Policy",2nd,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,2,A-2,"Optimized Test User 1",optimized-test-1@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,2,A-2,"Optimized Test User 4",optimized-test-4@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 7",optimized-test-7@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 22",optimized-test-22@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 16",optimized-test-16@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 10",optimized-test-10@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 28",optimized-test-28@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 34",optimized-test-34@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 37",optimized-test-37@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 40",optimized-test-40@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 52",optimized-test-52@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 55",optimized-test-55@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 49",optimized-test-49@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 43",optimized-test-43@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 58",optimized-test-58@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 61",optimized-test-61@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 67",optimized-test-67@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 73",optimized-test-73@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 97",optimized-test-97@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 100",optimized-test-100@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 91",optimized-test-91@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 76",optimized-test-76@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,8,A-8,"Scaling Test User 3",scaling-test-3@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,8,A-8,"Scaling Test User 5",scaling-test-5@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,8,A-8,"Scaling Test User 9",scaling-test-9@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,8,A-8,"Scaling Test User 11",scaling-test-11@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,9,A-9,"Scaling Test User 15",scaling-test-15@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,9,A-9,"Scaling Test User 17",scaling-test-17@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,9,A-9,"Scaling Test User 21",scaling-test-21@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,9,A-9,"Scaling Test User 25",scaling-test-25@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,10,A-10,"Scaling Test User 33",scaling-test-33@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,10,A-10,"Scaling Test User 35",scaling-test-35@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,10,A-10,"Scaling Test User 27",scaling-test-27@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,10,A-10,"Scaling Test User 31",scaling-test-31@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,11,A-11,"Scaling Test User 41",scaling-test-41@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,11,A-11,"Scaling Test User 43",scaling-test-43@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,11,A-11,"Scaling Test User 45",scaling-test-45@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,11,A-11,"Scaling Test User 47",scaling-test-47@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,12,A-12,"Scaling Test User 51",scaling-test-51@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,12,A-12,"Scaling Test User 55",scaling-test-55@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,12,A-12,"Scaling Test User 57",scaling-test-57@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,12,A-12,"Scaling Test User 59",scaling-test-59@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 61",scaling-test-61@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 65",scaling-test-65@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 69",scaling-test-69@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 73",scaling-test-73@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 85",scaling-test-85@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 83",scaling-test-83@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 75",scaling-test-75@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 77",scaling-test-77@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 87",scaling-test-87@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 91",scaling-test-91@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 93",scaling-test-93@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 95",scaling-test-95@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 107",scaling-test-107@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 109",scaling-test-109@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 103",scaling-test-103@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 101",scaling-test-101@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 111",scaling-test-111@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 115",scaling-test-115@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 117",scaling-test-117@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 121",scaling-test-121@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 127",scaling-test-127@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 129",scaling-test-129@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 131",scaling-test-131@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 133",scaling-test-133@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 139",scaling-test-139@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 141",scaling-test-141@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 137",scaling-test-137@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 135",scaling-test-135@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 143",scaling-test-143@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 145",scaling-test-145@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 147",scaling-test-147@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 149",scaling-test-149@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 153",scaling-test-153@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 155",scaling-test-155@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 165",scaling-test-165@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 167",scaling-test-167@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 169",scaling-test-169@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 171",scaling-test-171@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 173",scaling-test-173@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 175",scaling-test-175@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 185",scaling-test-185@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 183",scaling-test-183@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 179",scaling-test-179@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 181",scaling-test-181@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 189",scaling-test-189@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 191",scaling-test-191@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 193",scaling-test-193@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 197",scaling-test-197@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 209",scaling-test-209@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 207",scaling-test-207@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 201",scaling-test-201@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 199",scaling-test-199@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 211",scaling-test-211@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 213",scaling-test-213@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 215",scaling-test-215@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 221",scaling-test-221@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 223",scaling-test-223@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 225",scaling-test-225@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 227",scaling-test-227@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 231",scaling-test-231@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 247",scaling-test-247@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 241",scaling-test-241@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 235",scaling-test-235@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 237",scaling-test-237@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 249",scaling-test-249@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 251",scaling-test-251@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 253",scaling-test-253@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 257",scaling-test-257@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 275",scaling-test-275@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 267",scaling-test-267@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 265",scaling-test-265@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 263",scaling-test-263@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 273",scaling-test-273@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 277",scaling-test-277@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 279",scaling-test-279@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 281",scaling-test-281@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 285",scaling-test-285@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 287",scaling-test-287@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 291",scaling-test-291@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 297",scaling-test-297@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 299",scaling-test-299@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 10005",scaling-test-10005@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 10003",scaling-test-10003@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 10001",scaling-test-10001@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 10007",scaling-test-10007@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 10001",scaling-test-10001@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 10005",scaling-test-10005@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 10007",scaling-test-10007@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 10009",scaling-test-10009@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 10011",scaling-test-10011@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 10013",scaling-test-10013@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 10017",scaling-test-10017@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 10019",scaling-test-10019@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 10001",scaling-test-10001@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 10003",scaling-test-10003@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 10005",scaling-test-10005@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 10017",scaling-test-10017@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 10011",scaling-test-10011@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 10009",scaling-test-10009@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 10007",scaling-test-10007@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 10019",scaling-test-10019@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 10021",scaling-test-10021@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 10023",scaling-test-10023@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 10025",scaling-test-10025@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10003",scaling-test-10003@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10009",scaling-test-10009@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10011",scaling-test-10011@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10013",scaling-test-10013@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10015",scaling-test-10015@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10023",scaling-test-10023@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10019",scaling-test-10019@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10017",scaling-test-10017@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10021",scaling-test-10021@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10025",scaling-test-10025@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10031",scaling-test-10031@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10033",scaling-test-10033@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10045",scaling-test-10045@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10047",scaling-test-10047@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10041",scaling-test-10041@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10035",scaling-test-10035@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 10049",scaling-test-10049@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 30531",scaling-test-30531@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 35359",scaling-test-35359@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 35323",scaling-test-35323@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 34113",scaling-test-34113@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 5893",scaling-test-5893@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 16713",scaling-test-16713@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 18633",scaling-test-18633@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 7337",scaling-test-7337@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 21029",scaling-test-21029@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 35849",scaling-test-35849@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 17425",scaling-test-17425@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 3277",scaling-test-3277@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 42641",scaling-test-42641@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 5987",scaling-test-5987@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 13289",scaling-test-13289@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 12187",scaling-test-12187@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 29607",scaling-test-29607@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 43583",scaling-test-43583@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 14825",scaling-test-14825@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 12175",scaling-test-12175@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 14099",scaling-test-14099@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 49089",scaling-test-49089@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 33825",scaling-test-33825@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 23963",scaling-test-23963@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 35657",scaling-test-35657@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 47885",scaling-test-47885@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 7853",scaling-test-7853@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 18265",scaling-test-18265@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 22313",scaling-test-22313@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,1,B-1,"Brandon Lewis",nontech8@test.com,"Political Science",2nd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,1,B-1,"Daniel Clark",nontech6@test.com,"International Relations",4th,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,1,B-1,"Ryan Thompson",nontech2@test.com,"Economics",2nd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,1,B-1,"Logan Young",nontech12@test.com,"Business Administration",4th,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 25",optimized-test-25@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 79",optimized-test-79@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 70",optimized-test-70@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 13",optimized-test-13@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 85",optimized-test-85@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 88",optimized-test-88@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 94",optimized-test-94@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,3,B-3,"Scaling Test User 37",scaling-test-37@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,4,B-4,"Scaling Test User 67",scaling-test-67@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,4,B-4,"Scaling Test User 63",scaling-test-63@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,4,B-4,"Scaling Test User 53",scaling-test-53@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,4,B-4,"Scaling Test User 39",scaling-test-39@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 79",scaling-test-79@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 113",scaling-test-113@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 119",scaling-test-119@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 125",scaling-test-125@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 151",scaling-test-151@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 161",scaling-test-161@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 187",scaling-test-187@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 195",scaling-test-195@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 229",scaling-test-229@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 243",scaling-test-243@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 205",scaling-test-205@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 217",scaling-test-217@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 259",scaling-test-259@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 269",scaling-test-269@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 271",scaling-test-271@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 289",scaling-test-289@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 293",scaling-test-293@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 295",scaling-test-295@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 10001",scaling-test-10001@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 10003",scaling-test-10003@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 10015",scaling-test-10015@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 10013",scaling-test-10013@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 10027",scaling-test-10027@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 10005",scaling-test-10005@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 23451",scaling-test-23451@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 29677",scaling-test-29677@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 10043",scaling-test-10043@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 1273",scaling-test-1273@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 25761",scaling-test-25761@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 16837",scaling-test-16837@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 25421",scaling-test-25421@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 21525",scaling-test-21525@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 16989",scaling-test-16989@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 29533",scaling-test-29533@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 6567",scaling-test-6567@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,1,C-1,"Natalie White",nontech5@test.com,"Marketing",2nd,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,1,C-1,"Jordan Hall",nontech10@test.com,"Business Economics",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,1,C-1,"Optimized Test User 19",optimized-test-19@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,1,C-1,"Optimized Test User 31",optimized-test-31@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 46",optimized-test-46@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 64",optimized-test-64@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 82",optimized-test-82@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,2,C-2,"Scaling Test User 1",scaling-test-1@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,3,C-3,"Scaling Test User 19",scaling-test-19@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,3,C-3,"Scaling Test User 23",scaling-test-23@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,3,C-3,"Scaling Test User 13",scaling-test-13@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,3,C-3,"Scaling Test User 7",scaling-test-7@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 29",scaling-test-29@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 49",scaling-test-49@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 71",scaling-test-71@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 81",scaling-test-81@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 89",scaling-test-89@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 97",scaling-test-97@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 99",scaling-test-99@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 105",scaling-test-105@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 123",scaling-test-123@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 157",scaling-test-157@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 159",scaling-test-159@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 163",scaling-test-163@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 219",scaling-test-219@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 233",scaling-test-233@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 203",scaling-test-203@example.com,"Mathematics",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 177",scaling-test-177@example.com,"Arts",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 239",scaling-test-239@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 245",scaling-test-245@example.com,"Mathematics",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 255",scaling-test-255@example.com,"Arts",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 261",scaling-test-261@example.com,"Arts",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 283",scaling-test-283@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 10009",scaling-test-10009@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 10003",scaling-test-10003@example.com,"Business",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 10015",scaling-test-10015@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 10029",scaling-test-10029@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 10001",scaling-test-10001@example.com,"Mathematics",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 10007",scaling-test-10007@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 10027",scaling-test-10027@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,11,C-11,"Scaling Test User 49507",scaling-test-49507@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,11,C-11,"Scaling Test User 10037",scaling-test-10037@example.com,"Mathematics",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,11,C-11,"Scaling Test User 10039",scaling-test-10039@example.com,"Business",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,11,C-11,"Scaling Test User 10029",scaling-test-10029@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,12,C-12,"Scaling Test User 22765",scaling-test-22765@example.com,"Business",Freshman,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,12,C-12,"Scaling Test User 22029",scaling-test-22029@example.com,"Arts",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,12,C-12,"Scaling Test User 10477",scaling-test-10477@example.com,"Business",Junior,No,Assigned,8/22/2025, 6:28:44 PM
+Non-Tech,8:00 PM-9:00 PM,12,C-12,"Scaling Test User 3389",scaling-test-3389@example.com,"Mathematics",Graduate,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,1,A-1,"Alex Chen",tech1@test.com,"Computer Science",3rd,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,1,A-1,"April Huang",aphuang@ucsd.edu,"Data Science",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,1,A-1,"Tom Brown",tech9@test.com,"Computer Science",4th,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,1,A-1,"James Wilson",tech7@test.com,"Computer Engineering",3rd,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,2,A-2,"Mike Johnson",tech3@test.com,"Computer Engineering",4th,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,2,A-2,"Emily Davis",tech4@test.com,"Information Systems",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,2,A-2,"Chris Martinez",tech11@test.com,"Computer Engineering",2nd,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,2,A-2,"Optimized Test User 2",optimized-test-2@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 12",optimized-test-12@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 11",optimized-test-11@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 9",optimized-test-9@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,3,A-3,"Optimized Test User 5",optimized-test-5@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 17",optimized-test-17@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 18",optimized-test-18@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 20",optimized-test-20@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,4,A-4,"Optimized Test User 21",optimized-test-21@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 23",optimized-test-23@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 29",optimized-test-29@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 32",optimized-test-32@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,5,A-5,"Optimized Test User 33",optimized-test-33@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 41",optimized-test-41@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 45",optimized-test-45@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 44",optimized-test-44@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,6,A-6,"Optimized Test User 39",optimized-test-39@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 47",optimized-test-47@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 48",optimized-test-48@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 50",optimized-test-50@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,7,A-7,"Optimized Test User 51",optimized-test-51@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,8,A-8,"Optimized Test User 53",optimized-test-53@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,8,A-8,"Optimized Test User 54",optimized-test-54@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,8,A-8,"Optimized Test User 56",optimized-test-56@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,8,A-8,"Optimized Test User 62",optimized-test-62@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,9,A-9,"Optimized Test User 63",optimized-test-63@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,9,A-9,"Optimized Test User 68",optimized-test-68@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,9,A-9,"Optimized Test User 66",optimized-test-66@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,9,A-9,"Optimized Test User 65",optimized-test-65@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,10,A-10,"Optimized Test User 69",optimized-test-69@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,10,A-10,"Optimized Test User 71",optimized-test-71@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,10,A-10,"Optimized Test User 72",optimized-test-72@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,10,A-10,"Optimized Test User 74",optimized-test-74@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,11,A-11,"Optimized Test User 83",optimized-test-83@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,11,A-11,"Optimized Test User 87",optimized-test-87@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,11,A-11,"Optimized Test User 86",optimized-test-86@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,11,A-11,"Optimized Test User 84",optimized-test-84@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,12,A-12,"Optimized Test User 89",optimized-test-89@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,12,A-12,"Optimized Test User 92",optimized-test-92@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,12,A-12,"Optimized Test User 95",optimized-test-95@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,12,A-12,"Optimized Test User 96",optimized-test-96@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,13,A-13,"Optimized Test User 99",optimized-test-99@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 2",scaling-test-2@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 4",scaling-test-4@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,13,A-13,"Scaling Test User 6",scaling-test-6@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 8",scaling-test-8@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 14",scaling-test-14@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 12",scaling-test-12@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,14,A-14,"Scaling Test User 10",scaling-test-10@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 16",scaling-test-16@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 18",scaling-test-18@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 20",scaling-test-20@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,15,A-15,"Scaling Test User 22",scaling-test-22@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 28",scaling-test-28@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 34",scaling-test-34@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 32",scaling-test-32@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,16,A-16,"Scaling Test User 24",scaling-test-24@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 42",scaling-test-42@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 44",scaling-test-44@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 46",scaling-test-46@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,17,A-17,"Scaling Test User 48",scaling-test-48@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 60",scaling-test-60@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 58",scaling-test-58@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 54",scaling-test-54@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,18,A-18,"Scaling Test User 52",scaling-test-52@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 64",scaling-test-64@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 70",scaling-test-70@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 72",scaling-test-72@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,19,A-19,"Scaling Test User 74",scaling-test-74@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 76",scaling-test-76@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 78",scaling-test-78@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 80",scaling-test-80@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,20,A-20,"Scaling Test User 84",scaling-test-84@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 94",scaling-test-94@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 92",scaling-test-92@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 90",scaling-test-90@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,21,A-21,"Scaling Test User 88",scaling-test-88@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 96",scaling-test-96@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 98",scaling-test-98@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 102",scaling-test-102@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,22,A-22,"Scaling Test User 104",scaling-test-104@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 114",scaling-test-114@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 112",scaling-test-112@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 110",scaling-test-110@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,23,A-23,"Scaling Test User 106",scaling-test-106@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 116",scaling-test-116@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 118",scaling-test-118@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 120",scaling-test-120@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,24,A-24,"Scaling Test User 122",scaling-test-122@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 124",scaling-test-124@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 128",scaling-test-128@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 132",scaling-test-132@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,25,A-25,"Scaling Test User 134",scaling-test-134@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 138",scaling-test-138@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 142",scaling-test-142@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 140",scaling-test-140@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,26,A-26,"Scaling Test User 136",scaling-test-136@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 144",scaling-test-144@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 146",scaling-test-146@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 152",scaling-test-152@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,27,A-27,"Scaling Test User 154",scaling-test-154@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 166",scaling-test-166@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 164",scaling-test-164@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 162",scaling-test-162@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,28,A-28,"Scaling Test User 156",scaling-test-156@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 170",scaling-test-170@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 172",scaling-test-172@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 174",scaling-test-174@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,29,A-29,"Scaling Test User 178",scaling-test-178@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 180",scaling-test-180@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 182",scaling-test-182@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 184",scaling-test-184@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,30,A-30,"Scaling Test User 192",scaling-test-192@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 200",scaling-test-200@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 204",scaling-test-204@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 198",scaling-test-198@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,31,A-31,"Scaling Test User 194",scaling-test-194@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 208",scaling-test-208@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 210",scaling-test-210@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 212",scaling-test-212@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,32,A-32,"Scaling Test User 214",scaling-test-214@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 232",scaling-test-232@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 230",scaling-test-230@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 226",scaling-test-226@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,33,A-33,"Scaling Test User 216",scaling-test-216@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 236",scaling-test-236@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 238",scaling-test-238@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 242",scaling-test-242@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,34,A-34,"Scaling Test User 244",scaling-test-244@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 248",scaling-test-248@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 252",scaling-test-252@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 260",scaling-test-260@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,35,A-35,"Scaling Test User 266",scaling-test-266@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 272",scaling-test-272@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 280",scaling-test-280@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 274",scaling-test-274@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,36,A-36,"Scaling Test User 270",scaling-test-270@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 278",scaling-test-278@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 282",scaling-test-282@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 290",scaling-test-290@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,37,A-37,"Scaling Test User 292",scaling-test-292@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 300",scaling-test-300@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 298",scaling-test-298@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,38,A-38,"Scaling Test User 296",scaling-test-296@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10002",scaling-test-10002@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10004",scaling-test-10004@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,39,A-39,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10002",scaling-test-10002@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10006",scaling-test-10006@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,40,A-40,"Scaling Test User 10002",scaling-test-10002@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10014",scaling-test-10014@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10012",scaling-test-10012@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10010",scaling-test-10010@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,41,A-41,"Scaling Test User 10006",scaling-test-10006@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10016",scaling-test-10016@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10018",scaling-test-10018@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,42,A-42,"Scaling Test User 10002",scaling-test-10002@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 10004",scaling-test-10004@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 10008",scaling-test-10008@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 10012",scaling-test-10012@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,43,A-43,"Scaling Test User 10014",scaling-test-10014@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 10022",scaling-test-10022@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 10020",scaling-test-10020@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 10018",scaling-test-10018@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,44,A-44,"Scaling Test User 10016",scaling-test-10016@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 10026",scaling-test-10026@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 10028",scaling-test-10028@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 10000",scaling-test-10000@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,45,A-45,"Scaling Test User 10006",scaling-test-10006@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 10008",scaling-test-10008@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 10014",scaling-test-10014@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 10016",scaling-test-10016@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,46,A-46,"Scaling Test User 10020",scaling-test-10020@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 10026",scaling-test-10026@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 10032",scaling-test-10032@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 10028",scaling-test-10028@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,47,A-47,"Scaling Test User 10022",scaling-test-10022@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 10034",scaling-test-10034@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 10036",scaling-test-10036@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 10038",scaling-test-10038@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,48,A-48,"Scaling Test User 10044",scaling-test-10044@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 39304",scaling-test-39304@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 16166",scaling-test-16166@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 19520",scaling-test-19520@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,49,A-49,"Scaling Test User 34322",scaling-test-34322@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 21742",scaling-test-21742@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 26944",scaling-test-26944@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 1788",scaling-test-1788@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,50,A-50,"Scaling Test User 35182",scaling-test-35182@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,51,A-51,"Scaling Test User 8802",scaling-test-8802@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,51,A-51,"Scaling Test User 13206",scaling-test-13206@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,51,A-51,"Scaling Test User 40520",scaling-test-40520@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,51,A-51,"Scaling Test User 33338",scaling-test-33338@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,52,A-52,"Scaling Test User 20996",scaling-test-20996@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,52,A-52,"Scaling Test User 35776",scaling-test-35776@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,52,A-52,"Scaling Test User 29284",scaling-test-29284@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,52,A-52,"Scaling Test User 642",scaling-test-642@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,53,A-53,"Scaling Test User 44630",scaling-test-44630@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,53,A-53,"Scaling Test User 48828",scaling-test-48828@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,53,A-53,"Scaling Test User 26454",scaling-test-26454@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,53,A-53,"Scaling Test User 9244",scaling-test-9244@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,54,A-54,"Scaling Test User 49272",scaling-test-49272@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,54,A-54,"Scaling Test User 8196",scaling-test-8196@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,54,A-54,"Scaling Test User 8778",scaling-test-8778@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,54,A-54,"Scaling Test User 17142",scaling-test-17142@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,55,A-55,"Scaling Test User 28202",scaling-test-28202@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,55,A-55,"Scaling Test User 4704",scaling-test-4704@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,55,A-55,"Scaling Test User 27902",scaling-test-27902@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,55,A-55,"Scaling Test User 29816",scaling-test-29816@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,6:00 PM-7:00 PM,56,A-56,"Scaling Test User 35486",scaling-test-35486@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,1,B-1,"April Huang",aprilrouhuang@gmail.com,"Data Science",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,1,B-1,"Sarah Kim",tech2@test.com,"Data Science",2nd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,1,B-1,"Rachel Green",tech8@test.com,"Information Systems",2nd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,1,B-1,"Lisa Rodriguez",tech6@test.com,"Data Science",4th,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 3",optimized-test-3@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 8",optimized-test-8@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,2,B-2,"Optimized Test User 6",optimized-test-6@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,2,B-2,"Jessica Taylor",tech12@test.com,"Information Systems",4th,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 14",optimized-test-14@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 26",optimized-test-26@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 27",optimized-test-27@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,3,B-3,"Optimized Test User 35",optimized-test-35@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,4,B-4,"Optimized Test User 80",optimized-test-80@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,4,B-4,"Optimized Test User 78",optimized-test-78@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,4,B-4,"Optimized Test User 60",optimized-test-60@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,4,B-4,"Optimized Test User 57",optimized-test-57@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,5,B-5,"Optimized Test User 98",optimized-test-98@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 30",scaling-test-30@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 36",scaling-test-36@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,5,B-5,"Scaling Test User 38",scaling-test-38@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 40",scaling-test-40@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 50",scaling-test-50@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 56",scaling-test-56@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,6,B-6,"Scaling Test User 62",scaling-test-62@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 82",scaling-test-82@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 100",scaling-test-100@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 68",scaling-test-68@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,7,B-7,"Scaling Test User 66",scaling-test-66@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 126",scaling-test-126@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 130",scaling-test-130@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 148",scaling-test-148@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,8,B-8,"Scaling Test User 150",scaling-test-150@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 158",scaling-test-158@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 176",scaling-test-176@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 186",scaling-test-186@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,9,B-9,"Scaling Test User 188",scaling-test-188@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 196",scaling-test-196@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 224",scaling-test-224@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 202",scaling-test-202@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,10,B-10,"Scaling Test User 190",scaling-test-190@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 234",scaling-test-234@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 240",scaling-test-240@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 246",scaling-test-246@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,11,B-11,"Scaling Test User 250",scaling-test-250@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 254",scaling-test-254@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 256",scaling-test-256@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 258",scaling-test-258@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,12,B-12,"Scaling Test User 264",scaling-test-264@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 286",scaling-test-286@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 288",scaling-test-288@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 284",scaling-test-284@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,13,B-13,"Scaling Test User 276",scaling-test-276@example.com,"Computer Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,14,B-14,"Scaling Test User 10004",scaling-test-10004@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,14,B-14,"Scaling Test User 10004",scaling-test-10004@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,14,B-14,"Scaling Test User 10008",scaling-test-10008@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,14,B-14,"Scaling Test User 10006",scaling-test-10006@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,15,B-15,"Scaling Test User 10024",scaling-test-10024@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,15,B-15,"Scaling Test User 10004",scaling-test-10004@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,15,B-15,"Scaling Test User 10010",scaling-test-10010@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,15,B-15,"Scaling Test User 10012",scaling-test-10012@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,16,B-16,"Scaling Test User 10030",scaling-test-10030@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,16,B-16,"Scaling Test User 10048",scaling-test-10048@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,16,B-16,"Scaling Test User 10046",scaling-test-10046@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,16,B-16,"Scaling Test User 10018",scaling-test-10018@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,17,B-17,"Scaling Test User 43992",scaling-test-43992@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,17,B-17,"Scaling Test User 35380",scaling-test-35380@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,17,B-17,"Scaling Test User 19886",scaling-test-19886@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,17,B-17,"Scaling Test User 36468",scaling-test-36468@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,18,B-18,"Scaling Test User 21908",scaling-test-21908@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,7:00 PM-8:00 PM,18,B-18,"Scaling Test User 47024",scaling-test-47024@example.com,"Engineering",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,1,C-1,"David Wang",tech5@test.com,"Computer Science",2nd,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,1,C-1,"Amanda Lee",tech10@test.com,"Data Science",3rd,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,1,C-1,"Optimized Test User 15",optimized-test-15@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,1,C-1,"Optimized Test User 24",optimized-test-24@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 38",optimized-test-38@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 42",optimized-test-42@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 30",optimized-test-30@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,2,C-2,"Optimized Test User 36",optimized-test-36@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,3,C-3,"Optimized Test User 59",optimized-test-59@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,3,C-3,"Optimized Test User 75",optimized-test-75@example.com,"Arts",Senior,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,3,C-3,"Optimized Test User 77",optimized-test-77@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,3,C-3,"Optimized Test User 81",optimized-test-81@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,4,C-4,"Optimized Test User 90",optimized-test-90@example.com,"Engineering",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 86",scaling-test-86@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,4,C-4,"Scaling Test User 26",scaling-test-26@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,4,C-4,"Optimized Test User 93",optimized-test-93@example.com,"Business",Sophomore,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 108",scaling-test-108@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 160",scaling-test-160@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 168",scaling-test-168@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,5,C-5,"Scaling Test User 206",scaling-test-206@example.com,"Engineering",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 228",scaling-test-228@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 222",scaling-test-222@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 220",scaling-test-220@example.com,"Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,6,C-6,"Scaling Test User 218",scaling-test-218@example.com,"Engineering",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 10008",scaling-test-10008@example.com,"Computer Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 294",scaling-test-294@example.com,"Computer Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 268",scaling-test-268@example.com,"Science",Senior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,7,C-7,"Scaling Test User 262",scaling-test-262@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 10040",scaling-test-10040@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 10010",scaling-test-10010@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 10002",scaling-test-10002@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,8,C-8,"Scaling Test User 10024",scaling-test-10024@example.com,"Science",Graduate,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 41862",scaling-test-41862@example.com,"Computer Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 10042",scaling-test-10042@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 20902",scaling-test-20902@example.com,"Science",Junior,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,9,C-9,"Scaling Test User 4670",scaling-test-4670@example.com,"Engineering",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 42390",scaling-test-42390@example.com,"Computer Science",Freshman,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,10,C-10,"Scaling Test User 40696",scaling-test-40696@example.com,"Science",Sophomore,Yes,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,10,C-10,"Brian Can",bcan.career@gmail.com,"Data Science",1st,No,Assigned,8/22/2025, 6:28:44 PM
+Tech,8:00 PM-9:00 PM,10,C-10,"d",briancan6@gmail.com,"d",1st,No,Assigned,8/22/2025, 6:28:44 PM

@@ -20,6 +20,7 @@ const AssociatePage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [applicationsPerPage] = useState(30);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     // Check authentication state
@@ -117,6 +118,32 @@ const AssociatePage = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleExportCaseGroups = async () => {
+    setExporting(true);
+    try {
+      const response = await axios.get("http://localhost:5002/api/case-groups/export", {
+        responseType: 'blob'
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `case-group-assignments-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      alert("Case group assignments exported successfully!");
+    } catch (error) {
+      console.error("Error exporting case groups:", error);
+      alert("Failed to export case groups. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const updateStatus = (applicationId, newStatus, notes = "") => {
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
     
@@ -148,6 +175,22 @@ const AssociatePage = () => {
             Welcome, {adminInfo?.name || currentUser?.displayName} ({adminInfo?.role || "Admin"})
           </p>
           <div style={{ display: "flex", gap: "8px", marginTop: "5px" }}>
+            <button 
+              onClick={handleExportCaseGroups}
+              disabled={exporting}
+              style={{
+                backgroundColor: "#28a745",
+                color: "white",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                cursor: exporting ? "not-allowed" : "pointer",
+                fontSize: "14px",
+                opacity: exporting ? 0.6 : 1
+              }}
+            >
+              {exporting ? "Exporting..." : "Export Case Groups"}
+            </button>
             <button 
               onClick={fetchApplications}
               style={{
@@ -482,6 +525,46 @@ const ApplicationDetail = ({ application, onClose }) => (
               {application.status}
             </span>
           </p>
+          
+          {/* Case Night Availability Section */}
+          {application.caseNightPreferences && application.caseNightPreferences.length > 0 && (
+            <div style={{ marginTop: "15px" }}>
+              <p>
+                <strong>Case Night Availability:</strong>
+              </p>
+              <div style={{
+                backgroundColor: "#e3f2fd",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid #bbdefb"
+              }}>
+                {application.caseNightPreferences.map((slot, index) => {
+                  const slotNames = {
+                    'A': '6:00 PM - 7:00 PM',
+                    'B': '7:00 PM - 8:00 PM',
+                    'C': '8:00 PM - 9:00 PM'
+                  };
+                  return (
+                    <span
+                      key={slot}
+                      style={{
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        marginRight: "8px",
+                        marginBottom: "4px",
+                        display: "inline-block"
+                      }}
+                    >
+                      {slotNames[slot]}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
         
         <div style={{ flex: 1 }}>
