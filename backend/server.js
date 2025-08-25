@@ -37,6 +37,7 @@ try {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/admin", require("./routes/admin"));
+app.use("/api/case-groups", require("./routes/caseGroups"));
 app.use("/uploads", express.static("uploads"));
 
 
