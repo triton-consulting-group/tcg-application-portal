@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./associatePage.css";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -21,24 +21,9 @@ const AssociatePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [applicationsPerPage] = useState(30);
   const [exporting, setExporting] = useState(false);
+  const [caseNightConfig, setCaseNightConfig] = useState(null);
 
-  useEffect(() => {
-    // Check authentication state
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      if (user) {
-        checkAdminStatus(user.email);
-      } else {
-        setIsAdmin(false);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const checkAdminStatus = async (email) => {
+  const checkAdminStatus = useCallback(async (email) => {
     try {
       const response = await axios.post("http://localhost:5002/api/admin/check", { email });
       if (response.data.isAdmin) {
@@ -57,7 +42,36 @@ const AssociatePage = () => {
       setError("Access denied. Admin privileges required.");
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Check authentication state
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        checkAdminStatus(user.email);
+      } else {
+        setIsAdmin(false);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [checkAdminStatus]);
+
+  // Fetch case night configuration
+  useEffect(() => {
+    const fetchCaseNightConfig = async () => {
+      try {
+        const response = await axios.get("http://localhost:5002/api/applications/case-night-config");
+        setCaseNightConfig(response.data);
+      } catch (error) {
+        console.error("Error fetching case night config:", error);
+      }
+    };
+    fetchCaseNightConfig();
+  }, []);
 
   const fetchApplications = async () => {
     try {
@@ -270,6 +284,7 @@ const AssociatePage = () => {
           application={selectedApplication}
           onClose={() => setSelectedApplication(null)}
           updateStatus={updateStatus}
+          caseNightConfig={caseNightConfig}
         />
       )}
 
@@ -486,7 +501,7 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose }) => (
+const ApplicationDetail = ({ application, onClose, caseNightConfig }) => (
   <div className="modal-overlay">
     <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
       <button className="close-button" onClick={onClose}>
@@ -511,6 +526,9 @@ const ApplicationDetail = ({ application, onClose }) => (
           </p>
           <p>
             <strong>Major:</strong> {application.major}
+          </p>
+          <p>
+            <strong>Track:</strong> {application.candidateType}
           </p>
           <p>
             <strong>Current Status:</strong> 
@@ -539,11 +557,7 @@ const ApplicationDetail = ({ application, onClose }) => (
                 border: "1px solid #bbdefb"
               }}>
                 {application.caseNightPreferences.map((slot, index) => {
-                  const slotNames = {
-                    'A': '6:00 PM - 7:00 PM',
-                    'B': '7:00 PM - 8:00 PM',
-                    'C': '8:00 PM - 9:00 PM'
-                  };
+                  const slotName = caseNightConfig?.slots?.[slot] || `Slot ${slot}`;
                   return (
                     <span
                       key={slot}
@@ -558,7 +572,7 @@ const ApplicationDetail = ({ application, onClose }) => (
                         display: "inline-block"
                       }}
                     >
-                      {slotNames[slot]}
+                      {slotName}
                     </span>
                   );
                 })}
@@ -580,6 +594,42 @@ const ApplicationDetail = ({ application, onClose }) => (
           }}>
             {application.reason}
           </div>
+          
+          {/* Zombie Apocalypse Question */}
+          {application.zombieAnswer && (
+            <div style={{ marginTop: "15px" }}>
+              <p>
+                <strong>How are you surviving the zombie apocalypse?</strong>
+              </p>
+              <div style={{
+                backgroundColor: "#f8f9fa",
+                padding: "12px",
+                borderRadius: "6px",
+                maxHeight: "100px",
+                overflowY: "auto"
+              }}>
+                {application.zombieAnswer}
+              </div>
+            </div>
+          )}
+          
+          {/* Additional Info Question */}
+          {application.additionalInfo && (
+            <div style={{ marginTop: "15px" }}>
+              <p>
+                <strong>Additional Information:</strong>
+              </p>
+              <div style={{
+                backgroundColor: "#f8f9fa",
+                padding: "12px",
+                borderRadius: "6px",
+                maxHeight: "100px",
+                overflowY: "auto"
+              }}>
+                {application.additionalInfo}
+              </div>
+            </div>
+          )}
           
           <div style={{ marginTop: "15px" }}>
             <a
