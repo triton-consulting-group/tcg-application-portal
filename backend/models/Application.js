@@ -9,6 +9,9 @@ const ApplicationSchema = new mongoose.Schema(
     appliedBefore: { type: String, required: true }, 
     candidateType: { type: String, required: true },
     reason: { type: String, required: true },
+    // Optional additional applicant-provided fields
+    zombieAnswer: { type: String, default: "" },
+    additionalInfo: { type: String, default: "" },
     caseNightPreferences: { 
       type: [String], 
       default: [] 
