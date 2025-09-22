@@ -726,6 +726,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig }) => (
 // 🟢 **PhasesView Component**
 const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm }) => {
   const [phasePages, setPhasePages] = useState({});
+  const [techFilter, setTechFilter] = useState("all"); // Tech filter state
   const applicationsPerPhase = 10;
   const phases = [
     {
@@ -750,13 +751,23 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     }
   ];
 
-  // Filter applications based on search term
+  // Filter applications based on search term and tech filter
   const filteredApplications = applications.filter((app) => {
-    if (!searchTerm) return true;
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return ["fullName", "major", "email"].some((key) =>
-      app[key]?.toLowerCase().includes(lowerSearchTerm)
+    // Search filter
+    const matchesSearch = !searchTerm || ["fullName", "major", "email"].some((key) =>
+      app[key]?.toLowerCase().includes(searchTerm.toLowerCase())
     );
+    
+    // Tech filter
+    let matchesTechFilter = true;
+    if (techFilter === "tech") {
+      matchesTechFilter = app.candidateType === "Tech";
+    } else if (techFilter === "non-tech") {
+      matchesTechFilter = app.candidateType === "Non-Tech";
+    }
+    // If techFilter is "all", matchesTechFilter remains true
+    
+    return matchesSearch && matchesTechFilter;
   });
 
   // Initialize phase pages when applications change
@@ -881,12 +892,14 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
   return (
     <div>
-      {/* Search Bar */}
-      <div className="search-bar" style={{ 
+      {/* Search Bar and Tech Filter */}
+      <div style={{ 
         marginBottom: "20px", 
         padding: "0 20px",
         display: "flex",
-        justifyContent: "center"
+        justifyContent: "center",
+        gap: "16px",
+        alignItems: "center"
       }}>
         <input
           type="text"
@@ -910,10 +923,34 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
             e.target.style.borderColor = "#dee2e6";
           }}
         />
+        <select
+          value={techFilter}
+          onChange={(e) => setTechFilter(e.target.value)}
+          style={{
+            padding: "12px 16px",
+            fontSize: "16px",
+            border: "2px solid #dee2e6",
+            borderRadius: "8px",
+            backgroundColor: "white",
+            outline: "none",
+            transition: "border-color 0.2s ease",
+            minWidth: "150px"
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = "#007bff";
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = "#dee2e6";
+          }}
+        >
+          <option value="all">All Applications</option>
+          <option value="tech">Tech Only</option>
+          <option value="non-tech">Non-Tech Only</option>
+        </select>
       </div>
       
       {/* Search Results Counter */}
-      {searchTerm && (
+      {(searchTerm || techFilter !== "all") && (
         <div style={{ 
           textAlign: "center", 
           marginBottom: "10px",
@@ -921,6 +958,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
           fontSize: "14px"
         }}>
           Showing {filteredApplications.length} of {applications.length} applications
+          {techFilter !== "all" && ` (${techFilter === "tech" ? "Tech" : "Non-Tech"} only)`}
         </div>
       )}
       
@@ -994,7 +1032,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                     {app.email}
                   </p>
                   <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                    {app.major} • {app.studentYear}
+                    {app.major} • {app.studentYear} • {app.candidateType}
                   </p>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
