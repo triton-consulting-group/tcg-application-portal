@@ -261,6 +261,8 @@ const AssociatePage = () => {
             applications={applications}
             setSelectedApplication={setSelectedApplication}
             setApplications={setApplications}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
           />
         )}
       </div>
@@ -672,7 +674,9 @@ const ApplicationDetail = ({ application, onClose }) => (
 );
 
 // 🟢 **PhasesView Component**
-const PhasesView = ({ applications, setSelectedApplication, setApplications }) => {
+const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm }) => {
+  const [phasePages, setPhasePages] = useState({});
+  const applicationsPerPhase = 10;
   const phases = [
     {
       title: "Under Review",
@@ -695,6 +699,52 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications }) =
       color: "#c6f6d5"
     }
   ];
+
+  // Filter applications based on search term
+  const filteredApplications = applications.filter((app) => {
+    if (!searchTerm) return true;
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return ["fullName", "major", "email"].some((key) =>
+      app[key]?.toLowerCase().includes(lowerSearchTerm)
+    );
+  });
+
+  // Initialize phase pages when applications change
+  useEffect(() => {
+    const newPhasePages = {};
+    phases.forEach(phase => {
+      if (!phasePages[phase.title]) {
+        newPhasePages[phase.title] = 1;
+      }
+    });
+    if (Object.keys(newPhasePages).length > 0) {
+      setPhasePages(prev => ({ ...prev, ...newPhasePages }));
+    }
+  }, [applications]);
+
+  // Get applications for a specific phase with pagination
+  const getPhaseApplications = (phase) => {
+    const phaseApps = filteredApplications.filter((app) => 
+      phase.statuses.includes(app.status)
+    );
+    const currentPage = phasePages[phase.title] || 1;
+    const startIndex = (currentPage - 1) * applicationsPerPhase;
+    const endIndex = startIndex + applicationsPerPhase;
+    return {
+      applications: phaseApps.slice(startIndex, endIndex),
+      totalPages: Math.ceil(phaseApps.length / applicationsPerPhase),
+      currentPage,
+      totalApplications: phaseApps.length
+    };
+  };
+
+  // Handle page change for a specific phase
+  const handlePhasePageChange = (phaseTitle, pageNumber) => {
+    setPhasePages(prev => ({
+      ...prev,
+      [phaseTitle]: pageNumber
+    }));
+  };
 
   const handleDragStart = (e, application) => {
     e.dataTransfer.setData("applicationId", application._id);
@@ -780,42 +830,90 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications }) =
   };
 
   return (
-    <div className="application-phases" style={{ display: "flex", gap: "20px", padding: "20px" }}>
-      {phases.map((phase) => (
-        <div
-          key={phase.title}
+    <div>
+      {/* Search Bar */}
+      <div className="search-bar" style={{ 
+        marginBottom: "20px", 
+        padding: "0 20px",
+        display: "flex",
+        justifyContent: "center"
+      }}>
+        <input
+          type="text"
+          placeholder="Search by name, major, or email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           style={{
-            flex: 1,
-            backgroundColor: "white",
+            width: "100%",
+            maxWidth: "400px",
+            padding: "12px 16px",
+            fontSize: "16px",
+            border: "2px solid #dee2e6",
             borderRadius: "8px",
-            padding: "16px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            border: `3px solid ${phase.color}`,
-            minHeight: "400px"
+            outline: "none",
+            transition: "border-color 0.2s ease"
           }}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={(e) => {
-            handleDrop(e, phase);
-            e.currentTarget.style.backgroundColor = "white";
-            e.currentTarget.style.border = `3px solid ${phase.color}`;
+          onFocus={(e) => {
+            e.target.style.borderColor = "#007bff";
           }}
-          data-phase-color={phase.color}
-        >
-          <h3 style={{ 
-            margin: "0 0 16px 0", 
-            padding: "8px", 
-            backgroundColor: phase.color, 
-            borderRadius: "4px",
-            textAlign: "center",
-            fontWeight: "bold"
-          }}>
-            {phase.title}
-          </h3>
-          <div style={{ minHeight: "200px" }}>
-            {applications
-              .filter((app) => phase.statuses.includes(app.status))
-              .map((app) => (
+          onBlur={(e) => {
+            e.target.style.borderColor = "#dee2e6";
+          }}
+        />
+      </div>
+      
+      {/* Search Results Counter */}
+      {searchTerm && (
+        <div style={{ 
+          textAlign: "center", 
+          marginBottom: "10px",
+          color: "#6c757d",
+          fontSize: "14px"
+        }}>
+          Showing {filteredApplications.length} of {applications.length} applications
+        </div>
+      )}
+      
+      <div className="application-phases" style={{ display: "flex", gap: "20px", padding: "20px" }}>
+        {phases.map((phase) => {
+          const phaseData = getPhaseApplications(phase);
+          return (
+            <div
+              key={phase.title}
+              style={{
+                flex: 1,
+                backgroundColor: "white",
+                borderRadius: "8px",
+                padding: "16px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                border: `3px solid ${phase.color}`,
+                minHeight: "400px",
+                display: "flex",
+                flexDirection: "column"
+              }}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => {
+                handleDrop(e, phase);
+                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.border = `3px solid ${phase.color}`;
+              }}
+              data-phase-color={phase.color}
+            >
+              <h3 style={{ 
+                margin: "0 0 16px 0", 
+                padding: "8px", 
+                backgroundColor: phase.color, 
+                borderRadius: "4px",
+                textAlign: "center",
+                fontWeight: "bold"
+              }}>
+                {phase.title} ({phaseData.totalApplications})
+              </h3>
+              
+              {/* Applications List */}
+              <div style={{ flex: 1, minHeight: "200px" }}>
+                {phaseData.applications.map((app) => (
                 <div 
                   key={app._id} 
                   draggable
@@ -875,25 +973,99 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications }) =
                     </span>
                   </div>
                 </div>
-              ))}
-            {applications.filter((app) => phase.statuses.includes(app.status)).length === 0 && (
-              <div style={{ 
-                textAlign: "center", 
-                color: "#6c757d", 
-                fontStyle: "italic",
-                margin: "20px 0",
-                padding: "40px 20px",
-                border: "2px dashed #dee2e6",
-                borderRadius: "8px",
-                backgroundColor: "#f8f9fa"
-              }}>
-                <p style={{ margin: "0 0 10px 0" }}>No applications in this phase</p>
-                <p style={{ margin: "0", fontSize: "12px" }}>Drop applications here</p>
+                ))}
+                {phaseData.applications.length === 0 && (
+                  <div style={{ 
+                    textAlign: "center", 
+                    color: "#6c757d", 
+                    fontStyle: "italic",
+                    margin: "20px 0",
+                    padding: "40px 20px",
+                    border: "2px dashed #dee2e6",
+                    borderRadius: "8px",
+                    backgroundColor: "#f8f9fa"
+                  }}>
+                    <p style={{ margin: "0 0 10px 0" }}>No applications in this phase</p>
+                    <p style={{ margin: "0", fontSize: "12px" }}>Drop applications here</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-      ))}
+              
+              {/* Pagination Controls */}
+              {phaseData.totalPages > 1 && (
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto 1fr",
+                  alignItems: "center",
+                  marginTop: "12px",
+                  padding: "6px 8px",
+                  backgroundColor: "#f8f9fa",
+                  borderRadius: "4px",
+                  border: "1px solid #dee2e6"
+                }}>
+                  <button
+                    onClick={() => handlePhasePageChange(phase.title, phaseData.currentPage - 1)}
+                    disabled={phaseData.currentPage === 1}
+                    style={{
+                      backgroundColor: phaseData.currentPage === 1 ? "#6c757d" : "#007bff",
+                      color: "white",
+                      border: "none",
+                      padding: "4px 8px",
+                      borderRadius: "3px",
+                      cursor: phaseData.currentPage === 1 ? "not-allowed" : "pointer",
+                      fontSize: "10px",
+                      opacity: phaseData.currentPage === 1 ? 0.6 : 1,
+                      justifySelf: "start"
+                    }}
+                  >
+                    ← Prev
+                  </button>
+                  
+                  <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center"
+                  }}>
+                    <span style={{
+                      fontSize: "10px",
+                      color: "#6c757d",
+                      fontWeight: "bold"
+                    }}>
+                      Applications {((phaseData.currentPage - 1) * applicationsPerPhase) + 1}-{Math.min(phaseData.currentPage * applicationsPerPhase, phaseData.totalApplications)}
+                    </span>
+                    <span style={{
+                      fontSize: "10px",
+                      color: "#6c757d",
+                      fontWeight: "bold"
+                    }}>
+                      of {phaseData.totalApplications}
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={() => handlePhasePageChange(phase.title, phaseData.currentPage + 1)}
+                    disabled={phaseData.currentPage === phaseData.totalPages}
+                    style={{
+                      backgroundColor: phaseData.currentPage === phaseData.totalPages ? "#6c757d" : "#007bff",
+                      color: "white",
+                      border: "none",
+                      padding: "4px 8px",
+                      borderRadius: "3px",
+                      cursor: phaseData.currentPage === phaseData.totalPages ? "not-allowed" : "pointer",
+                      fontSize: "10px",
+                      opacity: phaseData.currentPage === phaseData.totalPages ? 0.6 : 1,
+                      justifySelf: "end"
+                    }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
