@@ -10,6 +10,7 @@ const AssociatePage = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [techFilter, setTechFilter] = useState("all"); // New state for tech filter
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
@@ -96,12 +97,24 @@ const AssociatePage = () => {
 
   const filteredApplications = useMemo(() => {
     const lowerSearchTerm = searchTerm.toLowerCase();
-    return sortedApplications.filter((app) =>
-      ["fullName", "major", "email"].some((key) =>
+    return sortedApplications.filter((app) => {
+      // Search filter
+      const matchesSearch = ["fullName", "major", "email"].some((key) =>
         app[key]?.toLowerCase().includes(lowerSearchTerm)
-      )
-    );
-  }, [searchTerm, sortedApplications]);
+      );
+      
+      // Tech filter
+      let matchesTechFilter = true;
+      if (techFilter === "tech") {
+        matchesTechFilter = app.candidateType === "Tech";
+      } else if (techFilter === "non-tech") {
+        matchesTechFilter = app.candidateType === "Non-Tech";
+      }
+      // If techFilter is "all", matchesTechFilter remains true
+      
+      return matchesSearch && matchesTechFilter;
+    });
+  }, [searchTerm, sortedApplications, techFilter]);
 
   // Pagination logic
   const indexOfLastApplication = currentPage * applicationsPerPage;
@@ -109,10 +122,10 @@ const AssociatePage = () => {
   const currentApplications = filteredApplications.slice(indexOfFirstApplication, indexOfLastApplication);
   const totalPages = Math.max(1, Math.ceil(filteredApplications.length / applicationsPerPage));
 
-  // Reset to first page when search term changes
+  // Reset to first page when search term or tech filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, techFilter]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -255,12 +268,16 @@ const AssociatePage = () => {
             totalApplications={filteredApplications.length}
             applicationsPerPage={applicationsPerPage}
             onPageChange={handlePageChange}
+            techFilter={techFilter}
+            setTechFilter={setTechFilter}
           />
         ) : (
           <PhasesView
             applications={applications}
             setSelectedApplication={setSelectedApplication}
             setApplications={setApplications}
+            techFilter={techFilter}
+            setTechFilter={setTechFilter}
           />
         )}
       </div>
@@ -297,14 +314,33 @@ const TableView = ({
   totalApplications,
   applicationsPerPage,
   onPageChange,
+  techFilter,
+  setTechFilter,
 }) => (
   <div className="all-applications">
-    <div className="search-bar">
+    <div className="search-bar" style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
       <input
         type="text"
         placeholder="Search by name, major, or email..."
         onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ flex: 1 }}
       />
+      <select
+        value={techFilter}
+        onChange={(e) => setTechFilter(e.target.value)}
+        style={{
+          padding: "8px 12px",
+          borderRadius: "4px",
+          border: "1px solid #ccc",
+          backgroundColor: "white",
+          fontSize: "14px",
+          minWidth: "150px"
+        }}
+      >
+        <option value="all">All Applications</option>
+        <option value="tech">Tech Only</option>
+        <option value="non-tech">Non-Tech Only</option>
+      </select>
     </div>
     <table>
       <thead>
@@ -513,6 +549,9 @@ const ApplicationDetail = ({ application, onClose }) => (
             <strong>Major:</strong> {application.major}
           </p>
           <p>
+            <strong>Track:</strong> {application.candidateType}
+          </p>
+          <p>
             <strong>Current Status:</strong> 
             <span style={{
               backgroundColor: "#28a745",
@@ -672,7 +711,7 @@ const ApplicationDetail = ({ application, onClose }) => (
 );
 
 // 🟢 **PhasesView Component**
-const PhasesView = ({ applications, setSelectedApplication, setApplications }) => {
+const PhasesView = ({ applications, setSelectedApplication, setApplications, techFilter, setTechFilter }) => {
   const phases = [
     {
       title: "Under Review",
@@ -695,6 +734,18 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications }) =
       color: "#c6f6d5"
     }
   ];
+
+  // Filter applications based on tech filter
+  const filteredApplications = useMemo(() => {
+    return applications.filter((app) => {
+      if (techFilter === "tech") {
+        return app.candidateType === "Tech";
+      } else if (techFilter === "non-tech") {
+        return app.candidateType === "Non-Tech";
+      }
+      return true; // Show all if filter is "all"
+    });
+  }, [applications, techFilter]);
 
   const handleDragStart = (e, application) => {
     e.dataTransfer.setData("applicationId", application._id);
@@ -780,120 +831,143 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications }) =
   };
 
   return (
-    <div className="application-phases" style={{ display: "flex", gap: "20px", padding: "20px" }}>
-      {phases.map((phase) => (
-        <div
-          key={phase.title}
+    <div>
+      {/* Filter controls for PhasesView - moved outside the main container */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+        <select
+          value={techFilter}
+          onChange={(e) => setTechFilter(e.target.value)}
           style={{
-            flex: 1,
-            backgroundColor: "white",
-            borderRadius: "8px",
-            padding: "16px",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            border: `3px solid ${phase.color}`,
-            minHeight: "400px"
-          }}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={(e) => {
-            handleDrop(e, phase);
-            e.currentTarget.style.backgroundColor = "white";
-            e.currentTarget.style.border = `3px solid ${phase.color}`;
-          }}
-          data-phase-color={phase.color}
-        >
-          <h3 style={{ 
-            margin: "0 0 16px 0", 
-            padding: "8px", 
-            backgroundColor: phase.color, 
+            padding: "8px 12px",
             borderRadius: "4px",
-            textAlign: "center",
-            fontWeight: "bold"
-          }}>
-            {phase.title}
-          </h3>
-          <div style={{ minHeight: "200px" }}>
-            {applications
-              .filter((app) => phase.statuses.includes(app.status))
-              .map((app) => (
-                <div 
-                  key={app._id} 
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, app)}
-                  style={{
-                    backgroundColor: "#f8f9fa",
-                    padding: "12px",
-                    margin: "8px 0",
-                    borderRadius: "6px",
-                    border: "1px solid #dee2e6",
-                    cursor: "grab",
-                    transition: "all 0.2s ease",
-                    userSelect: "none"
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = "translateY(-2px)";
-                    e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow = "none";
-                  }}
-                >
-                  <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>
-                    {app.fullName}
-                  </h4>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                    {app.email}
-                  </p>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                    {app.major} • {app.studentYear}
-                  </p>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      style={{
-                        backgroundColor: "#007bff",
+            border: "1px solid #ccc",
+            backgroundColor: "white",
+            fontSize: "14px",
+            minWidth: "150px"
+          }}
+        >
+          <option value="all">All Applications</option>
+          <option value="tech">Tech Only</option>
+          <option value="non-tech">Non-Tech Only</option>
+        </select>
+      </div>
+      
+      {/* Main phases container - separate from filter */}
+      <div className="application-phases" style={{ display: "flex", gap: "20px", padding: "20px" }}>
+        {phases.map((phase) => (
+          <div
+            key={phase.title}
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "16px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              border: `3px solid ${phase.color}`,
+              minHeight: "400px"
+            }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => {
+              handleDrop(e, phase);
+              e.currentTarget.style.backgroundColor = "white";
+              e.currentTarget.style.border = `3px solid ${phase.color}`;
+            }}
+            data-phase-color={phase.color}
+          >
+            <h3 style={{ 
+              margin: "0 0 16px 0", 
+              padding: "8px", 
+              backgroundColor: phase.color, 
+              borderRadius: "4px",
+              textAlign: "center",
+              fontWeight: "bold"
+            }}>
+              {phase.title}
+            </h3>
+            <div style={{ minHeight: "200px" }}>
+              {filteredApplications
+                .filter((app) => phase.statuses.includes(app.status))
+                .map((app) => (
+                  <div 
+                    key={app._id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, app)}
+                    style={{
+                      backgroundColor: "#f8f9fa",
+                      padding: "12px",
+                      margin: "8px 0",
+                      borderRadius: "6px",
+                      border: "1px solid #dee2e6",
+                      cursor: "grab",
+                      transition: "all 0.2s ease",
+                      userSelect: "none"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "none";
+                    }}
+                  >
+                    <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>
+                      {app.fullName}
+                    </h4>
+                    <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
+                      {app.email}
+                    </p>
+                    <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
+                      {app.major} • {app.studentYear} • {app.candidateType}
+                    </p>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        style={{
+                          backgroundColor: "#007bff",
+                          color: "white",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => setSelectedApplication(app)}
+                      >
+                        View
+                      </button>
+                      <span style={{
+                        backgroundColor: "#28a745",
                         color: "white",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer"
-                      }}
-                      onClick={() => setSelectedApplication(app)}
-                    >
-                      View
-                    </button>
-                    <span style={{
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                      fontSize: "10px",
-                      fontWeight: "bold"
-                    }}>
-                      {app.status}
-                    </span>
+                        padding: "2px 6px",
+                        borderRadius: "3px",
+                        fontSize: "10px",
+                        fontWeight: "bold"
+                      }}>
+                        {app.status}
+                      </span>
+                    </div>
                   </div>
+                ))}
+              {filteredApplications.filter((app) => phase.statuses.includes(app.status)).length === 0 && (
+                <div style={{ 
+                  textAlign: "center", 
+                  color: "#6c757d", 
+                  fontStyle: "italic",
+                  margin: "20px 0",
+                  padding: "40px 20px",
+                  border: "2px dashed #dee2e6",
+                  borderRadius: "8px",
+                  backgroundColor: "#f8f9fa"
+                }}>
+                  <p style={{ margin: "0 0 10px 0" }}>No applications in this phase</p>
+                  <p style={{ margin: "0", fontSize: "12px" }}>Drop applications here</p>
                 </div>
-              ))}
-            {applications.filter((app) => phase.statuses.includes(app.status)).length === 0 && (
-              <div style={{ 
-                textAlign: "center", 
-                color: "#6c757d", 
-                fontStyle: "italic",
-                margin: "20px 0",
-                padding: "40px 20px",
-                border: "2px dashed #dee2e6",
-                borderRadius: "8px",
-                backgroundColor: "#f8f9fa"
-              }}>
-                <p style={{ margin: "0 0 10px 0" }}>No applications in this phase</p>
-                <p style={{ margin: "0", fontSize: "12px" }}>Drop applications here</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
