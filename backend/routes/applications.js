@@ -55,6 +55,8 @@ router.post(
         appliedBefore: req.body.appliedBefore || "No",
         candidateType: req.body.candidateType || "Unknown",
         reason: req.body.reason || "",
+        zombieAnswer: req.body.zombieAnswer || "",
+        additionalInfo: req.body.additionalInfo || "",
         caseNightPreferences: req.body.caseNightPreferences || [],
         status: "Under Review", // ✅ Default status when a new application is created
 
@@ -176,6 +178,8 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
       appliedBefore: req.body.appliedBefore,
       candidateType: req.body.candidateType,
       reason: req.body.reason,
+      zombieAnswer: req.body.zombieAnswer,
+      additionalInfo: req.body.additionalInfo,
       caseNightPreferences: req.body.caseNightPreferences,
     };
 
