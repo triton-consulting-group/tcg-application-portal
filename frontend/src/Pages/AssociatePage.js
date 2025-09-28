@@ -287,6 +287,7 @@ const AssociatePage = () => {
           onClose={() => setSelectedApplication(null)}
           updateStatus={updateStatus}
           caseNightConfig={caseNightConfig}
+          adminInfo={adminInfo}
         />
       )}
 
@@ -321,6 +322,23 @@ const TableView = ({
         type="text"
         placeholder="Search by name, major, or email..."
         onChange={(e) => setSearchTerm(e.target.value)}
+        style={{
+          backgroundColor: "white",
+          color: "#333",
+          border: "1px solid #ccc",
+          borderRadius: "5px",
+          padding: "12px",
+          fontSize: "14px",
+          outline: "none",
+          width: "100%",
+          maxWidth: "500px"
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = "#007bff";
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = "#ccc";
+        }}
       />
     </div>
     <table>
@@ -342,7 +360,11 @@ const TableView = ({
       </thead>
       <tbody>
         {applications.map((app) => (
-          <tr key={app._id}>
+          <tr 
+            key={app._id}
+            className="clickable-row"
+            onClick={() => setSelectedApplication(app)}
+          >
             <td>{app.email}</td>
             <td>{app.fullName}</td>
             <td>{app.studentYear}</td>
@@ -354,6 +376,7 @@ const TableView = ({
                 href={`http://localhost:5002${app.resume || ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
               >
                 View Resume
               </a>
@@ -363,6 +386,7 @@ const TableView = ({
                 href={`http://localhost:5002${app.transcript || ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
               >
                 View Transcript
               </a>
@@ -375,9 +399,10 @@ const TableView = ({
                 alt="Profile"
                 width="50"
                 height="50"
-                onClick={() =>
-                  setSelectedImage(`http://localhost:5002${app.image}`)
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage(`http://localhost:5002${app.image}`);
+                }}
                 style={{ cursor: "pointer" }}
               />
             </td>
@@ -391,6 +416,7 @@ const TableView = ({
               <select
                 value={app.status}
                 onChange={(e) => updateStatus(app._id, e.target.value)}
+                onClick={(e) => e.stopPropagation()}
               >
                 <option value="Under Review">Under Review</option>
                 <option value="Case Night - Yes">Case Night - Yes</option>
@@ -406,7 +432,10 @@ const TableView = ({
             <td>
               <button
                 className="view-button"
-                onClick={() => setSelectedApplication(app)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedApplication(app);
+                }}
               >
                 View Application
               </button>
@@ -503,7 +532,35 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose, caseNightConfig }) => (
+const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo }) => {
+  const [comments, setComments] = useState(application.comments || []);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    
+    setIsSubmittingComment(true);
+    try {
+      const response = await axios.post(`http://localhost:5002/api/applications/${application._id}/comment`, {
+        comment: newComment,
+        adminEmail: adminInfo?.email || "unknown@admin.com",
+        adminName: adminInfo?.name || "Unknown Admin"
+      });
+
+      if (response.data) {
+        setComments(prev => [...prev, response.data.comment]);
+        setNewComment("");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      alert("Failed to add comment. Please try again.");
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  return (
   <div className="modal-overlay">
     <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
       <button className="close-button" onClick={onClose}>
@@ -719,9 +776,111 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig }) => (
           </div>
         </div>
       )}
+
+      {/* Comments Section */}
+      <div style={{ marginTop: "20px" }}>
+        <h3>Admin Comments ({comments.length})</h3>
+        
+        {/* Add Comment Form */}
+        <div style={{ marginBottom: "20px" }}>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add a comment about this applicant..."
+            style={{
+              width: "100%",
+              minHeight: "80px",
+              padding: "12px",
+              border: "2px solid #dee2e6",
+              borderRadius: "6px",
+              fontSize: "14px",
+              resize: "vertical",
+              backgroundColor: "white",
+              color: "#333"
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "#007bff";
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = "#dee2e6";
+            }}
+          />
+          <div style={{ marginTop: "10px", textAlign: "right" }}>
+            <button
+              onClick={handleAddComment}
+              disabled={!newComment.trim() || isSubmittingComment}
+              style={{
+                backgroundColor: newComment.trim() && !isSubmittingComment ? "#007bff" : "#6c757d",
+                color: "white",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "4px",
+                cursor: newComment.trim() && !isSubmittingComment ? "pointer" : "not-allowed",
+                fontSize: "14px"
+              }}
+            >
+              {isSubmittingComment ? "Adding..." : "Add Comment"}
+            </button>
+          </div>
+        </div>
+
+        {/* Comments List */}
+        <div style={{
+          backgroundColor: "#f8f9fa",
+          padding: "12px",
+          borderRadius: "6px",
+          maxHeight: "300px",
+          overflowY: "auto"
+        }}>
+          {comments.length === 0 ? (
+            <div style={{ 
+              textAlign: "center", 
+              color: "#6c757d", 
+              fontStyle: "italic",
+              padding: "20px"
+            }}>
+              No comments yet. Be the first to add a comment!
+            </div>
+          ) : (
+            comments.slice().reverse().map((comment, index) => (
+              <div 
+                key={index} 
+                style={{
+                  padding: "12px",
+                  margin: "8px 0",
+                  backgroundColor: "white",
+                  borderRadius: "6px",
+                  border: "1px solid #dee2e6",
+                  borderLeft: "4px solid #007bff"
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <span style={{
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    fontWeight: "bold"
+                  }}>
+                    {comment.adminName}
+                  </span>
+                  <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                    {new Date(comment.commentedAt).toLocaleString()}
+                  </span>
+                </div>
+                <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>
+                  {comment.comment}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   </div>
-);
+  );
+};
 
 // 🟢 **PhasesView Component**
 const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm }) => {
@@ -914,6 +1073,8 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
             border: "2px solid #dee2e6",
             borderRadius: "8px",
             outline: "none",
+            backgroundColor: "white",
+            color: "#333",
             transition: "border-color 0.2s ease"
           }}
           onFocus={(e) => {
