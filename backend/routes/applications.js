@@ -250,5 +250,66 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// 🟢 Add Comment to Application
+router.post("/:id/comment", async (req, res) => {
+  try {
+    const { comment, adminEmail, adminName } = req.body;
+
+    // Validate required fields
+    if (!comment || !adminEmail || !adminName) {
+      return res.status(400).json({ error: "❌ Comment, admin email, and admin name are required." });
+    }
+
+    // Find the application
+    const application = await Application.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({ error: "❌ Application not found" });
+    }
+
+    // Create comment entry
+    const commentEntry = {
+      comment: comment.trim(),
+      commentedBy: adminEmail,
+      commentedAt: new Date(),
+      adminName: adminName.trim()
+    };
+
+    // Add comment to application
+    const updatedApplication = await Application.findByIdAndUpdate(
+      req.params.id,
+      { $push: { comments: commentEntry } },
+      { new: true }
+    );
+
+    res.json({
+      message: "✅ Comment added successfully",
+      comment: commentEntry,
+      totalComments: updatedApplication.comments.length
+    });
+  } catch (error) {
+    console.error("❌ Error adding comment:", error);
+    res.status(500).json({ error: "❌ Failed to add comment." });
+  }
+});
+
+// 🟢 Get Application Comments
+router.get("/:id/comments", async (req, res) => {
+  try {
+    const application = await Application.findById(req.params.id).select('comments');
+    
+    if (!application) {
+      return res.status(404).json({ error: "❌ Application not found" });
+    }
+
+    res.json({
+      comments: application.comments || [],
+      totalComments: application.comments ? application.comments.length : 0
+    });
+  } catch (error) {
+    console.error("❌ Error fetching comments:", error);
+    res.status(500).json({ error: "❌ Failed to fetch comments." });
+  }
+});
+
 // ✅ Export Router
 module.exports = router;

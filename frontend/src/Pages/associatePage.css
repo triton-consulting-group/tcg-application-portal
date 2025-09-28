@@ -139,6 +139,15 @@ tr:hover {
   background: #f1f1f1;
 }
 
+tr.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+tr.clickable-row:hover {
+  background: #e9ecef;
+}
+
 /* View Button */
 .view-button {
   background: #007bff;

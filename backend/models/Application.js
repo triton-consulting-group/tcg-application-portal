@@ -34,6 +34,12 @@ const ApplicationSchema = new mongoose.Schema(
       changedAt: { type: Date, default: Date.now },
       notes: { type: String } // Optional notes for the status change
     }],
+    comments: [{
+      comment: { type: String, required: true },
+      commentedBy: { type: String, required: true }, // Admin email
+      commentedAt: { type: Date, default: Date.now },
+      adminName: { type: String, required: true } // Admin name for display
+    }],
   },
   { 
     timestamps: true,
