@@ -4,6 +4,7 @@ const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
+const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 
 // 🟢 Set up Multer storage for file uploads
@@ -211,7 +212,7 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
 });
 
 // 🟢 Update Application Status API
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireStatusChangePermission, async (req, res) => {
   try {
     const { status, changedBy, notes } = req.body;
 
@@ -251,7 +252,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // 🟢 Add Comment to Application
-router.post("/:id/comment", async (req, res) => {
+router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   try {
     const { comment, adminEmail, adminName } = req.body;
 

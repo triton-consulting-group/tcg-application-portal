@@ -159,6 +159,12 @@ const AssociatePage = () => {
   };
 
   const updateStatus = (applicationId, newStatus, notes = "") => {
+    // Check if admin has permission to change status
+    if (!adminInfo?.permissions?.canChangeStatus) {
+      alert("❌ You don't have permission to change application status.");
+      return;
+    }
+
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
     
     axios
@@ -166,6 +172,10 @@ const AssociatePage = () => {
         status: newStatus,
         changedBy: adminEmail,
         notes: notes
+      }, {
+        headers: {
+          'x-admin-email': adminEmail
+        }
       })
       .then(() => {
         return axios.get("http://localhost:5002/api/applications/all"); // 🔹 Refetch all applications
@@ -269,6 +279,7 @@ const AssociatePage = () => {
             totalApplications={filteredApplications.length}
             applicationsPerPage={applicationsPerPage}
             onPageChange={handlePageChange}
+            adminInfo={adminInfo}
           />
         ) : (
           <PhasesView
@@ -277,6 +288,7 @@ const AssociatePage = () => {
             setApplications={setApplications}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
+            adminInfo={adminInfo}
           />
         )}
       </div>
@@ -315,6 +327,7 @@ const TableView = ({
   totalApplications,
   applicationsPerPage,
   onPageChange,
+  adminInfo,
 }) => (
   <div className="all-applications">
     <div className="search-bar">
@@ -417,6 +430,11 @@ const TableView = ({
                 value={app.status}
                 onChange={(e) => updateStatus(app._id, e.target.value)}
                 onClick={(e) => e.stopPropagation()}
+                disabled={!adminInfo?.permissions?.canChangeStatus}
+                style={{
+                  opacity: adminInfo?.permissions?.canChangeStatus ? 1 : 0.6,
+                  cursor: adminInfo?.permissions?.canChangeStatus ? "pointer" : "not-allowed"
+                }}
               >
                 <option value="Under Review">Under Review</option>
                 <option value="Case Night - Yes">Case Night - Yes</option>
@@ -540,12 +558,22 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
     
+    // Check if admin has permission to add comments
+    if (!adminInfo?.permissions?.canAddComments) {
+      alert("❌ You don't have permission to add comments.");
+      return;
+    }
+    
     setIsSubmittingComment(true);
     try {
       const response = await axios.post(`http://localhost:5002/api/applications/${application._id}/comment`, {
         comment: newComment,
         adminEmail: adminInfo?.email || "unknown@admin.com",
         adminName: adminInfo?.name || "Unknown Admin"
+      }, {
+        headers: {
+          'x-admin-email': adminInfo?.email || "unknown@admin.com"
+        }
       });
 
       if (response.data) {
@@ -781,23 +809,25 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
       <div style={{ marginTop: "20px" }}>
         <h3>Admin Comments ({comments.length})</h3>
         
-        {/* Add Comment Form */}
-        <div style={{ marginBottom: "20px" }}>
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment about this applicant..."
-            style={{
-              width: "100%",
-              minHeight: "80px",
-              padding: "12px",
-              border: "2px solid #dee2e6",
-              borderRadius: "6px",
-              fontSize: "14px",
-              resize: "vertical",
-              backgroundColor: "white",
-              color: "#333"
-            }}
+                    {/* Add Comment Form */}
+                    <div style={{ marginBottom: "20px" }}>
+                      <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder={adminInfo?.permissions?.canAddComments ? "Add a comment about this applicant..." : "You don't have permission to add comments"}
+                        disabled={!adminInfo?.permissions?.canAddComments}
+                        style={{
+                          width: "100%",
+                          minHeight: "80px",
+                          padding: "12px",
+                          border: "2px solid #dee2e6",
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          resize: "vertical",
+                          backgroundColor: adminInfo?.permissions?.canAddComments ? "white" : "#f8f9fa",
+                          color: adminInfo?.permissions?.canAddComments ? "#333" : "#6c757d",
+                          opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
+                        }}
             onFocus={(e) => {
               e.target.style.borderColor = "#007bff";
             }}
@@ -808,18 +838,19 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
           <div style={{ marginTop: "10px", textAlign: "right" }}>
             <button
               onClick={handleAddComment}
-              disabled={!newComment.trim() || isSubmittingComment}
+              disabled={!newComment.trim() || isSubmittingComment || !adminInfo?.permissions?.canAddComments}
               style={{
-                backgroundColor: newComment.trim() && !isSubmittingComment ? "#007bff" : "#6c757d",
+                backgroundColor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "#007bff" : "#6c757d",
                 color: "white",
                 border: "none",
                 padding: "8px 16px",
                 borderRadius: "4px",
-                cursor: newComment.trim() && !isSubmittingComment ? "pointer" : "not-allowed",
-                fontSize: "14px"
+                cursor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "pointer" : "not-allowed",
+                fontSize: "14px",
+                opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
               }}
             >
-              {isSubmittingComment ? "Adding..." : "Add Comment"}
+              {isSubmittingComment ? "Adding..." : adminInfo?.permissions?.canAddComments ? "Add Comment" : "No Permission"}
             </button>
           </div>
         </div>
@@ -883,7 +914,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
 };
 
 // 🟢 **PhasesView Component**
-const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm }) => {
+const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm, adminInfo }) => {
   const [phasePages, setPhasePages] = useState({});
   const [techFilter, setTechFilter] = useState("all"); // Tech filter state
   const applicationsPerPhase = 10;
@@ -984,6 +1015,13 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
   const handleDrop = async (e, targetPhase) => {
     e.preventDefault();
+    
+    // Check if admin has permission to drag and drop
+    if (!adminInfo?.permissions?.canDragDrop) {
+      alert("❌ You don't have permission to move applications between phases.");
+      return;
+    }
+
     const applicationId = e.dataTransfer.getData("applicationId");
     const currentStatus = e.dataTransfer.getData("applicationStatus");
     
@@ -1140,13 +1178,13 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                 display: "flex",
                 flexDirection: "column"
               }}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => {
+              onDragOver={adminInfo?.permissions?.canDragDrop ? handleDragOver : undefined}
+              onDragLeave={adminInfo?.permissions?.canDragDrop ? handleDragLeave : undefined}
+              onDrop={adminInfo?.permissions?.canDragDrop ? (e) => {
                 handleDrop(e, phase);
                 e.currentTarget.style.backgroundColor = "white";
                 e.currentTarget.style.border = `3px solid ${phase.color}`;
-              }}
+              } : undefined}
               data-phase-color={phase.color}
             >
               <h3 style={{ 
@@ -1163,20 +1201,21 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               {/* Applications List */}
               <div style={{ flex: 1, minHeight: "200px" }}>
                 {phaseData.applications.map((app) => (
-                <div 
-                  key={app._id} 
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, app)}
-                  style={{
-                    backgroundColor: "#f8f9fa",
-                    padding: "12px",
-                    margin: "8px 0",
-                    borderRadius: "6px",
-                    border: "1px solid #dee2e6",
-                    cursor: "grab",
-                    transition: "all 0.2s ease",
-                    userSelect: "none"
-                  }}
+                            <div 
+                              key={app._id} 
+                              draggable={adminInfo?.permissions?.canDragDrop}
+                              onDragStart={(e) => handleDragStart(e, app)}
+                              style={{
+                                backgroundColor: "#f8f9fa",
+                                padding: "12px",
+                                margin: "8px 0",
+                                borderRadius: "6px",
+                                border: "1px solid #dee2e6",
+                                cursor: adminInfo?.permissions?.canDragDrop ? "grab" : "default",
+                                transition: "all 0.2s ease",
+                                userSelect: "none",
+                                opacity: adminInfo?.permissions?.canDragDrop ? 1 : 0.8
+                              }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = "translateY(-2px)";
                     e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
