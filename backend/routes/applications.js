@@ -5,6 +5,7 @@ const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const { emailService } = require("../config/emailConfig");
 
 // 🟢 Set up Multer storage for file uploads
 const storage = multer.diskStorage({
@@ -24,6 +25,27 @@ router.get("/case-night-config", (req, res) => {
   } catch (error) {
     console.error("❌ Error fetching case night config:", error);
     res.status(500).json({ error: "❌ Failed to fetch case night config." });
+  }
+});
+
+// 🟢 Test email configuration
+router.get("/test-email", async (req, res) => {
+  try {
+    const result = await emailService.testEmailConfig();
+    if (result.success) {
+      res.json({ 
+        message: "✅ Email configuration is valid",
+        status: "healthy"
+      });
+    } else {
+      res.status(500).json({ 
+        error: "❌ Email configuration error",
+        details: result.error
+      });
+    }
+  } catch (error) {
+    console.error("❌ Error testing email config:", error);
+    res.status(500).json({ error: "❌ Failed to test email configuration." });
   }
 });
 
@@ -64,6 +86,20 @@ router.post(
       });
 
       await newApplication.save();
+      
+      // Send confirmation email to the applicant
+      try {
+        const emailResult = await emailService.sendApplicationConfirmation(newApplication);
+        if (emailResult.success) {
+          console.log('✅ Confirmation email sent successfully to:', newApplication.email);
+        } else {
+          console.warn('⚠️ Failed to send confirmation email:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending confirmation email:', emailError);
+        // Don't fail the application submission if email fails
+      }
+      
       res.status(201).json({
         message: "✅ Application submitted successfully!",
         application: newApplication,
