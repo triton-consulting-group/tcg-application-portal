@@ -8,6 +8,7 @@ const { applicationSubmissionLimiter, generalApiLimiter } = require("../middlewa
 const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
+const { emailService } = require("../config/emailConfig");
 
 // 🟢 Set up Multer storage for file uploads
 let storage, upload;
@@ -84,6 +85,27 @@ router.get("/case-night-config", (req, res) => {
   }
 });
 
+// 🟢 Test email configuration
+router.get("/test-email", async (req, res) => {
+  try {
+    const result = await emailService.testEmailConfig();
+    if (result.success) {
+      res.json({ 
+        message: "✅ Email configuration is valid",
+        status: "healthy"
+      });
+    } else {
+      res.status(500).json({ 
+        error: "❌ Email configuration error",
+        details: result.error
+      });
+    }
+  } catch (error) {
+    console.error("❌ Error testing email config:", error);
+    res.status(500).json({ error: "❌ Failed to test email configuration." });
+  }
+});
+
 // 🟢 Handle application submission
 router.post(
   "/",
@@ -132,6 +154,20 @@ router.post(
       });
 
       await newApplication.save();
+      
+      // Send confirmation email to the applicant
+      try {
+        const emailResult = await emailService.sendApplicationConfirmation(newApplication);
+        if (emailResult.success) {
+          console.log('✅ Confirmation email sent successfully to:', newApplication.email);
+        } else {
+          console.warn('⚠️ Failed to send confirmation email:', emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending confirmation email:', emailError);
+        // Don't fail the application submission if email fails
+      }
+      
       res.status(201).json({
         message: "✅ Application submitted successfully!",
         application: newApplication,
@@ -347,7 +383,7 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
   } catch (error) {
     console.error("❌ Error updating status:", error);
     res.status(500).json({ error: "❌ Failed to update application status." });
-  }
+   }
 });
 
 // 🟢 Add Comment to Application
