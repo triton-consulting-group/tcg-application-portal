@@ -1,22 +1,69 @@
 const express = require("express");
 const multer = require("multer");
+const multerS3 = require("multer-s3");
 const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 
 // 🟢 Set up Multer storage for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Store files in "uploads/" directory
+let storage, upload;
+
+if (isS3Configured()) {
+  console.log("✅ Using S3 storage for file uploads");
+  
+  // S3 storage configuration
+  storage = multerS3({
+    s3: s3,
+    bucket: S3_CONFIG.bucketName,
+    // Remove ACL since bucket has ACLs disabled
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: function (req, file, cb) {
+      const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
+      const timestamp = Date.now();
+      const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const s3Key = `${s3Path}${timestamp}-${sanitizedName}`;
+      cb(null, s3Key);
+    },
+    metadata: function (req, file, cb) {
+      cb(null, { 
+        fieldName: file.fieldname,
+        originalName: file.originalname,
+        uploadedAt: new Date().toISOString()
+      });
+    }
+  });
+} else {
+  console.log("⚠️ S3 not configured, falling back to local storage");
+  
+  // Fallback to local storage
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, "uploads/"); // Store files in "uploads/" directory
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")); // Generate unique filename
+    },
+  });
+}
+
+upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: S3_CONFIG.uploadSettings.maxFileSize
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")); // Generate unique filename
-  },
+  fileFilter: (req, file, cb) => {
+    // Check if file type is allowed
+    if (S3_CONFIG.uploadSettings.allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type ${file.mimetype} is not allowed`), false);
+    }
+  }
 });
-const upload = multer({ storage });
 
 // 🟢 Get case night configuration
 router.get("/case-night-config", (req, res) => {
@@ -58,12 +105,17 @@ router.post(
         reason: req.body.reason || "",
         zombieAnswer: req.body.zombieAnswer || "",
         additionalInfo: req.body.additionalInfo || "",
-        caseNightPreferences: req.body.caseNightPreferences || [],
+        caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
+          ? req.body.caseNightPreferences 
+          : (req.body.caseNightPreferences ? JSON.parse(req.body.caseNightPreferences) : []),
         status: "Under Review", // ✅ Default status when a new application is created
 
-        resume: req.files && req.files["resume"] ? `/uploads/${req.files["resume"][0].filename}` : null,
-        transcript: req.files && req.files["transcript"] ? `/uploads/${req.files["transcript"][0].filename}` : null,
-        image: req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null,
+        resume: req.files && req.files["resume"] ? 
+          (isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`) : null,
+        transcript: req.files && req.files["transcript"] ? 
+          (isS3Configured() ? req.files["transcript"][0].location : `/uploads/${req.files["transcript"][0].filename}`) : null,
+        image: req.files && req.files["image"] ? 
+          (isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`) : null,
       });
 
       await newApplication.save();
@@ -186,13 +238,13 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
 
     // Handle file updates
     if (req.files && req.files["resume"]) {
-      updateData.resume = `/uploads/${req.files["resume"][0].filename}`;
+      updateData.resume = isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`;
     }
     if (req.files && req.files["transcript"]) {
-      updateData.transcript = `/uploads/${req.files["transcript"][0].filename}`;
+      updateData.transcript = isS3Configured() ? req.files["transcript"][0].location : `/uploads/${req.files["transcript"][0].filename}`;
     }
     if (req.files && req.files["image"]) {
-      updateData.image = `/uploads/${req.files["image"][0].filename}`;
+      updateData.image = isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`;
     }
 
     const updatedApplication = await Application.findOneAndUpdate(
