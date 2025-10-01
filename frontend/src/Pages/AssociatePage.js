@@ -172,8 +172,17 @@ const AssociatePage = () => {
   };
 
   const updateStatus = (applicationId, newStatus, notes = "") => {
+    // Debug: Log admin permissions
+    console.log("🔍 Admin info:", adminInfo);
+    console.log("🔍 Admin role:", adminInfo?.role);
+    console.log("🔍 Admin permissions:", adminInfo?.permissions);
+    console.log("🔍 Can change status:", adminInfo?.permissions?.canChangeStatus);
+    
     // Check if admin has permission to change status
-    if (!adminInfo?.permissions?.canChangeStatus) {
+    // Super admins always have permission, regular admins need explicit permission
+    const hasPermission = adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus;
+    
+    if (!hasPermission) {
       alert("❌ You don't have permission to change application status.");
       return;
     }
@@ -195,8 +204,16 @@ const AssociatePage = () => {
       })
       .then((response) => {
         setApplications(response.data || []);
+        console.log(`✅ Successfully updated application ${applicationId} status to ${newStatus}`);
       })
-      .catch((error) => console.error("❌ Error updating status:", error));
+      .catch((error) => {
+        console.error("❌ Error updating status:", error);
+        if (error.response?.data?.error) {
+          alert(`❌ Failed to update status: ${error.response.data.error}`);
+        } else {
+          alert("❌ Failed to update application status. Please try again.");
+        }
+      });
   };
 
   if (loading) return <p>Loading applications...</p>;
@@ -448,10 +465,10 @@ const TableView = ({
                 value={app.status}
                 onChange={(e) => updateStatus(app._id, e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                disabled={!adminInfo?.permissions?.canChangeStatus}
+                disabled={!(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus)}
                 style={{
-                  opacity: adminInfo?.permissions?.canChangeStatus ? 1 : 0.6,
-                  cursor: adminInfo?.permissions?.canChangeStatus ? "pointer" : "not-allowed"
+                  opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.6,
+                  cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "pointer" : "not-allowed"
                 }}
               >
                 <option value="Under Review">Under Review</option>
@@ -1040,9 +1057,12 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
   const handleDrop = async (e, targetPhase) => {
     e.preventDefault();
     
-    // Check if admin has permission to drag and drop
-    if (!adminInfo?.permissions?.canDragDrop) {
-      alert("❌ You don't have permission to move applications between phases.");
+    // Check if admin has permission to change status
+    // Super admins always have permission, regular admins need explicit permission
+    const hasPermission = adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus;
+    
+    if (!hasPermission) {
+      alert("❌ You don't have permission to change application status.");
       return;
     }
 
@@ -1098,6 +1118,10 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
         status: newStatus,
         changedBy: adminEmail,
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
+      }, {
+        headers: {
+          'x-admin-email': adminEmail
+        }
       });
       
       // Update local state
@@ -1105,9 +1129,14 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
         app._id === applicationId ? { ...app, status: newStatus } : app
       );
       setApplications(updatedApplications);
+      console.log(`✅ Successfully moved application ${applicationId} from ${currentStatus} to ${newStatus}`);
     } catch (error) {
       console.error("Error updating application status:", error);
-      alert("Failed to update application status");
+      if (error.response?.data?.error) {
+        alert(`❌ Failed to update status: ${error.response.data.error}`);
+      } else {
+        alert("❌ Failed to update application status. Please try again.");
+      }
     }
   };
 
@@ -1202,9 +1231,9 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                 display: "flex",
                 flexDirection: "column"
               }}
-              onDragOver={adminInfo?.permissions?.canDragDrop ? handleDragOver : undefined}
-              onDragLeave={adminInfo?.permissions?.canDragDrop ? handleDragLeave : undefined}
-              onDrop={adminInfo?.permissions?.canDragDrop ? (e) => {
+              onDragOver={(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? handleDragOver : undefined}
+              onDragLeave={(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? handleDragLeave : undefined}
+              onDrop={(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? (e) => {
                 handleDrop(e, phase);
                 e.currentTarget.style.backgroundColor = "white";
                 e.currentTarget.style.border = `3px solid ${phase.color}`;
@@ -1227,7 +1256,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                 {phaseData.applications.map((app) => (
                             <div 
                               key={app._id} 
-                              draggable={adminInfo?.permissions?.canDragDrop}
+                              draggable={adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus}
                               onDragStart={(e) => handleDragStart(e, app)}
                               style={{
                                 backgroundColor: "#f8f9fa",
@@ -1235,10 +1264,10 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                                 margin: "8px 0",
                                 borderRadius: "6px",
                                 border: "1px solid #dee2e6",
-                                cursor: adminInfo?.permissions?.canDragDrop ? "grab" : "default",
+                                cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "grab" : "default",
                                 transition: "all 0.2s ease",
                                 userSelect: "none",
-                                opacity: adminInfo?.permissions?.canDragDrop ? 1 : 0.8
+                                opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.8
                               }}
                   onMouseEnter={(e) => {
                     e.target.style.transform = "translateY(-2px)";

@@ -16,7 +16,8 @@ const checkAdminPermission = (permission) => {
         return res.status(403).json({ error: "❌ Admin not found or inactive" });
       }
 
-      if (!admin.permissions[permission]) {
+      // Super admins have all permissions, regular admins need explicit permission
+      if (admin.role !== "super_admin" && !admin.permissions[permission]) {
         return res.status(403).json({ 
           error: `❌ Permission denied. You need ${permission} permission to perform this action.`,
           requiredPermission: permission,
