@@ -12,6 +12,19 @@ import {
   Badge
 } from "@chakra-ui/react";
 
+// Helper function to get signed URL for file access
+const getFileUrl = async (filePath) => {
+  if (!filePath) return "";
+  
+  try {
+    const response = await axios.get(`http://localhost:5002/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    return response.data.url;
+  } catch (error) {
+    console.error("Error getting file URL:", error);
+    return filePath; // Fallback to original path
+  }
+};
+
 const ApplicationViewEdit = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -188,7 +201,11 @@ const ApplicationViewEdit = () => {
                 <Box>
                   <Text fontWeight="bold" color="#222">Resume:</Text>
                   <Text color="blue.500" textDecoration="underline">
-                    <a href={`http://localhost:5002${application.resume}`} target="_blank" rel="noopener noreferrer">
+                    <a href="#" onClick={async (e) => {
+                      e.preventDefault();
+                      const url = await getFileUrl(application.resume);
+                      if (url) window.open(url, '_blank');
+                    }}>
                       View Resume
                     </a>
                   </Text>
@@ -199,7 +216,11 @@ const ApplicationViewEdit = () => {
                 <Box>
                   <Text fontWeight="bold" color="#222">Transcript:</Text>
                   <Text color="blue.500" textDecoration="underline">
-                    <a href={`http://localhost:5002${application.transcript}`} target="_blank" rel="noopener noreferrer">
+                    <a href="#" onClick={async (e) => {
+                      e.preventDefault();
+                      const url = await getFileUrl(application.transcript);
+                      if (url) window.open(url, '_blank');
+                    }}>
                       View Transcript
                     </a>
                   </Text>
@@ -210,7 +231,11 @@ const ApplicationViewEdit = () => {
                 <Box>
                   <Text fontWeight="bold" color="#222">Profile Picture:</Text>
                   <Text color="blue.500" textDecoration="underline">
-                    <a href={`http://localhost:5002${application.image}`} target="_blank" rel="noopener noreferrer">
+                    <a href="#" onClick={async (e) => {
+                      e.preventDefault();
+                      const url = await getFileUrl(application.image);
+                      if (url) window.open(url, '_blank');
+                    }}>
                       View Image
                     </a>
                   </Text>
@@ -350,7 +375,11 @@ const ApplicationViewEdit = () => {
             <input type="file" onChange={(e) => handleFileChange(e, "resume")} style={styles.fileInput} />
             {application.resume && (
               <Text fontSize="sm" color="gray.500">
-                Current: <a href={`http://localhost:5002${application.resume}`} target="_blank" rel="noopener noreferrer">View Current Resume</a>
+                Current: <a href="#" onClick={async (e) => {
+                  e.preventDefault();
+                  const url = await getFileUrl(application.resume);
+                  if (url) window.open(url, '_blank');
+                }}>View Current Resume</a>
               </Text>
             )}
           </Stack>
@@ -361,7 +390,11 @@ const ApplicationViewEdit = () => {
             <input type="file" onChange={(e) => handleFileChange(e, "transcript")} style={styles.fileInput} />
             {application.transcript && (
               <Text fontSize="sm" color="gray.500">
-                Current: <a href={`http://localhost:5002${application.transcript}`} target="_blank" rel="noopener noreferrer">View Current Transcript</a>
+                Current: <a href="#" onClick={async (e) => {
+                  e.preventDefault();
+                  const url = await getFileUrl(application.transcript);
+                  if (url) window.open(url, '_blank');
+                }}>View Current Transcript</a>
               </Text>
             )}
           </Stack>
