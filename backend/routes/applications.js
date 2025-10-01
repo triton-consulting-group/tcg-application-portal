@@ -7,6 +7,8 @@ const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
+const { emailService } = require("../config/emailConfig");
 
 // 🟢 Set up Multer storage for file uploads
 let storage, upload;
