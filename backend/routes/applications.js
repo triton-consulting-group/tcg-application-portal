@@ -19,7 +19,7 @@ if (isS3Configured()) {
   storage = multerS3({
     s3: s3,
     bucket: S3_CONFIG.bucketName,
-    // Remove ACL since bucket has ACLs disabled
+    // ACL removed since bucket has ACLs disabled
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
       const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
@@ -60,7 +60,16 @@ upload = multer({
     if (S3_CONFIG.uploadSettings.allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error(`File type ${file.mimetype} is not allowed`), false);
+      // Fallback: check file extension for common file types
+      const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx'];
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      if (allowedExtensions.includes(fileExtension)) {
+        console.log(`⚠️ File ${file.originalname} has MIME type ${file.mimetype} but extension ${fileExtension} is allowed`);
+        cb(null, true);
+      } else {
+        cb(new Error(`File type ${file.mimetype} and extension ${fileExtension} are not allowed`), false);
+      }
     }
   }
 });
@@ -107,7 +116,11 @@ router.post(
         additionalInfo: req.body.additionalInfo || "",
         caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
           ? req.body.caseNightPreferences 
-          : (req.body.caseNightPreferences ? JSON.parse(req.body.caseNightPreferences) : []),
+          : (req.body.caseNightPreferences ? 
+              (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
+                JSON.parse(req.body.caseNightPreferences) : 
+                [req.body.caseNightPreferences]) : 
+              []),
         status: "Under Review", // ✅ Default status when a new application is created
 
         resume: req.files && req.files["resume"] ? 
@@ -190,6 +203,34 @@ router.get("/", generalApiLimiter, async (req, res) => {
   }
 });
 
+// 🟢 Get signed URL for file access
+router.get("/file-url/*", generalApiLimiter, async (req, res) => {
+  try {
+    const filePath = req.params[0]; // Get the wildcard parameter
+    
+    if (!isS3Configured()) {
+      // For local files, return the direct path
+      return res.json({ url: `http://localhost:5002/${filePath}` });
+    }
+    
+    // Extract S3 key from full URL
+    let s3Key = filePath;
+    if (filePath.includes('amazonaws.com/')) {
+      // Extract key from full S3 URL
+      s3Key = filePath.split('amazonaws.com/')[1];
+    }
+    
+    // For S3 files, generate signed URL
+    const { getSignedUrl } = require("../config/s3Config");
+    const signedUrl = getSignedUrl(s3Key, 3600); // 1 hour expiration
+    
+    res.json({ url: signedUrl });
+  } catch (error) {
+    console.error("❌ Error generating file URL:", error);
+    res.status(500).json({ error: "❌ Failed to generate file URL." });
+  }
+});
+
 // 🟢 Fetch application by email
 router.get("/email/:email", generalApiLimiter, async (req, res) => {
   try {
@@ -233,7 +274,13 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
       reason: req.body.reason,
       zombieAnswer: req.body.zombieAnswer,
       additionalInfo: req.body.additionalInfo,
-      caseNightPreferences: req.body.caseNightPreferences,
+      caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
+        ? req.body.caseNightPreferences 
+        : (req.body.caseNightPreferences ? 
+            (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
+              JSON.parse(req.body.caseNightPreferences) : 
+              [req.body.caseNightPreferences]) : 
+            []),
     };
 
     // Handle file updates
@@ -342,25 +389,6 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   } catch (error) {
     console.error("❌ Error adding comment:", error);
     res.status(500).json({ error: "❌ Failed to add comment." });
-  }
-});
-
-// 🟢 Get Application Comments
-router.get("/:id/comments", async (req, res) => {
-  try {
-    const application = await Application.findById(req.params.id).select('comments');
-    
-    if (!application) {
-      return res.status(404).json({ error: "❌ Application not found" });
-    }
-
-    res.json({
-      comments: application.comments || [],
-      totalComments: application.comments ? application.comments.length : 0
-    });
-  } catch (error) {
-    console.error("❌ Error fetching comments:", error);
-    res.status(500).json({ error: "❌ Failed to fetch comments." });
   }
 });
 

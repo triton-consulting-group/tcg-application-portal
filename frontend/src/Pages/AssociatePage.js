@@ -3,6 +3,19 @@ import axios from "axios";
 import "./associatePage.css";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
+// Helper function to get signed URL for file access
+const getFileUrl = async (filePath) => {
+  if (!filePath) return "";
+  
+  try {
+    const response = await axios.get(`http://localhost:5002/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    return response.data.url;
+  } catch (error) {
+    console.error("Error getting file URL:", error);
+    return filePath; // Fallback to original path
+  }
+};
+
 const AssociatePage = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -386,35 +399,40 @@ const TableView = ({
             <td>{app.candidateType}</td>
             <td>
               <a
-                href={`http://localhost:5002${app.resume || ""}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const url = await getFileUrl(app.resume);
+                  if (url) window.open(url, '_blank');
+                }}
               >
                 View Resume
               </a>
             </td>
             <td>
               <a
-                href={`http://localhost:5002${app.transcript || ""}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const url = await getFileUrl(app.transcript);
+                  if (url) window.open(url, '_blank');
+                }}
               >
                 View Transcript
               </a>
             </td>
             <td>
               <img
-                src={`http://localhost:5002${
-                  app.image || "/default-profile.png"
-                }`}
+                src={app.image || "/default-profile.png"}
                 alt="Profile"
                 width="50"
                 height="50"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  setSelectedImage(`http://localhost:5002${app.image}`);
+                  const url = await getFileUrl(app.image);
+                  if (url) setSelectedImage(url);
                 }}
                 style={{ cursor: "pointer" }}
               />
@@ -720,9 +738,12 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
           
           <div style={{ marginTop: "15px" }}>
             <a
-              href={`http://localhost:5002${application.resume}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#"
+              onClick={async (e) => {
+                e.preventDefault();
+                const url = await getFileUrl(application.resume);
+                if (url) window.open(url, '_blank');
+              }}
               style={{ 
                 marginRight: "15px",
                 backgroundColor: "#007bff",
@@ -736,9 +757,12 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
               View Resume
             </a>
             <a
-              href={`http://localhost:5002${application.transcript}`}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#"
+              onClick={async (e) => {
+                e.preventDefault();
+                const url = await getFileUrl(application.transcript);
+                if (url) window.open(url, '_blank');
+              }}
               style={{
                 backgroundColor: "#28a745",
                 color: "white",

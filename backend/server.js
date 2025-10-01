@@ -26,14 +26,6 @@ app.use((req, res, next) => {
   next();
 });
 
-try {
-    const applicationsRoutes = require("./routes/applications");
-    app.use("/api/applications", applicationsRoutes);
-    console.log("✅ /api/applications route successfully registered");
-  } catch (error) {
-    console.error("❌ Failed to register /api/applications:", error);
-  }
-  
 // Import routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));

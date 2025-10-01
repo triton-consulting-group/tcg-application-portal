@@ -49,7 +49,6 @@ const testS3Connection = async () => {
         Bucket: S3_CONFIG.bucketName,
         Key: testKey,
         Body: testContent,
-        ACL: 'public-read',
         ContentType: 'text/plain'
       };
 
