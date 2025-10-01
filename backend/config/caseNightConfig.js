@@ -5,10 +5,12 @@ const CASE_NIGHT_CONFIG = {
     C: "8:00 PM-9:00 PM"
   },
   maxCapacity: {
-    tech: 12,      // 3 groups of 4
-    nonTech: 12    // 3 groups of 4
+    tech: 200,     // Increased for current volume
+    nonTech: 200   // Increased for current volume
   },
-  date: "September 10th, 2025"
+  date: "September 10th, 2025",
+  groupSize: 4,    // Number of people per case group
+  maxGroupsPerSlot: 50  // Maximum groups per time slot (50 * 4 = 200 people)
 };
 
 module.exports = CASE_NIGHT_CONFIG; 

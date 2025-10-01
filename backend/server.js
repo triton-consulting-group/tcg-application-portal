@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
+const { isS3Configured } = require("./config/s3Config");
 
 dotenv.config(); // Load environment variables
 connectDB(); // Connect to MongoDB
@@ -25,19 +26,19 @@ app.use((req, res, next) => {
   next();
 });
 
-try {
-    const applicationsRoutes = require("./routes/applications");
-    app.use("/api/applications", applicationsRoutes);
-    console.log("✅ /api/applications route successfully registered");
-  } catch (error) {
-    console.error("❌ Failed to register /api/applications:", error);
-  }
-  
 // Import routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/admin", require("./routes/admin"));
-app.use("/uploads", express.static("uploads"));
+app.use("/api/case-groups", require("./routes/caseGroups"));
+
+// File serving - only serve local files if S3 is not configured
+if (!isS3Configured()) {
+  console.log("📁 Serving files from local uploads directory");
+  app.use("/uploads", express.static("uploads"));
+} else {
+  console.log("☁️ Files are served from S3 - no local file serving needed");
+}
 
 
 // Health check route

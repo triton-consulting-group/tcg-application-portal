@@ -1,22 +1,77 @@
 const express = require("express");
 const multer = require("multer");
+const multerS3 = require("multer-s3");
 const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
+const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
-const { emailService } = require("../config/emailConfig");
 
 // 🟢 Set up Multer storage for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Store files in "uploads/" directory
+let storage, upload;
+
+if (isS3Configured()) {
+  console.log("✅ Using S3 storage for file uploads");
+  
+  // S3 storage configuration
+  storage = multerS3({
+    s3: s3,
+    bucket: S3_CONFIG.bucketName,
+    // ACL removed since bucket has ACLs disabled
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: function (req, file, cb) {
+      const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
+      const timestamp = Date.now();
+      const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const s3Key = `${s3Path}${timestamp}-${sanitizedName}`;
+      cb(null, s3Key);
+    },
+    metadata: function (req, file, cb) {
+      cb(null, { 
+        fieldName: file.fieldname,
+        originalName: file.originalname,
+        uploadedAt: new Date().toISOString()
+      });
+    }
+  });
+} else {
+  console.log("⚠️ S3 not configured, falling back to local storage");
+  
+  // Fallback to local storage
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, "uploads/"); // Store files in "uploads/" directory
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")); // Generate unique filename
+    },
+  });
+}
+
+upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: S3_CONFIG.uploadSettings.maxFileSize
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")); // Generate unique filename
-  },
+  fileFilter: (req, file, cb) => {
+    // Check if file type is allowed
+    if (S3_CONFIG.uploadSettings.allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      // Fallback: check file extension for common file types
+      const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx'];
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      if (allowedExtensions.includes(fileExtension)) {
+        console.log(`⚠️ File ${file.originalname} has MIME type ${file.mimetype} but extension ${fileExtension} is allowed`);
+        cb(null, true);
+      } else {
+        cb(new Error(`File type ${file.mimetype} and extension ${fileExtension} are not allowed`), false);
+      }
+    }
+  }
 });
-const upload = multer({ storage });
 
 // 🟢 Get case night configuration
 router.get("/case-night-config", (req, res) => {
@@ -77,12 +132,23 @@ router.post(
         appliedBefore: req.body.appliedBefore || "No",
         candidateType: req.body.candidateType || "Unknown",
         reason: req.body.reason || "",
-        caseNightPreferences: req.body.caseNightPreferences || [],
+        zombieAnswer: req.body.zombieAnswer || "",
+        additionalInfo: req.body.additionalInfo || "",
+        caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
+          ? req.body.caseNightPreferences 
+          : (req.body.caseNightPreferences ? 
+              (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
+                JSON.parse(req.body.caseNightPreferences) : 
+                [req.body.caseNightPreferences]) : 
+              []),
         status: "Under Review", // ✅ Default status when a new application is created
 
-        resume: req.files && req.files["resume"] ? `/uploads/${req.files["resume"][0].filename}` : null,
-        transcript: req.files && req.files["transcript"] ? `/uploads/${req.files["transcript"][0].filename}` : null,
-        image: req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null,
+        resume: req.files && req.files["resume"] ? 
+          (isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`) : null,
+        transcript: req.files && req.files["transcript"] ? 
+          (isS3Configured() ? req.files["transcript"][0].location : `/uploads/${req.files["transcript"][0].filename}`) : null,
+        image: req.files && req.files["image"] ? 
+          (isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`) : null,
       });
 
       await newApplication.save();
@@ -171,6 +237,34 @@ router.get("/", generalApiLimiter, async (req, res) => {
   }
 });
 
+// 🟢 Get signed URL for file access
+router.get("/file-url/*", generalApiLimiter, async (req, res) => {
+  try {
+    const filePath = req.params[0]; // Get the wildcard parameter
+    
+    if (!isS3Configured()) {
+      // For local files, return the direct path
+      return res.json({ url: `http://localhost:5002/${filePath}` });
+    }
+    
+    // Extract S3 key from full URL
+    let s3Key = filePath;
+    if (filePath.includes('amazonaws.com/')) {
+      // Extract key from full S3 URL
+      s3Key = filePath.split('amazonaws.com/')[1];
+    }
+    
+    // For S3 files, generate signed URL
+    const { getSignedUrl } = require("../config/s3Config");
+    const signedUrl = getSignedUrl(s3Key, 3600); // 1 hour expiration
+    
+    res.json({ url: signedUrl });
+  } catch (error) {
+    console.error("❌ Error generating file URL:", error);
+    res.status(500).json({ error: "❌ Failed to generate file URL." });
+  }
+});
+
 // 🟢 Fetch application by email
 router.get("/email/:email", generalApiLimiter, async (req, res) => {
   try {
@@ -212,18 +306,26 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
       appliedBefore: req.body.appliedBefore,
       candidateType: req.body.candidateType,
       reason: req.body.reason,
-      caseNightPreferences: req.body.caseNightPreferences,
+      zombieAnswer: req.body.zombieAnswer,
+      additionalInfo: req.body.additionalInfo,
+      caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
+        ? req.body.caseNightPreferences 
+        : (req.body.caseNightPreferences ? 
+            (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
+              JSON.parse(req.body.caseNightPreferences) : 
+              [req.body.caseNightPreferences]) : 
+            []),
     };
 
     // Handle file updates
     if (req.files && req.files["resume"]) {
-      updateData.resume = `/uploads/${req.files["resume"][0].filename}`;
+      updateData.resume = isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`;
     }
     if (req.files && req.files["transcript"]) {
-      updateData.transcript = `/uploads/${req.files["transcript"][0].filename}`;
+      updateData.transcript = isS3Configured() ? req.files["transcript"][0].location : `/uploads/${req.files["transcript"][0].filename}`;
     }
     if (req.files && req.files["image"]) {
-      updateData.image = `/uploads/${req.files["image"][0].filename}`;
+      updateData.image = isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`;
     }
 
     const updatedApplication = await Application.findOneAndUpdate(
@@ -243,7 +345,7 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
 });
 
 // 🟢 Update Application Status API
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireStatusChangePermission, async (req, res) => {
   try {
     const { status, changedBy, notes } = req.body;
 
@@ -280,6 +382,48 @@ router.put("/:id", async (req, res) => {
     console.error("❌ Error updating status:", error);
     res.status(500).json({ error: "❌ Failed to update application status." });
    }
+});
+
+// 🟢 Add Comment to Application
+router.post("/:id/comment", requireCommentPermission, async (req, res) => {
+  try {
+    const { comment, adminEmail, adminName } = req.body;
+
+    // Validate required fields
+    if (!comment || !adminEmail || !adminName) {
+      return res.status(400).json({ error: "❌ Comment, admin email, and admin name are required." });
+    }
+
+    // Find the application
+    const application = await Application.findById(req.params.id);
+    if (!application) {
+      return res.status(404).json({ error: "❌ Application not found" });
+    }
+
+    // Create comment entry
+    const commentEntry = {
+      comment: comment.trim(),
+      commentedBy: adminEmail,
+      commentedAt: new Date(),
+      adminName: adminName.trim()
+    };
+
+    // Add comment to application
+    const updatedApplication = await Application.findByIdAndUpdate(
+      req.params.id,
+      { $push: { comments: commentEntry } },
+      { new: true }
+    );
+
+    res.json({
+      message: "✅ Comment added successfully",
+      comment: commentEntry,
+      totalComments: updatedApplication.comments.length
+    });
+  } catch (error) {
+    console.error("❌ Error adding comment:", error);
+    res.status(500).json({ error: "❌ Failed to add comment." });
+  }
 });
 
 // ✅ Export Router

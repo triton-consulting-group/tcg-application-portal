@@ -9,6 +9,9 @@ const ApplicationSchema = new mongoose.Schema(
     appliedBefore: { type: String, required: true }, 
     candidateType: { type: String, required: true },
     reason: { type: String, required: true },
+    // Optional additional applicant-provided fields
+    zombieAnswer: { type: String, default: "" },
+    additionalInfo: { type: String, default: "" },
     caseNightPreferences: { 
       type: [String], 
       default: [] 
@@ -30,6 +33,12 @@ const ApplicationSchema = new mongoose.Schema(
       changedBy: { type: String, required: true }, // Admin email
       changedAt: { type: Date, default: Date.now },
       notes: { type: String } // Optional notes for the status change
+    }],
+    comments: [{
+      comment: { type: String, required: true },
+      commentedBy: { type: String, required: true }, // Admin email
+      commentedAt: { type: Date, default: Date.now },
+      adminName: { type: String, required: true } // Admin name for display
     }],
   },
   { 

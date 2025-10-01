@@ -20,6 +20,8 @@ const ApplicationPage = () => {
     transcript: null, 
     image: null,
     reason: "",
+    zombieAnswer: "",
+    additionalInfo: "",
     caseNightPreferences: []
   });
 
@@ -72,6 +74,27 @@ const ApplicationPage = () => {
         ? formData.caseNightPreferences.filter(id => id !== slotId)
         : [...formData.caseNightPreferences, slotId]
     });
+  };
+
+  // Helpers to enforce word limits
+  const countWords = (text) => (text || "").trim().split(/\s+/).filter(Boolean).length;
+  const handleReasonChange = (e) => {
+    const value = e.target.value;
+    const words = value.trim().split(/\s+/).filter(Boolean);
+    if (words.length <= 150) {
+      setFormData({ ...formData, reason: value });
+    } else {
+      setFormData({ ...formData, reason: words.slice(0, 150).join(" ") });
+    }
+  };
+  const handleZombieChange = (e) => {
+    const value = e.target.value;
+    const words = value.trim().split(/\s+/).filter(Boolean);
+    if (words.length <= 15) {
+      setFormData({ ...formData, zombieAnswer: value });
+    } else {
+      setFormData({ ...formData, zombieAnswer: words.slice(0, 15).join(" ") });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -200,7 +223,7 @@ const ApplicationPage = () => {
         backgroundColor: "white"
       }}>
         <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
-          APPLICATION - TCG WINTER 25 RECRUITMENT
+          APPLICATION - TCG FALL 25 RECRUITMENT
         </h1>
 
         <form onSubmit={handleSubmit}>
@@ -275,7 +298,7 @@ const ApplicationPage = () => {
 
           {/* Tech or Non-Tech */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Are you Tech or Non-Tech? *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Are you applying as a tech candidate or non-tech candidate?*</p>
             <select 
               value={formData.candidateType}  
               onChange={(e) => setFormData({ ...formData, candidateType: e.target.value })}  
@@ -314,12 +337,39 @@ const ApplicationPage = () => {
 
           {/* Why Join TCG? */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? (250 words max) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? (150 words max) *</p>
             <textarea 
               value={formData.reason} 
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })} 
+              onChange={handleReasonChange}
               style={styles.textarea}
               required
+            />
+            <div style={{ textAlign: "right", fontSize: "12px", color: "#666", marginTop: "4px" }}>
+              {countWords(formData.reason)}/150 words
+            </div>
+          </div>
+
+          {/* Fun Question - Zombie Apocalypse */}
+          <div style={{ marginBottom: "16px" }}>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>How are you surviving the zombie apocalypse? (15 words) *</p>
+            <textarea
+              value={formData.zombieAnswer}
+              onChange={handleZombieChange}
+              style={styles.textarea}
+              required
+            />
+            <div style={{ textAlign: "right", fontSize: "12px", color: "#666", marginTop: "4px" }}>
+              {countWords(formData.zombieAnswer)}/15 words
+            </div>
+          </div>
+
+          {/* Additional Info - Optional */}
+          <div style={{ marginBottom: "16px" }}>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Is there anything else that you think you should let us know?</p>
+            <textarea
+              value={formData.additionalInfo}
+              onChange={(e) => setFormData({ ...formData, additionalInfo: e.target.value })}
+              style={styles.textarea}
             />
           </div>
 
