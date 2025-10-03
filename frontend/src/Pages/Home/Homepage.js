@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import Modal from "./Modal";
 import { 
@@ -22,9 +22,18 @@ function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [checkEmail, setCheckEmail] = useState("");
     const [showCheckForm, setShowCheckForm] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     const navigate = useNavigate();
     const auth = getAuth();
+
+    // Track authentication state
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setCurrentUser(user);
+        });
+        return () => unsubscribe();
+    }, [auth]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -45,7 +54,11 @@ function HomePage() {
     }
 
     const handleCheckApplication = () => {
-        if (checkEmail.trim()) {
+        if (currentUser && currentUser.email) {
+            // User is logged in - redirect directly to their application without email in URL
+            navigate('/application');
+        } else if (checkEmail.trim()) {
+            // User is not logged in - use manual email entry
             navigate(`/application?email=${encodeURIComponent(checkEmail.trim())}`);
         }
     }
@@ -88,12 +101,12 @@ function HomePage() {
                         color="white"
                         _hover={{ backgroundColor: "#218838" }}
                         size="lg" 
-                        onClick={() => setShowCheckForm(!showCheckForm)}
+                        onClick={currentUser ? handleCheckApplication : () => setShowCheckForm(!showCheckForm)}
                         height="50px"
                         fontSize="lg"
                         px={8}
                     >
-                        Check My Application
+                        {currentUser ? "View My Application" : "Check My Application"}
                     </Button>
                     
                     <Button 

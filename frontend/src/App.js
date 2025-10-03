@@ -22,6 +22,7 @@ const App = () => {
 
           {/* 📄 Application Page Route */}
           <Route path="/application" element={<ApplicationPage />} />
+          <Route path="/application/:id" element={<ApplicationPage />} />
 
           {/* 👥 Associate Page Route */}
           <Route path="/associate" element={<AssociatePage />} />
