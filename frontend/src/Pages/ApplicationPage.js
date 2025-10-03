@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
  // ✅ Import useNavigate for redirection
 import axios from "axios";
+import API_BASE_URL from "../config/api";
 
 const ApplicationPage = () => {
   const navigate = useNavigate(); // ✅ Initialize useNavigate
   const [searchParams] = useSearchParams();
+  const { id } = useParams(); // ✅ Get ID from URL params
   const emailParam = searchParams.get('email');
+  const [currentUser, setCurrentUser] = useState(null);
+  const auth = getAuth();
 
   const [formData, setFormData] = useState({
     email: emailParam || "",
@@ -30,18 +35,40 @@ const ApplicationPage = () => {
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
 
-  // Check for existing application when email is provided
+  // Track authentication state
   useEffect(() => {
-    if (emailParam) {
-      checkExistingApplication();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  // Update form data when user logs in (if no email param provided)
+  useEffect(() => {
+    if (!emailParam && currentUser && currentUser.email) {
+      setFormData(prev => ({ ...prev, email: currentUser.email }));
     }
-  }, [emailParam]);
+  }, [currentUser, emailParam]);
+
+  // Check for existing application when ID, email is provided, or user is logged in
+  useEffect(() => {
+    if (id) {
+      // If we have an ID, fetch application by ID
+      fetchApplicationById(id);
+    } else {
+      // Otherwise, use email-based lookup
+      const emailToCheck = emailParam || (currentUser && currentUser.email);
+      if (emailToCheck) {
+        checkExistingApplication(emailToCheck);
+      }
+    }
+  }, [id, emailParam, currentUser]);
 
   // Fetch case night configuration
   useEffect(() => {
     const fetchCaseNightConfig = async () => {
       try {
-        const response = await axios.get("http://localhost:5002/api/applications/case-night-config");
+        const response = await axios.get(`${API_BASE_URL}/api/applications/case-night-config`);
         setCaseNightConfig(response.data);
       } catch (error) {
         console.error("Error fetching case night config:", error);
@@ -50,10 +77,40 @@ const ApplicationPage = () => {
     fetchCaseNightConfig();
   }, []);
 
-  const checkExistingApplication = async () => {
+  const fetchApplicationById = async (applicationId) => {
     setCheckingExisting(true);
     try {
-      const response = await axios.get(`http://localhost:5002/api/applications/email/${emailParam}`);
+      const response = await axios.get(`${API_BASE_URL}/api/applications/${applicationId}`);
+      setExistingApplication(response.data);
+      // Pre-populate form with existing data
+      setFormData({
+        email: response.data.email,
+        fullName: response.data.fullName,
+        studentYear: response.data.studentYear,
+        major: response.data.major,
+        appliedBefore: response.data.appliedBefore,
+        candidateType: response.data.candidateType,
+        reason: response.data.reason,
+        zombieAnswer: response.data.zombieAnswer,
+        additionalInfo: response.data.additionalInfo,
+        caseNightPreferences: response.data.caseNightPreferences || [],
+        resume: null,
+        transcript: null,
+        image: null
+      });
+    } catch (error) {
+      console.error("Error fetching application by ID:", error);
+      setExistingApplication(null);
+    } finally {
+      setCheckingExisting(false);
+    }
+  };
+
+  const checkExistingApplication = async (email) => {
+    setCheckingExisting(true);
+    try {
+      const emailToUse = email || emailParam;
+      const response = await axios.get(`${API_BASE_URL}/api/applications/email/${emailToUse}`);
       setExistingApplication(response.data);
     } catch (error) {
       // No existing application found, which is fine
@@ -106,7 +163,7 @@ const ApplicationPage = () => {
     });
 
     try {
-      await axios.post("http://localhost:5002/api/applications", formDataToSend, {
+      await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       navigate("/success"); // ✅ Redirect to Success Page
@@ -173,7 +230,7 @@ const ApplicationPage = () => {
           </p>
           
           <button 
-            onClick={() => navigate(`/application/view?email=${existingApplication.email}`)}
+            onClick={() => navigate('/application/view')}
             style={{
               backgroundColor: "#3182ce",
               color: "white",

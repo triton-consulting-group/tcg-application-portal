@@ -24,7 +24,7 @@ Dear ${applicationData.fullName},<br><br>
 
 Thank you for submitting your application to Triton Consulting Group. We have received your application and it is currently under review.<br><br>
 
-You can view and edit your application at any time by clicking <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/application?email=${encodeURIComponent(applicationData.email)}">here.</a><br><br>
+You can view and edit your application at any time by clicking <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/application/${applicationData._id}">here.</a><br><br>
 
 WHAT HAPPENS NEXT:<br>
 1. Your application is currently under review.<br>
@@ -39,7 +39,7 @@ Dear ${applicationData.fullName},
 
 Thank you for submitting your application to Triton Consulting Group. We have received your application and it is currently under review.
 
-You can view and edit your application at any time by visiting: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/application?email=${encodeURIComponent(applicationData.email)}
+You can view and edit your application at any time by visiting: ${process.env.FRONTEND_URL || 'http://localhost:3000'}/application/${applicationData._id}
 
 WHAT HAPPENS NEXT:
 1. Your application is currently under review.

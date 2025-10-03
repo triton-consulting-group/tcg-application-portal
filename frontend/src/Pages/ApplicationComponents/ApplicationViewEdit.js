@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+import API_BASE_URL from "../../config/api";
 import { 
   Box, 
   VStack, 
@@ -17,7 +19,7 @@ const getFileUrl = async (filePath) => {
   if (!filePath) return "";
   
   try {
-    const response = await axios.get(`http://localhost:5002/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
     return response.data.url;
   } catch (error) {
     console.error("Error getting file URL:", error);
@@ -28,7 +30,10 @@ const getFileUrl = async (filePath) => {
 const ApplicationViewEdit = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { id } = useParams(); // ✅ Get ID from URL params
   const email = searchParams.get('email');
+  const [currentUser, setCurrentUser] = useState(null);
+  const auth = getAuth();
   
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,18 +42,61 @@ const ApplicationViewEdit = () => {
   const [formData, setFormData] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Track authentication state
   useEffect(() => {
-    if (email) {
-      fetchApplication();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, [auth]);
+
+  useEffect(() => {
+    if (id) {
+      // If we have an ID, fetch application by ID
+      fetchApplicationById(id);
     } else {
-      setError("No email provided");
+      // Otherwise, use email-based lookup
+      const emailToUse = email || (currentUser && currentUser.email);
+      if (emailToUse) {
+        fetchApplication(emailToUse);
+      } else {
+        setError("No email or ID provided");
+        setLoading(false);
+      }
+    }
+  }, [id, email, currentUser]);
+
+  const fetchApplicationById = async (applicationId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/applications/${applicationId}`);
+      setApplication(response.data);
+      setFormData({
+        email: response.data.email,
+        fullName: response.data.fullName,
+        studentYear: response.data.studentYear,
+        major: response.data.major,
+        appliedBefore: response.data.appliedBefore,
+        candidateType: response.data.candidateType,
+        reason: response.data.reason,
+        resume: null,
+        transcript: null,
+        image: null,
+      });
+      setLoading(false);
+    } catch (error) {
+      if (error.response?.status === 404) {
+        setError("No application found for this ID. You can create a new application.");
+      } else {
+        setError("Failed to load application");
+      }
       setLoading(false);
     }
-  }, [email]);
+  };
 
-  const fetchApplication = async () => {
+  const fetchApplication = async (emailToUse) => {
     try {
-      const response = await axios.get(`http://localhost:5002/api/applications/email/${email}`);
+      const emailParam = emailToUse || email;
+      const response = await axios.get(`${API_BASE_URL}/api/applications/email/${emailParam}`);
       setApplication(response.data);
       setFormData({
         email: response.data.email,
@@ -89,7 +137,7 @@ const ApplicationViewEdit = () => {
     });
 
     try {
-      await axios.put(`http://localhost:5002/api/applications/email/${email}`, formDataToSend, {
+      await axios.put(`${API_BASE_URL}/api/applications/email/${email}`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
@@ -410,7 +458,7 @@ const ApplicationViewEdit = () => {
             />
             {application.image && (
               <Text fontSize="sm" color="gray.500">
-                Current: <a href={`http://localhost:5002${application.image}`} target="_blank" rel="noopener noreferrer">View Current Image</a>
+                Current: <a href={`${API_BASE_URL}${application.image}`} target="_blank" rel="noopener noreferrer">View Current Image</a>
               </Text>
             )}
           </Stack>
