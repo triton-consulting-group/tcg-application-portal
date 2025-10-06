@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_BASE_URL from "../config/api";
 
 const AdminManagementPage = () => {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const AdminManagementPage = () => {
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get("http://localhost:5002/api/admin", {
+      const response = await axios.get("${API_BASE_URL}/api/admin", {
         data: { email: localStorage.getItem("adminEmail") }
       });
       setAdmins(response.data);
@@ -42,7 +43,7 @@ const AdminManagementPage = () => {
 
   const handleCreateAdmin = async () => {
     try {
-      await axios.post("http://localhost:5002/api/admin", {
+      await axios.post("${API_BASE_URL}/api/admin", {
         ...newAdmin,
         email: localStorage.getItem("adminEmail")
       });
@@ -71,7 +72,7 @@ const AdminManagementPage = () => {
   const handleDeactivateAdmin = async (email) => {
     if (window.confirm(`Are you sure you want to deactivate ${email}?`)) {
       try {
-        await axios.delete(`http://localhost:5002/api/admin/${email}`, {
+        await axios.delete(`${API_BASE_URL}/api/admin/${email}`, {
           data: { email: localStorage.getItem("adminEmail") }
         });
         fetchAdmins();
