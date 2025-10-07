@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import { 
   Box, 
@@ -27,6 +28,8 @@ const ApplicationViewEdit = () => {
   const [searchParams] = useSearchParams();
   const { id } = useParams();
   const email = searchParams.get('email');
+  const [currentUser, setCurrentUser] = useState(null);
+  const auth = getAuth();
   
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -82,7 +85,7 @@ const ApplicationViewEdit = () => {
   useEffect(() => {
     const fetchCaseNightConfig = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/applications/case-night-config`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5002'}/api/applications/case-night-config`);
         setCaseNightConfig(response.data);
       } catch (error) {
         console.error("Error fetching case night config:", error);
@@ -92,7 +95,7 @@ const ApplicationViewEdit = () => {
   }, []);
 
   // Fetch the application data with updated API endpoint
-  const fetchApplication = async () => {
+  const fetchApplication = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -100,6 +103,7 @@ const ApplicationViewEdit = () => {
       console.log("Fetching application with:", { id, email, currentUserEmail: currentUser?.email });
       
       let applicationData;
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
       
       if (id) {
         console.log("Fetching by ID:", id);
@@ -155,7 +159,7 @@ const ApplicationViewEdit = () => {
     } finally {
       setLoading(false);
     }
-  }, [email]);
+  }, [id, email, currentUser?.email, navigate]);
 
   useEffect(() => {
     // Wait for auth to load, then fetch if we have an identifier
@@ -166,7 +170,7 @@ const ApplicationViewEdit = () => {
       setLoading(false);
       setError("No application identifier provided. Please log in or provide an email parameter.");
     }
-  }, [id, email, currentUser, authLoading]);
+  }, [authLoading, fetchApplication]);
 
   // Handle form field changes
   const handleInputChange = (e) => {
@@ -215,6 +219,7 @@ const ApplicationViewEdit = () => {
         headers.Authorization = `Bearer ${authToken}`;
       }
 
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
       const response = await axios.put(`${API_BASE_URL}/api/applications/email/${application.email}`, formDataToSubmit, {
         headers,
       });
@@ -229,6 +234,43 @@ const ApplicationViewEdit = () => {
       alert("Error updating application: " + (error.response?.data?.message || error.message));
       console.error(error);
       setSubmitting(false);
+    }
+  };
+
+  // Styles for form inputs
+  const styles = {
+    input: {
+      width: "100%",
+      padding: "12px",
+      border: "1px solid #e2e8f0",
+      borderRadius: "6px",
+      fontSize: "16px",
+      boxSizing: "border-box",
+      backgroundColor: "white",
+      color: "#2d3748"
+    },
+    textarea: {
+      width: "100%",
+      padding: "12px",
+      border: "1px solid #e2e8f0",
+      borderRadius: "6px",
+      fontSize: "16px",
+      boxSizing: "border-box",
+      resize: "vertical",
+      backgroundColor: "white",
+      color: "#2d3748"
+    },
+    fileInput: {
+      width: "100%",
+      padding: "12px 16px",
+      border: "2px dashed #cbd5e0",
+      borderRadius: "8px",
+      fontSize: "14px",
+      boxSizing: "border-box",
+      backgroundColor: "#f7fafc",
+      cursor: "pointer",
+      transition: "all 0.2s ease-in-out",
+      color: "#4a5568"
     }
   };
 
@@ -269,6 +311,7 @@ const ApplicationViewEdit = () => {
 
   // Error state with matching styling
   if (error) {
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
     return (
       <div style={{ backgroundColor: "#e2e8f0", minHeight: "100vh", padding: "24px" }}>
         <div style={{
@@ -591,7 +634,7 @@ const ApplicationViewEdit = () => {
               type="email" 
               value={formData.email || ''} 
               disabled
-              style={{...styles.input, backgroundColor: "#f7fafc", color: "#4a5568"}}
+              style={{...styles.input, backgroundColor: "#f7fafc", color: "#4a5568", opacity: 1}}
             />
           </div>
 
@@ -834,45 +877,3 @@ const ApplicationViewEdit = () => {
 };
 
 export default ApplicationViewEdit;
-
-// CSS Styles matching the website's design system
-const styles = {
-  input: {
-    width: "100%",
-    padding: "12px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
-    color: "#222"
-  },
-  textarea: {
-    width: "100%",
-    minHeight: "120px",
-    padding: "12px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
-    color: "#222"
-  },
-  fileInput: {
-    width: "100%",
-    padding: "8px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
-    color: "#222"
-  }
-};
-
-// Add CSS for spinner animation
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(style);

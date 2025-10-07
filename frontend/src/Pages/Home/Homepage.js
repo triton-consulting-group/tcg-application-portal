@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import Modal from "./Modal";
 import { 
@@ -24,6 +24,14 @@ function HomePage() {
 
     const navigate = useNavigate();
     const auth = getAuth();
+
+    // Track authentication state changes
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setCurrentUser(user);
+        });
+        return () => unsubscribe();
+    }, [auth]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -93,7 +101,15 @@ function HomePage() {
                         fontWeight="500"
                         height="64px"
                         minWidth="220px"
-                        onClick={openModal}
+                        onClick={() => {
+                            if (currentUser && currentUser.email) {
+                                // User is already signed in, go directly to application
+                                navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
+                            } else {
+                                // User not signed in, open sign-in modal
+                                openModal();
+                            }
+                        }}
                         boxShadow="0 4px 12px rgba(49, 130, 206, 0.3)"
                         _active={{ transform: "translateY(1px)" }}
                     >

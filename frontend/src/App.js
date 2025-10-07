@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./Pages/Home/Homepage";
 import ApplicationPage from "./Pages/ApplicationPage";
 import AssociatePage from "./Pages/AssociatePage";
-import SuccessPage from "./Pages/SuccessPage";
 import ApplicationSubmitted from "./Pages/ApplicationComponents/ApplicationSubmitted";
 import ApplicationViewEdit from "./Pages/ApplicationComponents/ApplicationViewEdit";
 import AdminManagementPage from "./Pages/AdminManagementPage";
@@ -25,9 +24,6 @@ const App = () => {
 
           {/* 👥 Associate Page Route */}
           <Route path="/associate" element={<AssociatePage />} />
-
-          {/*Success Page Route*/}
-          <Route path="/success" element={<SuccessPage />} />
 
           {/*Application Submitted Page Route*/}
           <Route path="/ApplicationComponents/ApplicationSubmitted" element={<ApplicationSubmitted />} />
