@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlQkiPSwjY_MTSSliU9mLT62z2LSj74Zo",
-  authDomain: "tcg-application-portal.vercel.app",
+  authDomain: "tcg-application-portal-db9b2.firebaseapp.com",
   projectId: "tcg-application-portal-db9b2",
   storageBucket: "tcg-application-portal-db9b2.firebasestorage.app",
   messagingSenderId: "89677566801",
