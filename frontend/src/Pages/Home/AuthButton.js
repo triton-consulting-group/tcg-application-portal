@@ -1,41 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { auth, provider } from "./firebaseConfig"; // ✅ Use exported auth and provider
 
 export default function AuthButton({ onSuccessfulSignIn }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Listen for auth state changes and check for redirect results
+    // Listen for auth state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
-        });
-        
-        // Check if user just returned from redirect
-        getRedirectResult(auth).then((result) => {
-            if (result) {
-                console.log("Redirect sign-in successful:", result.user.displayName);
-                if (onSuccessfulSignIn && typeof onSuccessfulSignIn === 'function') {
-                    onSuccessfulSignIn();
-                }
-            }
-        }).catch((error) => {
-            console.error("Redirect sign-in error:", error);
+            console.log("AuthButton: User state changed:", user ? user.email : "No user");
         });
         
         // Cleanup subscription
         return () => unsubscribe();
-    }, [onSuccessfulSignIn]);
+    }, []);
 
     const handleSignIn = async () => {
         setIsLoading(true);
         try {
-            // Try redirect method instead of popup
-            await signInWithRedirect(auth, provider);
+            // Use popup method to avoid page refresh
+            const result = await signInWithPopup(auth, provider);
+            console.log("Popup sign-in successful:", result.user.displayName);
+            // Call the callback after successful sign-in
+            if (onSuccessfulSignIn && typeof onSuccessfulSignIn === 'function') {
+                onSuccessfulSignIn();
+            }
         } catch (error) {
             console.error("Error signing in:", error.message);
             alert("Failed to sign in: " + error.message);
+        } finally {
             setIsLoading(false);
         }
     };

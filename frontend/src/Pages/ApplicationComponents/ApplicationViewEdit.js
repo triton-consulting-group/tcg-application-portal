@@ -49,6 +49,25 @@ const ApplicationViewEdit = () => {
     return () => unsubscribe();
   }, [auth]);
 
+  // Security check: Ensure user can only access their own application
+  useEffect(() => {
+    if (!authLoading) {
+      // If user is not authenticated, redirect to home
+      if (!currentUser) {
+        console.log("User not authenticated, redirecting to home");
+        navigate('/');
+        return;
+      }
+
+      // If email parameter is provided, ensure it matches the authenticated user's email
+      if (email && email !== currentUser.email) {
+        console.log("Email parameter doesn't match authenticated user, redirecting to home");
+        navigate('/');
+        return;
+      }
+    }
+  }, [authLoading, currentUser, email, navigate]);
+
   // Helper functions for word counting and validation
   const countWords = (text) => (text || "").trim().split(/\s+/).filter(Boolean).length;
   
@@ -187,6 +206,19 @@ const ApplicationViewEdit = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Security check: Ensure user can only update their own application
+    if (!currentUser) {
+      alert("You must be logged in to update an application.");
+      navigate('/');
+      return;
+    }
+
+    if (application.email !== currentUser.email) {
+      alert("You can only update your own application.");
+      navigate('/');
+      return;
+    }
     
     try {
       setSubmitting(true);

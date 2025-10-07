@@ -21,16 +21,27 @@ import logo from "../../assets/Images/TCGLogo.png"; // ✅ Corrected path
 function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const [shouldNavigateAfterLogin, setShouldNavigateAfterLogin] = useState(false);
 
     const navigate = useNavigate();
+    const auth = getAuth();
 
     // Track authentication state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log("Auth state changed:", user ? user.email : "No user");
             setCurrentUser(user);
+            
+            // If user just signed in and we're waiting to navigate
+            if (user && shouldNavigateAfterLogin) {
+                console.log("User signed in, navigating to application");
+                setShouldNavigateAfterLogin(false);
+                closeModal();
+                navigate(`/application/view?email=${encodeURIComponent(user.email)}`);
+            }
         });
         return () => unsubscribe();
-    }, [auth]);
+    }, [auth, shouldNavigateAfterLogin, navigate]);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -41,13 +52,8 @@ function HomePage() {
     };
 
     const handleSuccessfulSignIn = () => {
-        closeModal();
-        const user = auth.currentUser;
-        if (user && user.email) {
-            navigate(`/application/view?email=${encodeURIComponent(user.email)}`);
-        } else {
-            navigate('/application');
-        }
+        console.log("handleSuccessfulSignIn called - auth state change will handle navigation");
+        // Navigation will be handled by the useEffect when auth state changes
     }
 
     const handleCheckApplication = () => {
@@ -103,9 +109,12 @@ function HomePage() {
                         onClick={() => {
                             if (currentUser && currentUser.email) {
                                 // User is already signed in, go directly to application
+                                console.log("User already signed in, navigating directly");
                                 navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
                             } else {
-                                // User not signed in, open sign-in modal
+                                // User not signed in, open sign-in modal and set flag
+                                console.log("User not signed in, opening modal");
+                                setShouldNavigateAfterLogin(true);
                                 openModal();
                             }
                         }}
