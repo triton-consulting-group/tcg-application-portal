@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebaseConfig";
 
 import Modal from "./Modal";
 import { 
@@ -25,7 +26,6 @@ function HomePage() {
     const [currentUser, setCurrentUser] = useState(null);
 
     const navigate = useNavigate();
-    const auth = getAuth();
 
     // Track authentication state
     useEffect(() => {
