@@ -35,14 +35,38 @@ const ApplicationPage = () => {
 
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Track authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setAuthLoading(false); // Auth state is now determined
     });
     return () => unsubscribe();
   }, [auth]);
+
+  // Authentication guard - redirect if not authenticated
+  useEffect(() => {
+    if (authLoading) {
+      // Still loading auth state
+      return;
+    }
+    
+    if (!currentUser) {
+      // User is not authenticated, redirect to home
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // If URL has email param, verify it matches authenticated user
+    if (emailParam && emailParam !== currentUser.email) {
+      // User is trying to access someone else's application
+      alert("You can only access your own application.");
+      navigate('/', { replace: true });
+      return;
+    }
+  }, [authLoading, currentUser, emailParam, navigate]);
 
   // Update form data when user logs in (if no email param provided)
   useEffect(() => {
@@ -53,6 +77,9 @@ const ApplicationPage = () => {
 
   // Check for existing application when ID, email is provided, or user is logged in
   useEffect(() => {
+    // Wait for auth to complete before checking applications
+    if (authLoading) return;
+    
     if (id) {
       // If we have an ID, fetch application by ID
       fetchApplicationById(id);
@@ -63,7 +90,7 @@ const ApplicationPage = () => {
         checkExistingApplication(emailToCheck);
       }
     }
-  }, [id, emailParam, currentUser]);
+  }, [id, emailParam, currentUser, authLoading]);
 
   // Fetch case night configuration
   useEffect(() => {
@@ -95,6 +122,20 @@ const ApplicationPage = () => {
     setCheckingExisting(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/api/applications/${applicationId}`);
+      
+      // Security check: Ensure user can only access their own application
+      if (!currentUser) {
+        console.log("User not authenticated, cannot access application by ID");
+        navigate('/');
+        return;
+      }
+
+      if (response.data.email !== currentUser.email) {
+        console.log("Application doesn't belong to authenticated user, redirecting to home");
+        navigate('/');
+        return;
+      }
+
       setExistingApplication(response.data);
       // Pre-populate form with existing data
       setFormData({
@@ -171,6 +212,19 @@ const ApplicationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Authentication check
+    if (!currentUser) {
+      alert("You must be signed in to submit an application.");
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Verify the form email matches the authenticated user
+    if (formData.email !== currentUser.email) {
+      alert("You can only submit applications for your own email address.");
+      return;
+    }
+    
     // Check deadline before submission
     if (deadlineStatus && deadlineStatus.isDeadlinePassed) {
       alert(deadlineStatus.message || "Applications are now closed.");
@@ -197,6 +251,30 @@ const ApplicationPage = () => {
       console.error(error);
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "24px", marginTop: "40px" }}>
+        <div style={{
+          border: "4px solid #e2e8f0",
+          borderTop: "4px solid #3182ce",
+          borderRadius: "50%",
+          width: "40px",
+          height: "40px",
+          animation: "spin 1s linear infinite",
+          margin: "0 auto 16px auto"
+        }}></div>
+        <p style={{ marginTop: "16px" }}>Checking authentication...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   if (checkingExisting) {
     return (
