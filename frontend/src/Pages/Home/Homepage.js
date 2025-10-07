@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import Modal from "./Modal";

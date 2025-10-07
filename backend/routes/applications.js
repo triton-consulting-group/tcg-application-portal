@@ -246,7 +246,7 @@ router.get("/file-url/*", generalApiLimiter, async (req, res) => {
     
     if (!isS3Configured()) {
       // For local files, return the direct path
-      return res.json({ url: `http://localhost:5002/${filePath}` });
+      return res.json({ url: `${process.env.BACKEND_URL || 'http://localhost:5002'}/${filePath}` });
     }
     
     // Extract S3 key from full URL
@@ -280,6 +280,23 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
     res.json(application);
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
+    res.status(500).json({ error: "❌ Failed to fetch application." });
+  }
+});
+
+// 🟢 Fetch application by ID
+router.get("/:id", generalApiLimiter, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const application = await Application.findById(id);
+    
+    if (!application) {
+      return res.status(404).json({ error: "❌ No application found for this ID." });
+    }
+    
+    res.json(application);
+  } catch (error) {
+    console.error("❌ Error fetching application by ID:", error);
     res.status(500).json({ error: "❌ Failed to fetch application." });
   }
 });

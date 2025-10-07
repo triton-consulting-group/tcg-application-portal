@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+import API_BASE_URL from "../../config/api";
 import { 
   Box, 
   VStack, 
@@ -15,7 +16,7 @@ const getFileUrl = async (filePath) => {
   if (!filePath) return "";
   
   try {
-    const response = await axios.get(`http://localhost:5002/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
     return response.data.url;
   } catch (error) {
     console.error("Error getting file URL:", error);
@@ -28,6 +29,8 @@ const ApplicationViewEdit = () => {
   const [searchParams] = useSearchParams();
   const { id } = useParams();
   const email = searchParams.get('email');
+  const [currentUser, setCurrentUser] = useState(null);
+  const auth = getAuth();
   const [currentUser, setCurrentUser] = useState(null);
   const auth = getAuth();
   
