@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getAuth, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { provider } from "./firebaseConfig"; // ✅ Correct import
-
-const auth = getAuth(); // ✅ Get Firebase authentication instance
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { auth, provider } from "./firebaseConfig"; // ✅ Use exported auth and provider
 
 export default function AuthButton({ onSuccessfulSignIn }) {
     const [user, setUser] = useState(null);
