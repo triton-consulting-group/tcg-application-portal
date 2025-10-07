@@ -7,6 +7,7 @@ const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { emailService } = require("../config/emailConfig");
 
@@ -120,6 +121,20 @@ router.post(
       console.log("✅ Received application data:", req.body);
       console.log("✅ Received files:", req.files);
 
+      //Check application deadline
+      if (DEADLINE_CONFIG.isActive) {
+        const now = new Date();
+        const deadline = new Date(DEADLINE_CONFIG.applicationDeadline);
+        
+        if (now > deadline) {
+          return res.status(400).json({ 
+            error: "Application deadline has passed.",
+            message: DEADLINE_CONFIG.message,
+            deadline: DEADLINE_CONFIG.applicationDeadline
+          });
+        }
+      }
+
       // 🔴 Validate required fields
       if (!req.body.fullName || !req.body.email) {
         return res.status(400).json({ error: "❌ Full Name and Email are required." });
@@ -178,6 +193,26 @@ router.post(
     }
   }
 );
+
+//Check application deadline status
+router.get("/deadline-status", (req, res) => {
+  try {
+    const now = new Date();
+    const deadline = new Date(DEADLINE_CONFIG.applicationDeadline);
+    const isDeadlinePassed = now > deadline;
+    
+    res.json({
+      isActive: DEADLINE_CONFIG.isActive,
+      isDeadlinePassed: isDeadlinePassed,
+      deadline: DEADLINE_CONFIG.applicationDeadline,
+      message: isDeadlinePassed ? DEADLINE_CONFIG.message : null,
+      timeRemaining: isDeadlinePassed ? null : Math.max(0, deadline - now)
+    });
+  } catch (error) {
+    console.error("Error checking deadline status:", error);
+    res.status(500).json({ error: "Failed to check deadline status." });
+  }
+});
 
 // 🟢 Fetch all applications (backward compatible - returns array only)
 router.get("/all", generalApiLimiter, async (req, res) => {

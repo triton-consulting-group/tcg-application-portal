@@ -1,38 +1,41 @@
 import React, { useState, useEffect } from "react";
-import { getAuth, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { provider } from "./firebaseConfig"; // ✅ Correct import
-
-const auth = getAuth(); // ✅ Get Firebase authentication instance
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { auth, provider } from "./firebaseConfig"; // ✅ Use exported auth and provider
 
 export default function AuthButton({ onSuccessfulSignIn }) {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Listen for auth state changes
+    // Listen for auth state changes and check for redirect results
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
         });
         
+        // Check if user just returned from redirect
+        getRedirectResult(auth).then((result) => {
+            if (result) {
+                console.log("Redirect sign-in successful:", result.user.displayName);
+                if (onSuccessfulSignIn && typeof onSuccessfulSignIn === 'function') {
+                    onSuccessfulSignIn();
+                }
+            }
+        }).catch((error) => {
+            console.error("Redirect sign-in error:", error);
+        });
+        
         // Cleanup subscription
         return () => unsubscribe();
-    }, []);
+    }, [onSuccessfulSignIn]);
 
     const handleSignIn = async () => {
         setIsLoading(true);
         try {
-            const result = await signInWithPopup(auth, provider);
-            setUser(result.user);
-            console.log("Signed in as:", result.user.displayName);
-            
-            // Call the onSuccessfulSignIn callback if provided
-            if (onSuccessfulSignIn && typeof onSuccessfulSignIn === 'function') {
-                onSuccessfulSignIn();
-            }
+            // Try redirect method instead of popup
+            await signInWithRedirect(auth, provider);
         } catch (error) {
             console.error("Error signing in:", error.message);
             alert("Failed to sign in: " + error.message);
-        } finally {
             setIsLoading(false);
         }
     };
