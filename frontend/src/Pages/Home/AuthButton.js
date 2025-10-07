@@ -59,38 +59,28 @@ export default function AuthButton({ onSuccessfulSignIn }) {
             onClick={user ? handleSignOut : handleSignIn}
             disabled={isLoading}
             style={{
+                backgroundColor: user ? "#718096" : "#3182ce",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "6px",
+                cursor: isLoading ? "default" : "pointer",
+                fontSize: "16px",
+                fontWeight: "500",
+                width: "200px",
+                height: "48px",
+                margin: "0 auto",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "10px 20px",
-                backgroundColor: user ? "#ff4d4d" : "#4285F4",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: isLoading ? "default" : "pointer",
                 opacity: isLoading ? 0.7 : 1,
                 transition: "all 0.3s ease",
-                fontFamily: "Roboto, Arial, sans-serif",
-                fontSize: "14px",
-                fontWeight: "500",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
-                width: "220px",
-                height: "42px",
             }}
         >
             {isLoading ? (
                 "Loading..."
             ) : (
-                <>
-                    {!user && (
-                        <img
-                            src="https://authjs.dev/img/providers/google.svg"
-                            alt="Google Logo"
-                            style={{ width: "18px", height: "18px", marginRight: "10px" }}
-                        />
-                    )}
-                    {user ? `Sign Out (${user.displayName})` : "Sign in with Google"}
-                </>
+                user ? `Sign Out (${user.displayName})` : "Sign in with Google"
             )}
         </button>
     );

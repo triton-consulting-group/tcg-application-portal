@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import AuthButton from "./AuthButton";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebaseConfig";
-
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Modal from "./Modal";
 import { 
     Box, 
@@ -21,13 +19,11 @@ import logo from "../../assets/Images/TCGLogo.png"; // ✅ Corrected path
 
 function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [checkEmail, setCheckEmail] = useState("");
-    const [showCheckForm, setShowCheckForm] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
 
     const navigate = useNavigate();
 
-    // Track authentication state
+    // Track authentication state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
@@ -47,7 +43,7 @@ function HomePage() {
         closeModal();
         const user = auth.currentUser;
         if (user && user.email) {
-            navigate(`/application?email=${encodeURIComponent(user.email)}`);
+            navigate(`/application/view?email=${encodeURIComponent(user.email)}`);
         } else {
             navigate('/application');
         }
@@ -55,11 +51,11 @@ function HomePage() {
 
     const handleCheckApplication = () => {
         if (currentUser && currentUser.email) {
-            // User is logged in - redirect directly to their application without email in URL
-            navigate('/application');
-        } else if (checkEmail.trim()) {
-            // User is not logged in - use manual email entry
-            navigate(`/application?email=${encodeURIComponent(checkEmail.trim())}`);
+            // User is logged in - redirect directly to their application 
+            navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
+        } else {
+            // User is not logged in - require them to sign in first
+            openModal();
         }
     }
 
@@ -69,8 +65,12 @@ function HomePage() {
             height="100vh" 
             alignItems="center" 
             justifyContent="center"
+            px={6}
+            py={4}
+            overflow="hidden"
+            backgroundColor="#e2e8f0"
         >
-            <Box textAlign="center" p={12} maxWidth="800px">
+            <Box textAlign="center" maxWidth="600px" w="100%">
                 <Box display="flex" justifyContent="center" mb={6}>
                     <Image 
                         src={logo} 
@@ -80,71 +80,60 @@ function HomePage() {
                     />
                 </Box>
                 
-                <Heading mb={3}>Welcome to Triton Consulting Group</Heading>
-                <Text fontSize="xl" mb={6} color="gray.600">Interested in joining? Apply now!</Text>
-                <VStack spacing={4}>
+                <Heading mb={3} fontSize={{ base: "2xl", md: "3xl" }} color="gray.800">
+                    Welcome to Triton Consulting Group
+                </Heading>
+                <Text fontSize={{ base: "lg", md: "xl" }} mb={8} color="gray.600" lineHeight="1.6">
+                    Interested in joining? Apply now!
+                </Text>
+                
+                <VStack spacing={20}>
                     <Button 
-                        backgroundColor="#003366" 
+                        backgroundColor="#3182ce" 
                         color="white"
-                        _hover={{ backgroundColor: "#004080" }}
-                        size="xl" 
-                        onClick={openModal}
-                        height="60px"
-                        fontSize="xl"
-                        px={10}
+                        _hover={{ backgroundColor: "#2c5282" }}
+                        border="none"
+                        padding="18px 40px"
+                        borderRadius="6px"
+                        fontSize="18px"
+                        fontWeight="500"
+                        height="64px"
+                        minWidth="220px"
+                        onClick={() => {
+                            if (currentUser && currentUser.email) {
+                                // User is already signed in, go directly to application
+                                navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
+                            } else {
+                                // User not signed in, open sign-in modal
+                                openModal();
+                            }
+                        }}
+                        boxShadow="0 4px 12px rgba(49, 130, 206, 0.3)"
+                        _active={{ transform: "translateY(1px)" }}
                     >
                         Apply Now
                     </Button>
                     
                     <Button 
-                        backgroundColor="#28a745" 
-                        color="white"
-                        _hover={{ backgroundColor: "#218838" }}
-                        size="lg" 
-                        onClick={currentUser ? handleCheckApplication : () => setShowCheckForm(!showCheckForm)}
-                        height="50px"
-                        fontSize="lg"
-                        px={8}
-                    >
-                        {currentUser ? "View My Application" : "Check My Application"}
-                    </Button>
-                    
-                    <Button 
-                        backgroundColor="#6c757d" 
+                        backgroundColor="#718096" 
                         color="white"
                         _hover={{ backgroundColor: "#5a6268" }}
-                        size="md" 
-                        onClick={() => navigate("/admin-login")}
+                        border="none"
+                        padding="10px 20px"
+                        borderRadius="6px"
+                        fontSize="14px"
+                        fontWeight="500"
                         height="40px"
-                        fontSize="md"
-                        px={6}
+                        minWidth="140px"
+                        onClick={() => navigate("/admin-login")}
+                        boxShadow="0 2px 6px rgba(113, 128, 150, 0.2)"
+                        _active={{ transform: "translateY(1px)" }}
+                        mt="10px"
                     >
                         Admin Login
                     </Button>
                 </VStack>
 
-                {showCheckForm && (
-                    <Box mt={6} p={4} border="1px solid" borderColor="gray.200" borderRadius="md" bg="white">
-                        <Text mb={3} fontWeight="bold">Enter your email to check your application:</Text>
-                        <VStack spacing={3}>
-                            <Input
-                                type="email"
-                                placeholder="Enter your email address"
-                                value={checkEmail}
-                                onChange={(e) => setCheckEmail(e.target.value)}
-                                size="lg"
-                            />
-                            <Button 
-                                colorScheme="blue" 
-                                onClick={handleCheckApplication}
-                                isDisabled={!checkEmail.trim()}
-                                width="100%"
-                            >
-                                Check Application
-                            </Button>
-                        </VStack>
-                    </Box>
-                )}
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
                     <div className="modal-content">
                         <h2>Sign in to Continue</h2>

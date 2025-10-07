@@ -187,7 +187,7 @@ const ApplicationPage = () => {
       await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      navigate("/success"); // ✅ Redirect to Success Page
+      navigate("/ApplicationComponents/ApplicationSubmitted"); // ✅ Redirect directly to confirmation page
     } catch (error) {
       if (error.response?.data?.message) {
         alert(error.response.data.message);
@@ -228,7 +228,7 @@ const ApplicationPage = () => {
           display: "flex",
           flexDirection: "column",
           gap: "20px",
-          maxWidth: "600px",
+          maxWidth: "700px",
           margin: "40px auto 0 auto",
           padding: "24px",
           borderRadius: "8px",
@@ -255,7 +255,7 @@ const ApplicationPage = () => {
           </p>
           
           <button 
-            onClick={() => navigate('/application/view')}
+            onClick={() => navigate(`/application/view?email=${encodeURIComponent(existingApplication.email)}`)}
             style={{
               backgroundColor: "#3182ce",
               color: "white",
@@ -297,7 +297,7 @@ const ApplicationPage = () => {
         display: "flex",
         flexDirection: "column",
         gap: "20px",
-        maxWidth: "600px",
+        maxWidth: "700px",
         margin: "40px auto 0 auto",
         padding: "24px",
         borderRadius: "8px",
@@ -414,13 +414,25 @@ const ApplicationPage = () => {
           {/* Resume Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your resume *</p>
-            <input type="file" onChange={(e) => handleFileChange(e, "resume")} style={styles.fileInput} required />
+            <input 
+              type="file" 
+              onChange={(e) => handleFileChange(e, "resume")} 
+              style={styles.fileInput}
+              accept=".pdf,.doc,.docx"
+              required
+            />
           </div>
 
           {/* Transcript Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your transcript *</p>
-            <input type="file" onChange={(e) => handleFileChange(e, "transcript")} style={styles.fileInput} required />
+            <input 
+              type="file" 
+              onChange={(e) => handleFileChange(e, "transcript")} 
+              style={styles.fileInput}
+              accept=".pdf,.doc,.docx"
+              required
+            />
           </div>
 
           {/* Profile Picture Upload */}
@@ -428,10 +440,10 @@ const ApplicationPage = () => {
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (JPG/PNG) *</p>
             <input 
               type="file" 
-              accept="image/png, image/jpeg"  
+              accept="image/png, image/jpeg"
               onChange={(e) => handleFileChange(e, "image")} 
-              style={styles.fileInput} 
-              required 
+              style={styles.fileInput}
+              required
             />
           </div>
 
@@ -530,12 +542,15 @@ const styles = {
   },
   fileInput: {
     width: "100%",
-    padding: "10px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
-    color: "#222"
+    padding: "12px 16px",
+    border: "2px dashed #cbd5e0",
+    borderRadius: "8px",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    backgroundColor: "#f7fafc",
+    cursor: "pointer",
+    transition: "all 0.2s ease-in-out",
+    color: "#4a5568"
   },
   textarea: {
     width: "100%",

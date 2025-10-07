@@ -44,38 +44,42 @@ const AdminLoginPage = () => {
 
   return (
     <div style={{
+      backgroundColor: "#e2e8f0",
       minHeight: "100vh",
+      padding: "24px",
       display: "flex",
       alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "#f7fafc"
+      justifyContent: "center"
     }}>
       <div style={{
         backgroundColor: "white",
-        padding: "32px",
+        padding: "24px",
         borderRadius: "8px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        maxWidth: "400px",
-        width: "100%"
+        boxShadow: "0 10px 25px rgba(0, 0, 0, 0.1)",
+        maxWidth: "500px",
+        width: "90%"
       }}>
         <div style={{
           display: "flex",
           flexDirection: "column",
-          gap: "24px"
+          gap: "20px"
         }}>
           <h1 style={{
             fontSize: "24px",
             fontWeight: "bold",
             textAlign: "center",
+            color: "black",
             margin: "0"
           }}>
             TCG Admin Portal
           </h1>
           
           <p style={{
+            fontSize: "16px",
             textAlign: "center",
             color: "#4a5568",
-            margin: "0"
+            margin: "0",
+            lineHeight: "1.5"
           }}>
             Sign in with your admin Google account to access the associate portal.
           </p>
@@ -84,7 +88,7 @@ const AdminLoginPage = () => {
             <div style={{
               backgroundColor: "#fed7d7",
               border: "1px solid #feb2b2",
-              borderRadius: "4px",
+              borderRadius: "6px",
               padding: "12px",
               color: "#c53030"
             }}>
@@ -102,7 +106,6 @@ const AdminLoginPage = () => {
               borderRadius: "6px",
               padding: "12px 24px",
               fontSize: "16px",
-              fontWeight: "500",
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,
               width: "100%"
@@ -114,16 +117,17 @@ const AdminLoginPage = () => {
           <button
             onClick={() => navigate("/")}
             style={{
-              backgroundColor: "transparent",
-              color: "#4a5568",
+              backgroundColor: "#718096",
+              color: "white",
               border: "none",
               padding: "8px 16px",
-              fontSize: "14px",
+              borderRadius: "6px",
               cursor: "pointer",
-              textDecoration: "underline"
+              fontSize: "14px",
+              width: "100%"
             }}
           >
-            Back to Home
+            Return to Home
           </button>
         </div>
       </div>
