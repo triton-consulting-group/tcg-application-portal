@@ -276,6 +276,51 @@ The system is designed to support:
 - **Real-time group management** and member swapping
 - **Integration with calendar systems** for automated scheduling
 
+## Application Deadline Management
+
+The application portal includes automatic deadline enforcement to prevent submissions after the specified deadline.
+
+### Configuration
+
+**File:** `backend/config/deadlineConfig.js`
+
+```javascript
+const DEADLINE_CONFIG = {
+  // Application deadline: Saturday noon EST (2 days after Thursday info night)
+  applicationDeadline: "2025-09-14T12:00:00-05:00", // Saturday noon EST
+  isActive: true, // Easy toggle for testing/debugging
+  message: "Applications are now closed. Thank you for your interest in TCG!",
+  
+  // Timezone information for reference
+  timezone: "EST (Eastern Standard Time)",
+  
+  // Future cycles: Update the applicationDeadline date above
+  // Format: YYYY-MM-DDTHH:mm:ss-HH:mm (ISO 8601 with timezone)
+  // Example: "2026-09-12T12:00:00-05:00" for next year
+};
+```
+
+### How It Works
+
+1. **Backend Validation**: The application submission route checks the deadline before processing
+2. **Frontend Prevention**: The application form disables submission and shows a closed message
+3. **User Experience**: Clear messaging when applications are closed
+4. **Easy Updates**: Simply update the date in the config file for future cycles
+
+### Updating for Future Cycles
+
+To update the deadline for a new application cycle:
+
+1. **Update the deadline date** in `backend/config/deadlineConfig.js`
+2. **Deploy the changes**
+3. **Test the deadline enforcement** (set `isActive: false` temporarily for testing)
+
+### Testing Deadline Functionality
+
+- Set `isActive: false` in the config to disable deadline checking
+- Temporarily set a past date to test the closed state
+- The system will show "Applications Closed" message and disable the submit button
+
 ## Contributing
 
 1. Fork the repository
