@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signInWithPopup } from "firebase/auth";
-import { provider } from "./Home/firebaseConfig";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 
 const AdminLoginPage = () => {
@@ -14,11 +14,10 @@ const AdminLoginPage = () => {
     setError(null);
     
     try {
-      const auth = getAuth();
       const result = await signInWithPopup(auth, provider);
       
       // Check if the user is an admin
-      const response = await fetch("${API_BASE_URL}/api/admin/check", {
+      const response = await fetch(`${API_BASE_URL}/api/admin/check`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

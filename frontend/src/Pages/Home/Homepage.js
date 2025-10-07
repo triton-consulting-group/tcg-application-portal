@@ -24,7 +24,6 @@ function HomePage() {
     const [shouldNavigateAfterLogin, setShouldNavigateAfterLogin] = useState(false);
 
     const navigate = useNavigate();
-    const auth = getAuth();
 
     // Track authentication state changes
     useEffect(() => {
