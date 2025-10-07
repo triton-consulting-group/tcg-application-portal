@@ -33,12 +33,14 @@ function Modal({ isOpen, onClose, children }) {
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-container" onClick={e => e.stopPropagation()}>
-                <button className="modal-close-button" onClick={onClose}>
-                    &times;
+        <div className="modal-backdrop" onClick={onClose}>
+            <div className="modal-box" onClick={e => e.stopPropagation()}>
+                <button className="modal-x" onClick={onClose}>
+                    ×
                 </button>
-                {children}
+                <div className="modal-body">
+                    {children}
+                </div>
             </div>
         </div>
     );

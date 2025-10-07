@@ -173,7 +173,7 @@ const ApplicationPage = () => {
           </p>
           
           <button 
-            onClick={() => navigate(`/application/view?email=${existingApplication.email}`)}
+            onClick={() => navigate(`/application/view?email=${encodeURIComponent(existingApplication.email)}`)}
             style={{
               backgroundColor: "#3182ce",
               color: "white",
