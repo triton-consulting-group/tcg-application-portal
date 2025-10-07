@@ -31,8 +31,6 @@ const ApplicationViewEdit = () => {
   const email = searchParams.get('email');
   const [currentUser, setCurrentUser] = useState(null);
   const auth = getAuth();
-  const [currentUser, setCurrentUser] = useState(null);
-  const auth = getAuth();
   
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
