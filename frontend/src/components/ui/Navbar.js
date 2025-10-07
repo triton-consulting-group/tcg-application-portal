@@ -4,6 +4,7 @@ import { Flex, Box, Link, Button, Image } from "@chakra-ui/react";
 import { auth, provider } from "../../Pages/Home/firebaseConfig";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
+import API_BASE_URL from "../../config/api";
 import TCGLogo from "../../assets/Images/TCGLogo.png";
 
 const Navbar = () => {
@@ -19,7 +20,7 @@ const Navbar = () => {
       if (currentUser) {
         // First, try to register the user (this will create them if they don't exist)
         try {
-          await axios.post("http://localhost:5002/api/auth/register", {
+          await axios.post("${API_BASE_URL}/api/auth/register", {
             email: currentUser.email,
             name: currentUser.displayName || ""
           });
@@ -29,7 +30,7 @@ const Navbar = () => {
 
         // Then get their role
         try {
-          const response = await axios.get(`http://localhost:5002/api/auth/role/${currentUser.email}`);
+          const response = await axios.get(`${API_BASE_URL}/api/auth/role/${currentUser.email}`);
           setRole(response.data.role || "applicant");
         } catch (error) {
           console.error("Error fetching user role:", error);
@@ -98,7 +99,7 @@ const Navbar = () => {
 
       // First, try to register the user (this will create them if they don't exist)
       try {
-        await axios.post("http://localhost:5002/api/auth/register", {
+        await axios.post("${API_BASE_URL}/api/auth/register", {
           email: result.user.email,
           name: result.user.displayName || ""
         });
@@ -108,7 +109,7 @@ const Navbar = () => {
 
       // Then get their role
       try {
-        const response = await axios.get(`http://localhost:5002/api/auth/role/${result.user.email}`);
+        const response = await axios.get(`${API_BASE_URL}/api/auth/role/${result.user.email}`);
         setRole(response.data.role || "applicant");
       } catch (error) {
         console.error("Error fetching user role:", error);

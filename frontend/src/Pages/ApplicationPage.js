@@ -31,6 +31,7 @@ const ApplicationPage = () => {
   });
 
   const [caseNightConfig, setCaseNightConfig] = useState(null);
+  const [deadlineStatus, setDeadlineStatus] = useState(null);
 
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
@@ -75,6 +76,19 @@ const ApplicationPage = () => {
       }
     };
     fetchCaseNightConfig();
+  }, []);
+
+  // Fetch deadline status
+  useEffect(() => {
+    const fetchDeadlineStatus = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/applications/deadline-status`);
+        setDeadlineStatus(response.data);
+      } catch (error) {
+        console.error("Error fetching deadline status:", error);
+      }
+    };
+    fetchDeadlineStatus();
   }, []);
 
   const fetchApplicationById = async (applicationId) => {
@@ -156,6 +170,13 @@ const ApplicationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check deadline before submission
+    if (deadlineStatus && deadlineStatus.isDeadlinePassed) {
+      alert(deadlineStatus.message || "Applications are now closed.");
+      return;
+    }
+    
     const formDataToSend = new FormData();
 
     Object.keys(formData).forEach((key) => {
@@ -168,7 +189,11 @@ const ApplicationPage = () => {
       });
       navigate("/ApplicationComponents/ApplicationSubmitted"); // ✅ Redirect directly to confirmation page
     } catch (error) {
-      alert("❌ Error submitting application.");
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else {
+        alert("Deadline Passed,Error submitting application.");
+      }
       console.error(error);
     }
   };
@@ -282,6 +307,24 @@ const ApplicationPage = () => {
         <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
           APPLICATION - TCG FALL 25 RECRUITMENT
         </h1>
+
+        {/* Deadline Status Display */}
+        {deadlineStatus && deadlineStatus.isDeadlinePassed && (
+          <div style={{
+            backgroundColor: "#fed7d7",
+            color: "#c53030",
+            padding: "16px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            border: "2px solid #feb2b2",
+            textAlign: "center"
+          }}>
+            <h2 style={{ margin: "0 0 8px 0", fontSize: "20px" }}>Applications Closed</h2>
+            <p style={{ margin: "0", fontSize: "16px" }}>
+              {deadlineStatus.message || "Thank you for your interest in TCG!"}
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Email */}
@@ -465,19 +508,20 @@ const ApplicationPage = () => {
           {/* Submit Button */}
           <button 
             type="submit"
+            disabled={deadlineStatus && deadlineStatus.isDeadlinePassed}
             style={{
-              backgroundColor: "#3182ce",
+              backgroundColor: deadlineStatus && deadlineStatus.isDeadlinePassed ? "#a0aec0" : "#3182ce",
               color: "white",
               border: "none",
               padding: "12px 24px",
               borderRadius: "6px",
-              cursor: "pointer",
+              cursor: deadlineStatus && deadlineStatus.isDeadlinePassed ? "not-allowed" : "pointer",
               fontSize: "16px",
               width: "100%",
               marginTop: "16px"
             }}
           >
-            Submit Application
+            {deadlineStatus && deadlineStatus.isDeadlinePassed ? "Applications Closed" : "Submit Application"}
           </button>
         </form>
       </div>

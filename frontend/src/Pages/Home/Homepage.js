@@ -22,7 +22,6 @@ function HomePage() {
     const [currentUser, setCurrentUser] = useState(null);
 
     const navigate = useNavigate();
-    const auth = getAuth();
 
     // Track authentication state changes
     useEffect(() => {
