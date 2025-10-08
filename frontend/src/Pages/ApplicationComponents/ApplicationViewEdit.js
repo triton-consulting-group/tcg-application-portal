@@ -123,7 +123,7 @@ const ApplicationViewEdit = () => {
       console.log("Fetching application with:", { id, email, currentUserEmail: currentUser?.email });
       
       let applicationData;
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5002';
       
       if (id) {
         console.log("Fetching by ID:", id);
