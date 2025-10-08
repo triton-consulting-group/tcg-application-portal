@@ -35,14 +35,38 @@ const ApplicationPage = () => {
 
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Track authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setAuthLoading(false); // Auth state is now determined
     });
     return () => unsubscribe();
   }, [auth]);
+
+  // Authentication guard - redirect if not authenticated
+  useEffect(() => {
+    if (authLoading) {
+      // Still loading auth state
+      return;
+    }
+    
+    if (!currentUser) {
+      // User is not authenticated, redirect to home
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // If URL has email param, verify it matches authenticated user
+    if (emailParam && emailParam !== currentUser.email) {
+      // User is trying to access someone else's application
+      alert("You can only access your own application.");
+      navigate('/', { replace: true });
+      return;
+    }
+  }, [authLoading, currentUser, emailParam, navigate]);
 
   // Update form data when user logs in (if no email param provided)
   useEffect(() => {
@@ -53,6 +77,9 @@ const ApplicationPage = () => {
 
   // Check for existing application when ID, email is provided, or user is logged in
   useEffect(() => {
+    // Wait for auth to complete before checking applications
+    if (authLoading) return;
+    
     if (id) {
       // If we have an ID, fetch application by ID
       fetchApplicationById(id);
@@ -63,7 +90,7 @@ const ApplicationPage = () => {
         checkExistingApplication(emailToCheck);
       }
     }
-  }, [id, emailParam, currentUser]);
+  }, [id, emailParam, currentUser, authLoading]);
 
   // Fetch case night configuration
   useEffect(() => {
@@ -95,6 +122,20 @@ const ApplicationPage = () => {
     setCheckingExisting(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/api/applications/${applicationId}`);
+      
+      // Security check: Ensure user can only access their own application
+      if (!currentUser) {
+        console.log("User not authenticated, cannot access application by ID");
+        navigate('/');
+        return;
+      }
+
+      if (response.data.email !== currentUser.email) {
+        console.log("Application doesn't belong to authenticated user, redirecting to home");
+        navigate('/');
+        return;
+      }
+
       setExistingApplication(response.data);
       // Pre-populate form with existing data
       setFormData({
@@ -171,6 +212,19 @@ const ApplicationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Authentication check
+    if (!currentUser) {
+      alert("You must be signed in to submit an application.");
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Verify the form email matches the authenticated user
+    if (formData.email !== currentUser.email) {
+      alert("You can only submit applications for your own email address.");
+      return;
+    }
+    
     // Check deadline before submission
     if (deadlineStatus && deadlineStatus.isDeadlinePassed) {
       alert(deadlineStatus.message || "Applications are now closed.");
@@ -187,7 +241,7 @@ const ApplicationPage = () => {
       await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      navigate("/success"); // ✅ Redirect to Success Page
+      navigate("/ApplicationComponents/ApplicationSubmitted"); // ✅ Redirect directly to confirmation page
     } catch (error) {
       if (error.response?.data?.message) {
         alert(error.response.data.message);
@@ -197,6 +251,30 @@ const ApplicationPage = () => {
       console.error(error);
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "24px", marginTop: "40px" }}>
+        <div style={{
+          border: "4px solid #e2e8f0",
+          borderTop: "4px solid #3182ce",
+          borderRadius: "50%",
+          width: "40px",
+          height: "40px",
+          animation: "spin 1s linear infinite",
+          margin: "0 auto 16px auto"
+        }}></div>
+        <p style={{ marginTop: "16px" }}>Checking authentication...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   if (checkingExisting) {
     return (
@@ -228,7 +306,7 @@ const ApplicationPage = () => {
           display: "flex",
           flexDirection: "column",
           gap: "20px",
-          maxWidth: "600px",
+          maxWidth: "700px",
           margin: "40px auto 0 auto",
           padding: "24px",
           borderRadius: "8px",
@@ -255,7 +333,7 @@ const ApplicationPage = () => {
           </p>
           
           <button 
-            onClick={() => navigate('/application/view')}
+            onClick={() => navigate(`/application/view?email=${encodeURIComponent(existingApplication.email)}`)}
             style={{
               backgroundColor: "#3182ce",
               color: "white",
@@ -297,7 +375,7 @@ const ApplicationPage = () => {
         display: "flex",
         flexDirection: "column",
         gap: "20px",
-        maxWidth: "600px",
+        maxWidth: "700px",
         margin: "40px auto 0 auto",
         padding: "24px",
         borderRadius: "8px",
@@ -414,13 +492,25 @@ const ApplicationPage = () => {
           {/* Resume Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your resume *</p>
-            <input type="file" onChange={(e) => handleFileChange(e, "resume")} style={styles.fileInput} required />
+            <input 
+              type="file" 
+              onChange={(e) => handleFileChange(e, "resume")} 
+              style={styles.fileInput}
+              accept=".pdf,.doc,.docx"
+              required
+            />
           </div>
 
           {/* Transcript Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your transcript *</p>
-            <input type="file" onChange={(e) => handleFileChange(e, "transcript")} style={styles.fileInput} required />
+            <input 
+              type="file" 
+              onChange={(e) => handleFileChange(e, "transcript")} 
+              style={styles.fileInput}
+              accept=".pdf,.doc,.docx"
+              required
+            />
           </div>
 
           {/* Profile Picture Upload */}
@@ -428,10 +518,10 @@ const ApplicationPage = () => {
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (JPG/PNG) *</p>
             <input 
               type="file" 
-              accept="image/png, image/jpeg"  
+              accept="image/png, image/jpeg"
               onChange={(e) => handleFileChange(e, "image")} 
-              style={styles.fileInput} 
-              required 
+              style={styles.fileInput}
+              required
             />
           </div>
 
@@ -530,12 +620,15 @@ const styles = {
   },
   fileInput: {
     width: "100%",
-    padding: "10px",
-    fontSize: "16px",
-    borderRadius: "5px",
-    border: "1px solid #ccc",
-    backgroundColor: "#fff",
-    color: "#222"
+    padding: "12px 16px",
+    border: "2px dashed #cbd5e0",
+    borderRadius: "8px",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    backgroundColor: "#f7fafc",
+    cursor: "pointer",
+    transition: "all 0.2s ease-in-out",
+    color: "#4a5568"
   },
   textarea: {
     width: "100%",

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getAuth, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { provider } from "./firebaseConfig"; // ✅ Correct import
-
-const auth = getAuth(); // ✅ Get Firebase authentication instance
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { auth, provider } from "./firebaseConfig"; // ✅ Use exported auth and provider
 
 export default function AuthButton({ onSuccessfulSignIn }) {
     const [user, setUser] = useState(null);
@@ -12,6 +10,7 @@ export default function AuthButton({ onSuccessfulSignIn }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
+            console.log("AuthButton: User state changed:", user ? user.email : "No user");
         });
         
         // Cleanup subscription
@@ -21,11 +20,10 @@ export default function AuthButton({ onSuccessfulSignIn }) {
     const handleSignIn = async () => {
         setIsLoading(true);
         try {
+            // Use popup method to avoid page refresh
             const result = await signInWithPopup(auth, provider);
-            setUser(result.user);
-            console.log("Signed in as:", result.user.displayName);
-            
-            // Call the onSuccessfulSignIn callback if provided
+            console.log("Popup sign-in successful:", result.user.displayName);
+            // Call the callback after successful sign-in
             if (onSuccessfulSignIn && typeof onSuccessfulSignIn === 'function') {
                 onSuccessfulSignIn();
             }
@@ -56,38 +54,28 @@ export default function AuthButton({ onSuccessfulSignIn }) {
             onClick={user ? handleSignOut : handleSignIn}
             disabled={isLoading}
             style={{
+                backgroundColor: user ? "#718096" : "#3182ce",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "6px",
+                cursor: isLoading ? "default" : "pointer",
+                fontSize: "16px",
+                fontWeight: "500",
+                width: "200px",
+                height: "48px",
+                margin: "0 auto",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "10px 20px",
-                backgroundColor: user ? "#ff4d4d" : "#4285F4",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: isLoading ? "default" : "pointer",
                 opacity: isLoading ? 0.7 : 1,
                 transition: "all 0.3s ease",
-                fontFamily: "Roboto, Arial, sans-serif",
-                fontSize: "14px",
-                fontWeight: "500",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
-                width: "220px",
-                height: "42px",
             }}
         >
             {isLoading ? (
                 "Loading..."
             ) : (
-                <>
-                    {!user && (
-                        <img
-                            src="https://authjs.dev/img/providers/google.svg"
-                            alt="Google Logo"
-                            style={{ width: "18px", height: "18px", marginRight: "10px" }}
-                        />
-                    )}
-                    {user ? `Sign Out (${user.displayName})` : "Sign in with Google"}
-                </>
+                user ? `Sign Out (${user.displayName})` : "Sign in with Google"
             )}
         </button>
     );

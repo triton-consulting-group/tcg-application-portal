@@ -12,9 +12,19 @@ const app = express();
 
 // Security and performance middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'https://tcg-application-portal.vercel.app',
+    'https://tcg-application-portal-production.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-email'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
+
+// Additional CORS handling for preflight requests
+app.options('*', cors());
 
 // Body parsing middleware with limits
 app.use(express.json({ limit: '10mb' }));
@@ -76,8 +86,14 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
 });
+
+// Export for Railway deployment
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+}

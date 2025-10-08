@@ -1,14 +1,16 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./associatePage.css";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./Home/firebaseConfig";
+import API_BASE_URL from "../config/api";
 
 // Helper function to get signed URL for file access
 const getFileUrl = async (filePath) => {
   if (!filePath) return "";
   
   try {
-    const response = await axios.get(`http://localhost:5002/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
     return response.data.url;
   } catch (error) {
     console.error("Error getting file URL:", error);
@@ -38,7 +40,7 @@ const AssociatePage = () => {
 
   const checkAdminStatus = useCallback(async (email) => {
     try {
-      const response = await axios.post("http://localhost:5002/api/admin/check", { email });
+      const response = await axios.post(`${API_BASE_URL}/api/admin/check`, { email });
       if (response.data.isAdmin) {
         setIsAdmin(true);
         setAdminInfo(response.data.admin);
@@ -59,7 +61,6 @@ const AssociatePage = () => {
 
   useEffect(() => {
     // Check authentication state
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user) {
@@ -77,7 +78,7 @@ const AssociatePage = () => {
   useEffect(() => {
     const fetchCaseNightConfig = async () => {
       try {
-        const response = await axios.get("http://localhost:5002/api/applications/case-night-config");
+        const response = await axios.get(`${API_BASE_URL}/api/applications/case-night-config`);
         setCaseNightConfig(response.data);
       } catch (error) {
         console.error("Error fetching case night config:", error);
@@ -89,7 +90,7 @@ const AssociatePage = () => {
   const fetchApplications = async () => {
     try {
       // Use the backward-compatible endpoint to get all applications
-      const response = await axios.get("http://localhost:5002/api/applications/all");
+      const response = await axios.get(`${API_BASE_URL}/api/applications/all`);
       setApplications(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -148,7 +149,7 @@ const AssociatePage = () => {
   const handleExportCaseGroups = async () => {
     setExporting(true);
     try {
-      const response = await axios.get("http://localhost:5002/api/case-groups/export", {
+      const response = await axios.get(`${API_BASE_URL}/api/case-groups/export`, {
         responseType: 'blob'
       });
       
@@ -190,7 +191,7 @@ const AssociatePage = () => {
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
     
     axios
-      .put(`http://localhost:5002/api/applications/${applicationId}`, {
+      .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
         status: newStatus,
         changedBy: adminEmail,
         notes: notes
@@ -200,7 +201,7 @@ const AssociatePage = () => {
         }
       })
       .then(() => {
-        return axios.get("http://localhost:5002/api/applications/all"); // 🔹 Refetch all applications
+        return axios.get(`${API_BASE_URL}/api/applications/all`); // 🔹 Refetch all applications
       })
       .then((response) => {
         setApplications(response.data || []);
@@ -601,7 +602,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
     
     setIsSubmittingComment(true);
     try {
-      const response = await axios.post(`http://localhost:5002/api/applications/${application._id}/comment`, {
+      const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
         comment: newComment,
         adminEmail: adminInfo?.email || "unknown@admin.com",
         adminName: adminInfo?.name || "Unknown Admin"
@@ -634,7 +635,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
       <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
         <div style={{ flex: 1 }}>
           <img
-            src={`http://localhost:5002${application.image}`}
+            src={`${API_BASE_URL}${application.image}`}
             alt="Profile"
             width="100"
             height="100"
@@ -1114,7 +1115,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       const adminEmail = localStorage.getItem("adminEmail") || "Unknown Admin";
       
       // Update the application status
-      await axios.put(`http://localhost:5002/api/applications/${applicationId}`, {
+      await axios.put(`${API_BASE_URL}/api/applications/${applicationId}`, {
         status: newStatus,
         changedBy: adminEmail,
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
