@@ -52,6 +52,40 @@ if (isS3Configured()) {
   });
 }
 
+// adds a guard before upload.fields()
+function guardApplicationWindow(req, res, next) {
+  // if the feature flag is off, do nothing
+  if (!DEADLINE_CONFIG?.isActive) return next();
+
+  const now = new Date();
+  const start = DEADLINE_CONFIG.applicationStartTime
+    ? new Date(DEADLINE_CONFIG.applicationStartTime)
+    : null;
+  const deadline = DEADLINE_CONFIG.applicationDeadline
+    ? new Date(DEADLINE_CONFIG.applicationDeadline)
+    : null;
+
+  if (start && now < start) {
+    return res.status(403).json({
+      error: "Applications are not open yet.",
+      message:
+        DEADLINE_CONFIG.preOpenMessage ||
+        "Applications are not open right now. Please come back later.",
+      opensAt: DEADLINE_CONFIG.applicationStartTime,
+    });
+  }
+
+  if (deadline && now > deadline) {
+    return res.status(400).json({
+      error: "Application deadline has passed.",
+      message: DEADLINE_CONFIG.message,
+      deadline: DEADLINE_CONFIG.applicationDeadline,
+    });
+  }
+
+  return next();
+}
+
 upload = multer({ 
   storage: storage,
   limits: {
@@ -111,6 +145,7 @@ router.get("/test-email", async (req, res) => {
 router.post(
   "/",
   applicationSubmissionLimiter, // Apply rate limiting
+  guardApplicationWindow, //enforces start time
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
@@ -193,6 +228,39 @@ router.post(
     }
   }
 );
+
+// Get whether or not to open application
+router.get("/window", (req, res) => {
+  try {
+    const now = new Date();
+    const start = DEADLINE_CONFIG.applicationStartTime
+      ? new Date(DEADLINE_CONFIG.applicationStartTime)
+      : null;
+    const deadline = DEADLINE_CONFIG.applicationDeadline
+      ? new Date(DEADLINE_CONFIG.applicationDeadline)
+      : null;
+
+    const isOpen =
+      (!DEADLINE_CONFIG?.isActive) ||
+      ((start ? now >= start : true) && (deadline ? now <= deadline : true));
+
+    res.json({
+      isOpen,
+      now: now.toISOString(),
+      opensAt: DEADLINE_CONFIG.applicationStartTime || null,
+      deadline: DEADLINE_CONFIG.applicationDeadline || null,
+      messageClosed:
+        DEADLINE_CONFIG.message ||
+        "Applications are now closed. Thank you for your interest in TCG!",
+      messageNotOpen:
+        DEADLINE_CONFIG.preOpenMessage ||
+        "Applications are not open right now. Please come back later.",
+    });
+  } catch (e) {
+    console.error("Error computing window:", e);
+    res.status(500).json({ error: "Failed to compute application window." });
+  }
+});
 
 //Check application deadline status
 router.get("/deadline-status", (req, res) => {
