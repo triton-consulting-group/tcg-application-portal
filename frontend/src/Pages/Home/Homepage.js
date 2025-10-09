@@ -4,6 +4,7 @@ import AuthButton from "./AuthButton";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig";
 import Modal from "./Modal";
+import axios from "axios";
 import { 
     Box, 
     Button, 
@@ -12,11 +13,9 @@ import {
     Text, 
     Flex, 
     Image,
-    Input,
-    Alert
 } from "@chakra-ui/react";
-import logo from "../../assets/Images/TCGLogo.png"; // ✅ Corrected path
-
+import logo from "../../assets/Images/TCGLogo.png";
+import API_BASE_URL from "../../config/api";
 
 function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,13 +24,12 @@ function HomePage() {
 
     const navigate = useNavigate();
 
-    // Track authentication state changes
+    // Track authentication state
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             console.log("Auth state changed:", user ? user.email : "No user");
             setCurrentUser(user);
             
-            // If user just signed in and we're waiting to navigate
             if (user && shouldNavigateAfterLogin) {
                 console.log("User signed in, navigating to application");
                 setShouldNavigateAfterLogin(false);
@@ -40,30 +38,53 @@ function HomePage() {
             }
         });
         return () => unsubscribe();
-    }, [auth, shouldNavigateAfterLogin, navigate]);
+    }, [shouldNavigateAfterLogin, navigate]);
 
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
 
     const handleSuccessfulSignIn = () => {
         console.log("handleSuccessfulSignIn called - auth state change will handle navigation");
-        // Navigation will be handled by the useEffect when auth state changes
-    }
+    };
 
-    const handleCheckApplication = () => {
-        if (currentUser && currentUser.email) {
-            // User is logged in - redirect directly to their application 
-            navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
-        } else {
-            // User is not logged in - require them to sign in first
-            openModal();
+    // Check if application window is open
+    const handleApplyClick = async () => {
+        try {
+            const base = API_BASE_URL.replace(/\/$/, ""); // strip trailing slash just in case
+            const url = `${base}/api/applications/window-status`;
+            console.log("Checking window status:", url);
+
+            const { data } = await axios.get(url);
+            console.log("Window status:", data);
+
+            // Enforce only when gating is active
+            if (data.isActive && !data.isOpen) {
+                if (data.isBeforeStart) {
+                    alert("Applications are not open yet. Please check back later!");
+                    return;
+                } 
+                if (data.isAfterDeadline) {
+                    alert("The application deadline has passed.");
+                    return;
+                }
+                alert("Applications are currently closed.");
+                return;
+            }
+
+            // Open (or gating disabled) — continue
+            if (currentUser && currentUser.email) {
+                console.log("User already signed in, navigating directly");
+                navigate(`/application?email=${encodeURIComponent(currentUser.email)}`);
+            } else {
+                console.log("User not signed in, opening modal");
+                setShouldNavigateAfterLogin(true);
+                openModal();
+            }
+        } catch (err) {
+            console.error("Error checking window status:", err);
+            alert("Unable to check application window right now. Please try again.");
         }
-    }
+    };
 
     return (
         <Flex 
@@ -105,18 +126,7 @@ function HomePage() {
                         fontWeight="500"
                         height="64px"
                         minWidth="220px"
-                        onClick={() => {
-                            if (currentUser && currentUser.email) {
-                                // User is already signed in, go directly to application
-                                console.log("User already signed in, navigating directly");
-                                navigate(`/application?email=${encodeURIComponent(currentUser.email)}`);
-                            } else {
-                                // User not signed in, open sign-in modal and set flag
-                                console.log("User not signed in, opening modal");
-                                setShouldNavigateAfterLogin(true);
-                                openModal();
-                            }
-                        }}
+                        onClick={handleApplyClick}
                         boxShadow="0 4px 12px rgba(49, 130, 206, 0.3)"
                         _active={{ transform: "translateY(1px)" }}
                     >
