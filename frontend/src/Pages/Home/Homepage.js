@@ -36,7 +36,7 @@ function HomePage() {
                 console.log("User signed in, navigating to application");
                 setShouldNavigateAfterLogin(false);
                 closeModal();
-                navigate(`/application/view?email=${encodeURIComponent(user.email)}`);
+                navigate(`/application?email=${encodeURIComponent(user.email)}`);
             }
         });
         return () => unsubscribe();
@@ -109,7 +109,7 @@ function HomePage() {
                             if (currentUser && currentUser.email) {
                                 // User is already signed in, go directly to application
                                 console.log("User already signed in, navigating directly");
-                                navigate(`/application/view?email=${encodeURIComponent(currentUser.email)}`);
+                                navigate(`/application?email=${encodeURIComponent(currentUser.email)}`);
                             } else {
                                 // User not signed in, open sign-in modal and set flag
                                 console.log("User not signed in, opening modal");
