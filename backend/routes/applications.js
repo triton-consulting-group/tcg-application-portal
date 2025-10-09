@@ -11,17 +11,37 @@ const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { emailService } = require("../config/emailConfig");
 
-// 🟢 Set up Multer storage for file uploads
+/* =========================
+   NEW: date helpers + no-cache
+   ========================= */
+function parseMaybeDate(val) {
+  // Accept ISO strings, numbers (timestamps), or Date
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  if (typeof val === "number") return new Date(val);
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? null : d;
+}
+function nowUtc() {
+  return new Date(); // backend runs in UTC; compute consistently
+}
+function addNoStore(res) {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+  res.set("Surrogate-Control", "no-store");
+}
+
+/* =========================
+   Multer storage setup (unchanged)
+   ========================= */
 let storage, upload;
 
 if (isS3Configured()) {
   console.log("✅ Using S3 storage for file uploads");
-  
-  // S3 storage configuration
   storage = multerS3({
     s3: s3,
     bucket: S3_CONFIG.bucketName,
-    // ACL removed since bucket has ACLs disabled
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: function (req, file, cb) {
       const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
@@ -40,32 +60,21 @@ if (isS3Configured()) {
   });
 } else {
   console.log("⚠️ S3 not configured, falling back to local storage");
-  
-  // Fallback to local storage
   storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, "uploads/"); // Store files in "uploads/" directory
-    },
-    filename: (req, file, cb) => {
-      cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")); // Generate unique filename
-    },
+    destination: (req, file, cb) => cb(null, "uploads/"),
+    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")),
   });
 }
 
 upload = multer({ 
   storage: storage,
-  limits: {
-    fileSize: S3_CONFIG.uploadSettings.maxFileSize
-  },
+  limits: { fileSize: S3_CONFIG.uploadSettings.maxFileSize },
   fileFilter: (req, file, cb) => {
-    // Check if file type is allowed
     if (S3_CONFIG.uploadSettings.allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      // Fallback: check file extension for common file types
       const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx'];
       const fileExtension = path.extname(file.originalname).toLowerCase();
-      
       if (allowedExtensions.includes(fileExtension)) {
         console.log(`⚠️ File ${file.originalname} has MIME type ${file.mimetype} but extension ${fileExtension} is allowed`);
         cb(null, true);
@@ -76,9 +85,14 @@ upload = multer({
   }
 });
 
-// 🟢 Get case night configuration
+/* =========================
+   Routes
+   ========================= */
+
+// Case night config
 router.get("/case-night-config", (req, res) => {
   try {
+    addNoStore(res);
     res.json(CASE_NIGHT_CONFIG);
   } catch (error) {
     console.error("❌ Error fetching case night config:", error);
@@ -86,20 +100,15 @@ router.get("/case-night-config", (req, res) => {
   }
 });
 
-// 🟢 Test email configuration
+// Test email
 router.get("/test-email", async (req, res) => {
   try {
+    addNoStore(res);
     const result = await emailService.testEmailConfig();
     if (result.success) {
-      res.json({ 
-        message: "✅ Email configuration is valid",
-        status: "healthy"
-      });
+      res.json({ message: "✅ Email configuration is valid", status: "healthy" });
     } else {
-      res.status(500).json({ 
-        error: "❌ Email configuration error",
-        details: result.error
-      });
+      res.status(500).json({ error: "❌ Email configuration error", details: result.error });
     }
   } catch (error) {
     console.error("❌ Error testing email config:", error);
@@ -107,10 +116,51 @@ router.get("/test-email", async (req, res) => {
   }
 });
 
-// 🟢 Handle application submission
+/* ===================================================
+   NEW: Public window status (start + deadline together)
+   GET /api/applications/window-status
+   =================================================== */
+router.get("/window-status", (req, res) => {
+  try {
+    addNoStore(res);
+
+    const isActive = !!DEADLINE_CONFIG.isActive;
+    const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
+    const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+
+    const now = nowUtc();
+    const hasStart = !!start;
+    const hasDeadline = !!deadline;
+
+    const isBeforeStart = isActive && hasStart ? now < start : false;
+    const isAfterDeadline = isActive && hasDeadline ? now > deadline : false;
+    const isOpen = isActive && (!hasStart || now >= start) && (!hasDeadline || now <= deadline);
+
+    res.json({
+      isActive,
+      isOpen,
+      isBeforeStart,
+      isAfterDeadline,
+      start: hasStart ? start.toISOString() : null,
+      deadline: hasDeadline ? deadline.toISOString() : null,
+      preStartMessage: DEADLINE_CONFIG.preStartMessage || "Applications are not open yet.",
+      deadlineMessage: DEADLINE_CONFIG.message || "Application deadline has passed.",
+      serverTime: now.toISOString(),
+      timeUntilStart: isActive && hasStart && now < start ? (start - now) : null,
+      timeRemaining: isActive && hasDeadline && now < deadline ? (deadline - now) : null,
+    });
+  } catch (error) {
+    console.error("❌ Error checking window status:", error);
+    res.status(500).json({ error: "❌ Failed to check window status." });
+  }
+});
+
+/* ===================================================
+   Submission (with start-time + deadline gating)
+   =================================================== */
 router.post(
   "/",
-  applicationSubmissionLimiter, // Apply rate limiting
+  applicationSubmissionLimiter,
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
@@ -121,26 +171,44 @@ router.post(
       console.log("✅ Received application data:", req.body);
       console.log("✅ Received files:", req.files);
 
-      //Check application deadline
+      // --- NEW: Start-time gate ---
       if (DEADLINE_CONFIG.isActive) {
-        const now = new Date();
-        const deadline = new Date(DEADLINE_CONFIG.applicationDeadline);
-        
-        if (now > deadline) {
-          return res.status(400).json({ 
-            error: "Application deadline has passed.",
-            message: DEADLINE_CONFIG.message,
-            deadline: DEADLINE_CONFIG.applicationDeadline
+        const now = nowUtc();
+        const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
+        if (start && now < start) {
+          addNoStore(res);
+          return res.status(400).json({
+            error: "Applications are not open yet.",
+            message: DEADLINE_CONFIG.preStartMessage || "Please check back when the application opens.",
+            start: start.toISOString(),
+            serverTime: now.toISOString(),
+            timeUntilStart: start - now
           });
         }
       }
 
-      // 🔴 Validate required fields
+      // Existing: deadline gate
+      if (DEADLINE_CONFIG.isActive) {
+        const now = nowUtc();
+        const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+
+        if (deadline && now > deadline) {
+          addNoStore(res);
+          return res.status(400).json({ 
+            error: "Application deadline has passed.",
+            message: DEADLINE_CONFIG.message,
+            deadline: deadline.toISOString(),
+            serverTime: now.toISOString()
+          });
+        }
+      }
+
+      // Validate required fields
       if (!req.body.fullName || !req.body.email) {
         return res.status(400).json({ error: "❌ Full Name and Email are required." });
       }
 
-      // 🟢 Create new application with **default status**
+      // Create application
       const newApplication = new Application({
         email: req.body.email,
         fullName: req.body.fullName,
@@ -158,8 +226,7 @@ router.post(
                 JSON.parse(req.body.caseNightPreferences) : 
                 [req.body.caseNightPreferences]) : 
               []),
-        status: "Under Review", // ✅ Default status when a new application is created
-
+        status: "Under Review",
         resume: req.files && req.files["resume"] ? 
           (isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`) : null,
         transcript: req.files && req.files["transcript"] ? 
@@ -169,8 +236,8 @@ router.post(
       });
 
       await newApplication.save();
-      
-      // Send confirmation email to the applicant
+
+      // Confirmation email (best-effort)
       try {
         const emailResult = await emailService.sendApplicationConfirmation(newApplication);
         if (emailResult.success) {
@@ -180,7 +247,6 @@ router.post(
         }
       } catch (emailError) {
         console.error('❌ Error sending confirmation email:', emailError);
-        // Don't fail the application submission if email fails
       }
       
       res.status(201).json({
@@ -194,19 +260,20 @@ router.post(
   }
 );
 
-//Check application deadline status
+// Back-compat: deadline status only (unchanged shape)
 router.get("/deadline-status", (req, res) => {
   try {
-    const now = new Date();
-    const deadline = new Date(DEADLINE_CONFIG.applicationDeadline);
-    const isDeadlinePassed = now > deadline;
+    addNoStore(res);
+    const now = nowUtc();
+    const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+    const isDeadlinePassed = deadline ? now > deadline : false;
     
     res.json({
-      isActive: DEADLINE_CONFIG.isActive,
-      isDeadlinePassed: isDeadlinePassed,
-      deadline: DEADLINE_CONFIG.applicationDeadline,
+      isActive: !!DEADLINE_CONFIG.isActive,
+      isDeadlinePassed,
+      deadline: deadline ? deadline.toISOString() : null,
       message: isDeadlinePassed ? DEADLINE_CONFIG.message : null,
-      timeRemaining: isDeadlinePassed ? null : Math.max(0, deadline - now)
+      timeRemaining: (deadline && now < deadline) ? Math.max(0, deadline - now) : null
     });
   } catch (error) {
     console.error("Error checking deadline status:", error);
@@ -214,12 +281,11 @@ router.get("/deadline-status", (req, res) => {
   }
 });
 
-// 🟢 Fetch all applications (backward compatible - returns array only)
+// All applications (array only)
 router.get("/all", generalApiLimiter, async (req, res) => {
   try {
-    const applications = await Application.find()
-      .sort({ createdAt: -1 })
-      .lean();
+    addNoStore(res);
+    const applications = await Application.find().sort({ createdAt: -1 }).lean();
     res.json(applications);
   } catch (error) {
     console.error("❌ Error fetching all applications:", error);
@@ -227,30 +293,21 @@ router.get("/all", generalApiLimiter, async (req, res) => {
   }
 });
 
-// 🟢 Fetch all applications with pagination
+// Paginated list
 router.get("/", generalApiLimiter, async (req, res) => {
   try {
+    addNoStore(res);
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
-    const maxLimit = 200; // Maximum limit to prevent overload
-    
-    // Ensure limit doesn't exceed maximum
+    const maxLimit = 200;
     const actualLimit = Math.min(limit, maxLimit);
-    
-    // Calculate skip value for pagination
     const skip = (page - 1) * actualLimit;
-    
-    // Get total count for pagination info
     const totalApplications = await Application.countDocuments();
-    
-    // Fetch applications with pagination
     const applications = await Application.find()
-      .sort({ createdAt: -1 }) // Sort by newest first
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(actualLimit)
-      .lean(); // Use lean() for better performance
-    
-    // Calculate pagination info
+      .lean();
     const totalPages = Math.ceil(totalApplications / actualLimit);
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
@@ -274,27 +331,20 @@ router.get("/", generalApiLimiter, async (req, res) => {
   }
 });
 
-// 🟢 Get signed URL for file access
+// Signed file URL
 router.get("/file-url/*", generalApiLimiter, async (req, res) => {
   try {
-    const filePath = req.params[0]; // Get the wildcard parameter
-    
+    addNoStore(res);
+    const filePath = req.params[0];
     if (!isS3Configured()) {
-      // For local files, return the direct path
       return res.json({ url: `${process.env.BACKEND_URL || 'http://localhost:5002'}/${filePath}` });
     }
-    
-    // Extract S3 key from full URL
     let s3Key = filePath;
     if (filePath.includes('amazonaws.com/')) {
-      // Extract key from full S3 URL
       s3Key = filePath.split('amazonaws.com/')[1];
     }
-    
-    // For S3 files, generate signed URL
     const { getSignedUrl } = require("../config/s3Config");
-    const signedUrl = getSignedUrl(s3Key, 3600); // 1 hour expiration
-    
+    const signedUrl = getSignedUrl(s3Key, 3600);
     res.json({ url: signedUrl });
   } catch (error) {
     console.error("❌ Error generating file URL:", error);
@@ -302,16 +352,15 @@ router.get("/file-url/*", generalApiLimiter, async (req, res) => {
   }
 });
 
-// 🟢 Fetch application by email
+// By email
 router.get("/email/:email", generalApiLimiter, async (req, res) => {
   try {
+    addNoStore(res);
     const { email } = req.params;
     const application = await Application.findOne({ email: email });
-    
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
-    
     res.json(application);
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
@@ -319,16 +368,15 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
   }
 });
 
-// 🟢 Fetch application by ID
+// By ID
 router.get("/:id", generalApiLimiter, async (req, res) => {
   try {
+    addNoStore(res);
     const { id } = req.params;
     const application = await Application.findById(id);
-    
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this ID." });
     }
-    
     res.json(application);
   } catch (error) {
     console.error("❌ Error fetching application by ID:", error);
@@ -336,23 +384,20 @@ router.get("/:id", generalApiLimiter, async (req, res) => {
   }
 });
 
-// 🟢 Update application by email
+// Update by email
 router.put("/email/:email", generalApiLimiter, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },
 ]), async (req, res) => {
   try {
+    addNoStore(res);
     const { email } = req.params;
-    
-    // Find existing application
     const existingApplication = await Application.findOne({ email: email });
-    
     if (!existingApplication) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
 
-    // Prepare update data
     const updateData = {
       fullName: req.body.fullName,
       studentYear: req.body.studentYear,
@@ -371,7 +416,6 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
             []),
     };
 
-    // Handle file updates
     if (req.files && req.files["resume"]) {
       updateData.resume = isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`;
     }
@@ -398,25 +442,23 @@ router.put("/email/:email", generalApiLimiter, upload.fields([
   }
 });
 
-// 🟢 Update Application Status API
+// Status update
 router.put("/:id", requireStatusChangePermission, async (req, res) => {
   try {
+    addNoStore(res);
     const { status, changedBy, notes } = req.body;
 
-    // ✅ Validate allowed status values
     if (!["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"].includes(status)) {
       return res.status(400).json({ error: "❌ Invalid status value" });
     }
 
-    // Find the current application to get the old status
     const currentApplication = await Application.findById(req.params.id);
     if (!currentApplication) {
       return res.status(404).json({ error: "❌ Application not found" });
     }
 
-    // Create status history entry
     const statusHistoryEntry = {
-      status: status,
+      status,
       changedBy: changedBy || "Unknown Admin",
       changedAt: new Date(),
       notes: notes || ""
@@ -428,7 +470,7 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
         status,
         $push: { statusHistory: statusHistoryEntry }
       },
-      { new: true } // ✅ Returns the updated document
+      { new: true }
     );
 
     res.json(updatedApplication);
@@ -438,23 +480,21 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
    }
 });
 
-// 🟢 Add Comment to Application
+// Comments
 router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   try {
+    addNoStore(res);
     const { comment, adminEmail, adminName } = req.body;
 
-    // Validate required fields
     if (!comment || !adminEmail || !adminName) {
       return res.status(400).json({ error: "❌ Comment, admin email, and admin name are required." });
     }
 
-    // Find the application
     const application = await Application.findById(req.params.id);
     if (!application) {
       return res.status(404).json({ error: "❌ Application not found" });
     }
 
-    // Create comment entry
     const commentEntry = {
       comment: comment.trim(),
       commentedBy: adminEmail,
@@ -462,7 +502,6 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
       adminName: adminName.trim()
     };
 
-    // Add comment to application
     const updatedApplication = await Application.findByIdAndUpdate(
       req.params.id,
       { $push: { comments: commentEntry } },
@@ -480,5 +519,4 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   }
 });
 
-// ✅ Export Router
 module.exports = router;

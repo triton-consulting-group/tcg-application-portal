@@ -1,5 +1,6 @@
 const DEADLINE_CONFIG = {
   // Application deadline: Saturday noon EST (2 days after Thursday info night)
+  applicationStartTime: "2023-10-09T20:00:00-07:00",
   applicationDeadline: "2025-10-11T12:00:00-12:00", // Saturday noon EST
   isActive: false, // Easy toggle for testing/debugging (should be true for production)
   message: "Applications are now closed. Thank you for your interest in TCG!",
