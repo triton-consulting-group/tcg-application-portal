@@ -247,11 +247,8 @@ const ApplicationPage = () => {
       });
       console.log("Application submitted successfully:", response.status);
       
-      // Use setTimeout to ensure navigation happens after any state updates
-      setTimeout(() => {
-        console.log("Navigating to confirmation page...");
-        navigate("/application-submitted", { replace: true });
-      }, 100);
+      // Redirect immediately after successful submission
+      navigate("/application-submitted", { replace: true });
     } catch (error) {
       setSubmitting(false); // Stop loading on error
       if (error.response?.data?.message) {
