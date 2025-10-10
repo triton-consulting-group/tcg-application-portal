@@ -354,6 +354,23 @@ router.get("/:id", generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const { id } = req.params;
+    
+    // Check if the ID looks like an email parameter (common mistake)
+    if (id.includes('email=')) {
+      return res.status(400).json({ 
+        error: "❌ Invalid request format. Use /api/applications/email/{email} to find by email.",
+        hint: "It looks like you're trying to search by email. Use the correct endpoint format."
+      });
+    }
+    
+    // Validate that the ID is a valid MongoDB ObjectId
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({ 
+        error: "❌ Invalid ID format. Expected a 24-character hexadecimal string.",
+        receivedId: id
+      });
+    }
+    
     const application = await Application.findById(id);
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this ID." });

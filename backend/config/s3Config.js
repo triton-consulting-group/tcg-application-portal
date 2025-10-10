@@ -5,16 +5,20 @@ require('dotenv').config();
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-west-2'
+  region: process.env.AWS_REGION || 'us-west-1',
+  signatureVersion: 'v4'
 });
 
 // Create S3 instance
-const s3 = new AWS.S3();
+const s3 = new AWS.S3({
+  region: process.env.AWS_REGION || 'us-west-1',
+  signatureVersion: 'v4'
+});
 
 // S3 bucket configuration
 const S3_CONFIG = {
   bucketName: process.env.S3_BUCKET_NAME || 'tcg-application-portal-files',
-  region: process.env.AWS_REGION || 'us-west-2',
+  region: process.env.AWS_REGION || 'us-west-1',
   
   // File upload settings
   uploadSettings: {
