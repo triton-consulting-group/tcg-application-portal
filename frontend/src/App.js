@@ -27,7 +27,7 @@ const App = () => {
           <Route path="/associate" element={<AssociatePage />} />
 
           {/*Application Submitted Page Route*/}
-          <Route path="/ApplicationComponents/ApplicationSubmitted" element={<ApplicationSubmitted />} />
+          <Route path="/application-submitted" element={<ApplicationSubmitted />} />
 
           {/*Application View/Edit Page Route*/}
           <Route path="/application/view" element={<ApplicationViewEdit />} />

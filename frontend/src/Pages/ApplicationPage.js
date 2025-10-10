@@ -36,6 +36,7 @@ const ApplicationPage = () => {
   const [checkingExisting, setCheckingExisting] = useState(false);
   const [existingApplication, setExistingApplication] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   // Track authentication state
   useEffect(() => {
@@ -231,6 +232,8 @@ const ApplicationPage = () => {
       return;
     }
     
+    setSubmitting(true); // Start loading
+    
     const formDataToSend = new FormData();
 
     Object.keys(formData).forEach((key) => {
@@ -238,11 +241,19 @@ const ApplicationPage = () => {
     });
 
     try {
-      await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
+      console.log("Submitting application...");
+      const response = await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      navigate("/ApplicationComponents/ApplicationSubmitted"); // ✅ Redirect directly to confirmation page
+      console.log("Application submitted successfully:", response.status);
+      
+      // Use setTimeout to ensure navigation happens after any state updates
+      setTimeout(() => {
+        console.log("Navigating to confirmation page...");
+        navigate("/application-submitted", { replace: true });
+      }, 100);
     } catch (error) {
+      setSubmitting(false); // Stop loading on error
       if (error.response?.data?.message) {
         alert(error.response.data.message);
       } else {
@@ -584,22 +595,41 @@ const ApplicationPage = () => {
           )}
 
           {/* Submit Button */}
-          <button 
+          <button
             type="submit"
-            disabled={deadlineStatus && deadlineStatus.isDeadlinePassed}
+            disabled={deadlineStatus && deadlineStatus.isDeadlinePassed || submitting}
             style={{
-              backgroundColor: deadlineStatus && deadlineStatus.isDeadlinePassed ? "#a0aec0" : "#3182ce",
+              backgroundColor: deadlineStatus && deadlineStatus.isDeadlinePassed || submitting ? "#a0aec0" : "#3182ce",
               color: "white",
               border: "none",
               padding: "12px 24px",
               borderRadius: "6px",
-              cursor: deadlineStatus && deadlineStatus.isDeadlinePassed ? "not-allowed" : "pointer",
+              cursor: deadlineStatus && deadlineStatus.isDeadlinePassed || submitting ? "not-allowed" : "pointer",
               fontSize: "16px",
               width: "100%",
-              marginTop: "16px"
+              marginTop: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px"
             }}
           >
-            {deadlineStatus && deadlineStatus.isDeadlinePassed ? "Applications Closed" : "Submit Application"}
+            {submitting && (
+              <div style={{
+                width: "16px",
+                height: "16px",
+                border: "2px solid transparent",
+                borderTop: "2px solid white",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite"
+              }} />
+            )}
+            {submitting 
+              ? "Submitting..." 
+              : deadlineStatus && deadlineStatus.isDeadlinePassed 
+                ? "Applications Closed" 
+                : "Submit Application"
+            }
           </button>
         </form>
       </div>
