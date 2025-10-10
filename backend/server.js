@@ -10,6 +10,9 @@ connectDB(); // Connect to MongoDB
 
 const app = express();
 
+// Trust proxy for Railway deployment (enables proper rate limiting)
+app.set('trust proxy', true);
+
 // Security and performance middleware
 app.use(cors({
   origin: [

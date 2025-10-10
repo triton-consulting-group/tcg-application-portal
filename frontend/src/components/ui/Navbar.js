@@ -58,7 +58,7 @@ const Navbar = () => {
         
         // First, try to register the user (this will create them if they don't exist)
         try {
-          await axios.post("http://localhost:5002/api/auth/register", {
+          await axios.post(`${API_BASE_URL}/api/auth/register`, {
             email: result.user.email,
             name: result.user.displayName || ""
           });
@@ -68,7 +68,7 @@ const Navbar = () => {
 
         // Then get their role
         try {
-          const response = await axios.get(`http://localhost:5002/api/auth/role/${result.user.email}`);
+          const response = await axios.get(`${API_BASE_URL}/api/auth/role/${result.user.email}`);
           setRole(response.data.role || "applicant");
         } catch (error) {
           console.error("Error fetching user role:", error);

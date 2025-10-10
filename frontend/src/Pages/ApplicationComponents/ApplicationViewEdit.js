@@ -105,7 +105,7 @@ const ApplicationViewEdit = () => {
   useEffect(() => {
     const fetchCaseNightConfig = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5002'}/api/applications/case-night-config`);
+        const response = await axios.get(`${API_BASE_URL}/api/applications/case-night-config`);
         setCaseNightConfig(response.data);
       } catch (error) {
         console.error("Error fetching case night config:", error);
@@ -157,11 +157,14 @@ const ApplicationViewEdit = () => {
         applicationData.additionalFilesUrl = await getFileUrl(applicationData.additionalFiles);
       }
 
+      console.log("Setting application data:", applicationData);
       setApplication(applicationData);
       setFormData(applicationData);
     } catch (error) {
       console.error("Error fetching application:", error);
       console.error("Error details:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      console.error("Full error object:", error);
       
       // If it's a 404 error (application not found), redirect to application creation page
       if (error.response?.status === 404) {
@@ -252,7 +255,6 @@ const ApplicationViewEdit = () => {
         headers.Authorization = `Bearer ${authToken}`;
       }
 
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
       const response = await axios.put(`${API_BASE_URL}/api/applications/email/${application.email}`, formDataToSubmit, {
         headers,
       });
@@ -344,7 +346,6 @@ const ApplicationViewEdit = () => {
 
   // Error state with matching styling
   if (error) {
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
     return (
       <div style={{ backgroundColor: "#e2e8f0", minHeight: "100vh", padding: "24px" }}>
         <div style={{
@@ -407,6 +408,17 @@ const ApplicationViewEdit = () => {
 
   // No application found with matching styling
   if (!application) {
+    console.log("Render: No application found state");
+    console.log("Current state:", { 
+      loading, 
+      authLoading, 
+      error, 
+      application, 
+      hasId: !!id, 
+      hasEmail: !!email, 
+      hasCurrentUser: !!currentUser?.email 
+    });
+    
     return (
       <div style={{ backgroundColor: "#e2e8f0", minHeight: "100vh", padding: "24px" }}>
         <div style={{
@@ -422,6 +434,27 @@ const ApplicationViewEdit = () => {
           textAlign: "center"
         }}>
           <p style={{ fontSize: "18px", margin: "0" }}>No application found</p>
+          
+          {/* Debug info */}
+          <div style={{
+            backgroundColor: "#f7fafc",
+            padding: "16px",
+            borderRadius: "6px",
+            fontSize: "14px",
+            border: "1px solid #e2e8f0",
+            textAlign: "left"
+          }}>
+            <p style={{ fontWeight: "bold", margin: "0 0 8px 0" }}>Debug Info:</p>
+            <p style={{ margin: "0" }}>Loading: {loading.toString()}</p>
+            <p style={{ margin: "0" }}>Auth Loading: {authLoading.toString()}</p>
+            <p style={{ margin: "0" }}>Error: {error || 'none'}</p>
+            <p style={{ margin: "0" }}>Application: {application ? 'exists' : 'null'}</p>
+            <p style={{ margin: "0" }}>URL ID: {id || 'none'}</p>
+            <p style={{ margin: "0" }}>Email param: {email || 'none'}</p>
+            <p style={{ margin: "0" }}>Current user: {currentUser?.email || 'not logged in'}</p>
+            <p style={{ margin: "0" }}>API Base URL: {API_BASE_URL}</p>
+          </div>
+          
           <button
             onClick={() => navigate("/application")}
             style={{
