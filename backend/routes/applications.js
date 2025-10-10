@@ -9,7 +9,6 @@ const { requireStatusChangePermission, requireCommentPermission } = require("../
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
-const { emailService } = require("../config/emailConfig");
 
 /* =========================
    NEW: date helpers + no-cache
@@ -100,22 +99,6 @@ router.get("/case-night-config", (req, res) => {
   }
 });
 
-// Test email
-router.get("/test-email", async (req, res) => {
-  try {
-    addNoStore(res);
-    const result = await emailService.testEmailConfig();
-    if (result.success) {
-      res.json({ message: "✅ Email configuration is valid", status: "healthy" });
-    } else {
-      res.status(500).json({ error: "❌ Email configuration error", details: result.error });
-    }
-  } catch (error) {
-    console.error("❌ Error testing email config:", error);
-    res.status(500).json({ error: "❌ Failed to test email configuration." });
-  }
-});
-
 /* ===================================================
    NEW: Public window status (start + deadline together)
    GET /api/applications/window-status
@@ -168,6 +151,7 @@ router.post(
   ]),
   async (req, res) => {
     try {
+      const startTime = Date.now();
       console.log("✅ Received application data:", req.body);
       console.log("✅ Received files:", req.files);
 
@@ -235,24 +219,21 @@ router.post(
           (isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`) : null,
       });
 
+      const beforeDbSave = Date.now();
       await newApplication.save();
+      const afterDbSave = Date.now();
+      console.log(`✅ Application saved to database: ${newApplication._id}`);
+      console.log(`⏱️ Database save took: ${afterDbSave - beforeDbSave}ms`);
 
-      // Confirmation email (best-effort)
-      try {
-        const emailResult = await emailService.sendApplicationConfirmation(newApplication);
-        if (emailResult.success) {
-          console.log('✅ Confirmation email sent successfully to:', newApplication.email);
-        } else {
-          console.warn('⚠️ Failed to send confirmation email:', emailResult.error);
-        }
-      } catch (emailError) {
-        console.error('❌ Error sending confirmation email:', emailError);
-      }
-      
+      // Send response immediately
+      const beforeResponse = Date.now();
       res.status(201).json({
         message: "✅ Application submitted successfully!",
         application: newApplication,
       });
+      const afterResponse = Date.now();
+      console.log(`⏱️ Response sent (${afterResponse - beforeResponse}ms)`);
+      console.log(`⏱️ Total request time: ${afterResponse - startTime}ms`);
     } catch (error) {
       console.error("❌ Error submitting application:", error);
       res.status(500).json({ error: "❌ Failed to submit application." });

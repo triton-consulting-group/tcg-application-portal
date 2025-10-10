@@ -24,7 +24,7 @@ const ApplicationSubmitted = () => {
         </p>
         
         <p style={{ fontSize: "16px", color: "#4a5568", margin: "0 0 20px 0", lineHeight: "1.5" }}>
-          You will receive an email confirmation with the next steps of our application process.
+          You can view and edit your application at any time by returning to the home page and signing in.
         </p>
 
         <div style={{
