@@ -492,9 +492,6 @@ const ApplicationViewEdit = () => {
         }}>
           
           <div style={{ textAlign: "center", marginBottom: "20px" }}>
-            <p style={{ fontSize: "18px", fontWeight: "bold", color: "black", margin: "0" }}>
-              Application Status: {application.status}
-            </p>
             <p style={{ fontSize: "16px", color: "#4a5568", margin: "0" }}>
               Email: {application.email}
             </p>
@@ -682,9 +679,6 @@ const ApplicationViewEdit = () => {
 
         {/* Application Status Header - same as view mode */}
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <p style={{ fontSize: "18px", fontWeight: "bold", color: "black", margin: "0" }}>
-            Application Status: {application.status}
-          </p>
           <p style={{ fontSize: "16px", color: "#4a5568", margin: "0" }}>
             Email: {application.email}
           </p>
