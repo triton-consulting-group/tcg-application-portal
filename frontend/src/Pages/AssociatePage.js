@@ -449,10 +449,16 @@ const TableView = ({
                 height="50"
                 onClick={async (e) => {
                   e.stopPropagation();
-                  const url = await getFileUrl(app.image);
-                  if (url) setSelectedImage(url);
+                  if (app.image) {
+                    const url = await getFileUrl(app.image);
+                    if (url) setSelectedImage(url);
+                  }
                 }}
-                style={{ cursor: "pointer" }}
+                style={{ 
+                  cursor: app.image ? "pointer" : "default",
+                  borderRadius: "4px",
+                  objectFit: "cover"
+                }}
               />
             </td>
             <td>
@@ -590,6 +596,23 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
   const [comments, setComments] = useState(application.comments || []);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+
+  // Load the image URL when component mounts
+  useEffect(() => {
+    const loadImageUrl = async () => {
+      if (application.image) {
+        try {
+          const url = await getFileUrl(application.image);
+          setImageUrl(url);
+        } catch (error) {
+          console.error("Error loading image URL:", error);
+          setImageUrl(null);
+        }
+      }
+    };
+    loadImageUrl();
+  }, [application.image]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -635,7 +658,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
       <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
         <div style={{ flex: 1 }}>
           <img
-            src={`${API_BASE_URL}${application.image}`}
+            src={imageUrl || "/default-profile.png"}
             alt="Profile"
             width="100"
             height="100"
@@ -1279,15 +1302,30 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                     e.target.style.boxShadow = "none";
                   }}
                 >
-                  <h4 style={{ margin: "0 0 8px 0", fontSize: "14px" }}>
-                    {app.fullName}
-                  </h4>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                    {app.email}
-                  </p>
-                  <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                    {app.major} • {app.studentYear} • {app.candidateType}
-                  </p>
+                  <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                    <img
+                      src={app.image || "/default-profile.png"}
+                      alt="Profile"
+                      width="40"
+                      height="40"
+                      style={{ 
+                        borderRadius: "6px",
+                        objectFit: "cover",
+                        flexShrink: 0
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ margin: "0 0 4px 0", fontSize: "14px" }}>
+                        {app.fullName}
+                      </h4>
+                      <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "#6c757d" }}>
+                        {app.email}
+                      </p>
+                      <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
+                        {app.major} • {app.studentYear} • {app.candidateType}
+                      </p>
+                    </div>
+                  </div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
                       style={{
