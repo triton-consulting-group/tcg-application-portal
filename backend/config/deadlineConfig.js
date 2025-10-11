@@ -8,7 +8,7 @@ const DEADLINE_CONFIG = {
 
   // Application deadline (ISO8601 with timezone)
   // Adjust as needed; example below is a placeholder
-  applicationDeadline: "2025-10-11T17:00:00-07:00",
+  applicationDeadline: "2025-10-11T17:30:00-07:00",
 
   // Messages
   preStartMessage: "Applications are not open yet. Please check back later!",
