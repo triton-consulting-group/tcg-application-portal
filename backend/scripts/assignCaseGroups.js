@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 const Application = require("../models/Application");
 const CaseGroupAssignment = require("../models/CaseGroupAssignment");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
-require("dotenv").config();
+const path = require("path");
+
+// Load environment variables - support production mode
+const envFile = process.argv.includes('--production') ? 'production.env' : '.env';
+require("dotenv").config({ path: path.join(__dirname, '..', envFile) });
 
 const assignCaseGroups = async () => {
   try {

@@ -3,7 +3,10 @@ const CaseGroupAssignment = require("../models/CaseGroupAssignment");
 const Application = require("../models/Application");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config();
+
+// Load environment variables - support production mode
+const envFile = process.argv.includes('--production') ? 'production.env' : '.env';
+require("dotenv").config({ path: path.join(__dirname, '..', envFile) });
 
 const exportCaseGroups = async () => {
   try {
