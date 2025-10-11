@@ -1,19 +1,83 @@
-const AWS = require('aws-sdk');
+const { S3Client } = require('@aws-sdk/client-s3');
+const { getSignedUrl: getSignedUrlV3 } = require('@aws-sdk/s3-request-presigner');
+const { GetObjectCommand, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 require('dotenv').config();
 
-// Configure AWS SDK
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION || 'us-west-1',
-  signatureVersion: 'v4'
-});
+// Validate AWS configuration
+const validateAwsConfig = () => {
+  const requiredVars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME'];
+  const missing = requiredVars.filter(varName => !process.env[varName]);
+  
+  if (missing.length > 0) {
+    console.log(`⚠️  Missing AWS environment variables: ${missing.join(', ')}`);
+    console.log('📁 Falling back to local file storage');
+    return false;
+  }
+  
+  // Validate region explicitly
+  const region = process.env.AWS_REGION || 'us-west-1';
+  console.log('✅ AWS S3 configuration found');
+  console.log(`📍 Using region: ${region}`);
+  console.log(`🪣 Using bucket: ${process.env.S3_BUCKET_NAME}`);
+  return true;
+};
 
-// Create S3 instance
-const s3 = new AWS.S3({
-  region: process.env.AWS_REGION || 'us-west-1',
-  signatureVersion: 'v4'
-});
+const isS3Configured = validateAwsConfig();
+
+// Configure AWS SDK v3 only if properly configured
+let s3Client = null;
+let s3 = null; // Legacy S3 for multer-s3 compatibility
+
+if (isS3Configured) {
+  try {
+    const region = process.env.AWS_REGION || 'us-west-1';
+    
+    // Create S3 client with AWS SDK v3 (more reliable region handling)
+    s3Client = new S3Client({
+      region: region || 'us-west-1',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
+    });
+    
+    // Also create legacy S3 instance for multer-s3 compatibility
+    const AWS = require('aws-sdk');
+    AWS.config.update({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: region || 'us-west-1',
+      signatureVersion: 'v4'
+    });
+    
+    s3 = new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: region || 'us-west-1',
+      signatureVersion: 'v4',
+      s3ForcePathStyle: false,
+      useAccelerateEndpoint: false
+    });
+    
+    console.log(`✅ S3 clients created successfully`);
+    console.log(`🔐 Using signature version: v4`);
+    
+    // Test the configuration with AWS SDK v3
+    const { HeadBucketCommand } = require('@aws-sdk/client-s3');
+    s3Client.send(new HeadBucketCommand({ Bucket: process.env.S3_BUCKET_NAME }))
+      .then(() => {
+        console.log(`✅ S3 bucket test successful with AWS SDK v3`);
+      })
+      .catch((err) => {
+        console.error('❌ S3 bucket test failed:', err.message);
+      });
+    
+  } catch (error) {
+    console.error('❌ Error configuring S3:', error.message);
+    s3Client = null;
+    s3 = null;
+  }
+}
 
 // S3 bucket configuration
 const S3_CONFIG = {
@@ -115,21 +179,16 @@ const deleteFile = async (s3Key) => {
   }
 };
 
-// Helper function to check if S3 is properly configured
-const isS3Configured = () => {
-  return !!(
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
-    process.env.S3_BUCKET_NAME
-  );
-};
+// Export the validation result
+const isS3Available = () => isS3Configured;
 
 module.exports = {
-  s3,
+  s3, // Legacy S3 for multer-s3
+  s3Client, // New S3 client for better region handling
   S3_CONFIG,
   getFileTypeAndPath,
   getFileUrl,
   getSignedUrl,
   deleteFile,
-  isS3Configured
+  isS3Configured: isS3Available
 };

@@ -251,12 +251,28 @@ const ApplicationPage = () => {
       navigate("/application-submitted", { replace: true });
     } catch (error) {
       setSubmitting(false); // Stop loading on error
-      if (error.response?.data?.message) {
+      console.error("Application submission error:", error);
+      
+      // Check for specific error types and messages
+      if (error.response?.data?.error) {
+        // Backend returned a structured error message
+        alert(error.response.data.error);
+      } else if (error.response?.data?.message) {
+        // Alternative message field
         alert(error.response.data.message);
+      } else if (error.response?.status === 413) {
+        // File too large
+        alert("File size too large. Please choose smaller files and try again.");
+      } else if (error.response?.status >= 500) {
+        // Server error
+        alert("Server error occurred. Please try again later.");
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        // Network connectivity issue
+        alert("Network error. Please check your connection and try again.");
       } else {
-        alert("Deadline Passed,Error submitting application.");
+        // Generic fallback with more helpful message
+        alert("Error submitting application. Please check your files and try again.");
       }
-      console.error(error);
     }
   };
 

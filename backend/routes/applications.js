@@ -38,16 +38,94 @@ let storage, upload;
 
 if (isS3Configured()) {
   console.log("✅ Using S3 storage for file uploads");
+  
+  const region = process.env.AWS_REGION || 'us-west-1';
+  
+  // Create a dedicated S3 instance specifically for multer-s3 with bulletproof region config
+  const AWS = require('aws-sdk');
+  
+  // Set global AWS region configuration
+  AWS.config.update({
+    region: region || 'us-west-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    signatureVersion: 'v4'
+  });
+  
+  // Force AWS SDK to use explicit configuration
+  const multerS3Instance = new AWS.S3({
+    region: region || 'us-west-1',
+    signatureVersion: 'v4',
+    s3ForcePathStyle: false,
+    useAccelerateEndpoint: false
+    // Remove explicit endpoint - let AWS SDK determine it automatically
+  });
+  
+  console.log(`📍 Multer S3 instance region: ${region}`);
+  console.log(`🪣 Target bucket: ${S3_CONFIG.bucketName}`);
+  console.log(`� S3 instance config:`, {
+    region: multerS3Instance.config.region,
+    endpoint: multerS3Instance.endpoint?.host || 'auto-detected'
+  });
+  
   storage = multerS3({
-    s3: s3,
+    s3: s3, // Use the pre-configured S3 instance from s3Config
     bucket: S3_CONFIG.bucketName,
     contentType: multerS3.AUTO_CONTENT_TYPE,
+    acl: 'private',
+    serverSideEncryption: 'AES256',
+    cacheControl: 'max-age=31536000',
     key: function (req, file, cb) {
-      const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
-      const timestamp = Date.now();
-      const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const s3Key = `${s3Path}${timestamp}-${sanitizedName}`;
-      cb(null, s3Key);
+      try {
+        const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
+        const originalName = file.originalname || "file";
+        const normalized = originalName.normalize("NFC");
+        const ext = path.extname(normalized);
+        const nameWithoutExt = path.basename(normalized, ext);
+
+        // Special handling for images - more aggressive sanitization
+        if (file.fieldname === 'image') {
+          console.log(`🖼️ Processing profile picture: ${originalName}`);
+          // For images, use an even more conservative approach
+          let safeName = nameWithoutExt
+            .replace(/[^\x00-\x7F]/g, "") // Remove all non-ASCII completely
+            .replace(/[^a-zA-Z0-9]/g, "") // Only allow alphanumeric
+            .substring(0, 20); // Limit length
+          
+          if (!safeName || safeName.length === 0) {
+            safeName = "profile_image";
+          }
+          
+          const finalName = `${safeName}${ext}`;
+          const s3Key = `${s3Path}${Date.now()}-${finalName}`; // No encoding for images
+          
+          console.log(`🖼️ Image S3 upload key: ${s3Key}`);
+          console.log(`🖼️ Image sanitized filename: ${finalName}`);
+          cb(null, s3Key);
+          return;
+        }
+
+        // Regular handling for other files
+        let safeName = nameWithoutExt
+          .replace(/[^\x00-\x7F]/g, "_")
+          .replace(/[^a-zA-Z0-9._-]/g, "_")
+          .replace(/_{2,}/g, "_")
+          .replace(/^_+|_+$/g, "");
+
+        if (!safeName) safeName = `file_${fileType}`;
+
+        const finalName = `${safeName}${ext}`;
+        const s3Key = `${s3Path}${Date.now()}-${encodeURIComponent(finalName)}`;
+
+        console.log(`📁 S3 upload key: ${s3Key}`);
+        console.log(`🔤 Original filename: ${originalName}`);
+        console.log(`🔤 Sanitized filename: ${finalName}`);
+        
+        cb(null, s3Key);
+      } catch (err) {
+        console.error('❌ Error generating S3 key:', err);
+        cb(err);
+      }
     },
     metadata: function (req, file, cb) {
       cb(null, { 
@@ -61,7 +139,29 @@ if (isS3Configured()) {
   console.log("⚠️ S3 not configured, falling back to local storage");
   storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "uploads/"),
-    filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_")),
+    filename: (req, file, cb) => {
+      // IMPROVED local filename sanitization - same logic as S3
+      const originalName = file.originalname;
+      const fileExtension = path.extname(originalName);
+      const nameWithoutExt = originalName.replace(fileExtension, '');
+      
+      let sanitizedName = nameWithoutExt
+        .replace(/[^\x00-\x7F]/g, '_') // Replace all non-ASCII with underscore
+        .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace remaining special chars
+        .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+      
+      // If name becomes empty (all Chinese), use a fallback
+      if (!sanitizedName || sanitizedName.length === 0) {
+        sanitizedName = 'file';
+      }
+      
+      const finalFilename = `${Date.now()}-${sanitizedName}${fileExtension}`;
+      console.log(`📁 Local storage filename: ${finalFilename}`);
+      console.log(`🔤 Original filename: ${originalName}`);
+      console.log(`🔤 Sanitized filename: ${sanitizedName}${fileExtension}`);
+      cb(null, finalFilename);
+    },
   });
 }
 
@@ -87,6 +187,44 @@ upload = multer({
 /* =========================
    Routes
    ========================= */
+
+// Debug route to test S3 upload configuration
+router.post("/debug-s3", async (req, res) => {
+  try {
+    const region = process.env.AWS_REGION || 'us-west-1';
+    
+    console.log('🧪 Testing S3 upload configuration...');
+    console.log('📍 Region:', region);
+    console.log('🪣 Bucket:', process.env.S3_BUCKET_NAME);
+    
+    // Test a simple putObject operation
+    const testParams = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: 'test/debug-test.txt',
+      Body: 'Debug test file',
+      ContentType: 'text/plain',
+      ServerSideEncryption: 'AES256'
+    };
+    
+    const result = await s3.putObject(testParams).promise();
+    console.log('✅ S3 upload test successful:', result);
+    
+    res.json({
+      success: true,
+      message: 'S3 upload test successful',
+      region: region,
+      bucket: process.env.S3_BUCKET_NAME
+    });
+  } catch (error) {
+    console.error('❌ S3 upload test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      code: error.code,
+      region: error.region
+    });
+  }
+});
 
 // Case night config
 router.get("/case-night-config", (req, res) => {
@@ -139,6 +277,46 @@ router.get("/window-status", (req, res) => {
 });
 
 /* ===================================================
+   File Upload Error Handler Middleware
+   =================================================== */
+const handleUploadError = (error, req, res, next) => {
+  console.error('❌ Upload error:', error);
+  console.error('📍 Error region:', error.region);
+  console.error('🔧 Expected region:', process.env.AWS_REGION || 'us-west-1');
+  
+  if (error.code === 'SignatureDoesNotMatch') {
+    console.error('🔐 S3 Signature error - likely caused by special characters in filename');
+    console.error('🔍 Debugging info:');
+    console.error('   - AWS_REGION env var:', process.env.AWS_REGION);
+    console.error('   - S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
+    console.error('   - Error region:', error.region);
+    
+    // Check if this is likely an image upload issue
+    const isImageError = req.files && req.files.image;
+    const errorMessage = isImageError 
+      ? "❌ Profile picture upload failed. Please rename your image file using only English letters and numbers (e.g., 'profile.jpg' instead of '照片.jpg')."
+      : "❌ File upload failed. Please make sure your file names don't contain special characters.";
+    
+    return res.status(400).json({ error: errorMessage });
+  }
+  
+  if (error.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ 
+      error: "❌ File too large. Maximum file size is 10MB." 
+    });
+  }
+  
+  if (error.message && error.message.includes('File type')) {
+    return res.status(400).json({ error: error.message });
+  }
+  
+  // Default error
+  return res.status(500).json({ 
+    error: "❌ File upload error. Please try again." 
+  });
+};
+
+/* ===================================================
    Submission (with start-time + deadline gating)
    =================================================== */
 router.post(
@@ -149,6 +327,7 @@ router.post(
     { name: "transcript", maxCount: 1 },
     { name: "image", maxCount: 1 },
   ]),
+  handleUploadError, // Add error handler for upload errors
   async (req, res) => {
     try {
       const startTime = Date.now();
@@ -236,7 +415,37 @@ router.post(
       console.log(`⏱️ Total request time: ${afterResponse - startTime}ms`);
     } catch (error) {
       console.error("❌ Error submitting application:", error);
-      res.status(500).json({ error: "❌ Failed to submit application." });
+      
+      // Check for specific S3 signature errors
+      if (error.message && error.message.includes('signature')) {
+        console.error("🔐 S3 Signature Error - likely caused by special characters in filename");
+        res.status(400).json({ 
+          error: "❌ File upload failed. Please make sure your file names don't contain special characters."
+        });
+      } else if (error.code === 'SignatureDoesNotMatch') {
+        console.error("🔐 S3 SignatureDoesNotMatch - likely caused by special characters in filename");
+        res.status(400).json({ 
+          error: "❌ File upload failed. Please make sure your file names don't contain special characters." 
+        });
+      } else if (error.message && error.message.includes('Access Denied')) {
+        console.error("🚫 S3 Access Denied - Check bucket permissions");
+        res.status(500).json({ 
+          error: "❌ File upload permission error. Please contact support." 
+        });
+      } else if (error.name === 'MulterError') {
+        console.error("📁 Multer Error:", error.code);
+        if (error.code === 'LIMIT_FILE_SIZE') {
+          res.status(413).json({ 
+            error: "❌ File too large. Maximum file size is 10MB." 
+          });
+        } else {
+          res.status(400).json({ 
+            error: "❌ File upload error. Please check your files and try again." 
+          });
+        }
+      } else {
+        res.status(500).json({ error: "❌ Failed to submit application." });
+      }
     }
   }
 );
