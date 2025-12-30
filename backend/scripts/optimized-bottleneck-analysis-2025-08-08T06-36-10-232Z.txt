@@ -1,0 +1,36 @@
+
+🚀 OPTIMIZED BOTTLENECK ANALYSIS REPORT
+======================================
+📊 Performance Summary:
+- Total Requests: 527
+- Successful: 289
+- Failed: 238
+- Success Rate: 54.84%
+- Average Response Time: 88.83ms
+- Requests/Second: 9.39
+- Test Duration: 56.11s
+
+🚨 Bottlenecks Detected (238):
+- request_failure: CONCURRENT_CREATE_1 (N/Ams)
+- request_failure: CONCURRENT_CREATE_5 (N/Ams)
+- request_failure: CONCURRENT_CREATE_5 (N/Ams)
+- request_failure: CONCURRENT_CREATE_5 (N/Ams)
+- request_failure: CONCURRENT_CREATE_5 (N/Ams)
+- request_failure: CONCURRENT_CREATE_5 (N/Ams)
+- request_failure: CONCURRENT_CREATE_10 (N/Ams)
+- request_failure: CONCURRENT_CREATE_10 (N/Ams)
+- request_failure: CONCURRENT_CREATE_10 (N/Ams)
+- request_failure: CONCURRENT_CREATE_10 (N/Ams)
+... and 228 more
+
+
+🐌 Slowest Operation:
+- Operation: STRESS_TEST
+- Duration: 317ms
+- Success: Yes
+
+
+💡 Recommendations:
+- Consider implementing request queuing
+
+🚨 NEEDS WORK: Further optimizations required

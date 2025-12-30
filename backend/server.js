@@ -2,22 +2,101 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const { errorHandler, notFound } = require("./middleware/errorHandler");
+const { isS3Configured } = require("./config/s3Config");
 
 dotenv.config(); // Load environment variables
 connectDB(); // Connect to MongoDB
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Trust proxy for Railway deployment (enables proper rate limiting)
+app.set('trust proxy', true);
+
+// Security and performance middleware
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://tcg-application-portal.vercel.app',
+    'https://tcg-application-portal-production.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-email'],
+  optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+}));
+
+// Additional CORS handling for preflight requests
+app.options('*', cors());
+
+// Body parsing middleware with limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
 
 // Import routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));
+app.use("/api/admin", require("./routes/admin"));
+app.use("/api/case-groups", require("./routes/caseGroups"));
 
-// Example routes
+// File serving - only serve local files if S3 is not configured
+if (!isS3Configured()) {
+  console.log("📁 Serving files from local uploads directory");
+  app.use("/uploads", express.static("uploads"));
+} else {
+  console.log("☁️ Files are served from S3 - no local file serving needed");
+}
+
+
+// Health check route
 app.get("/", (req, res) => {
-    res.send("Backend is running!");
+    res.json({
+        message: "TCG Application Portal Backend is running!",
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
+// Health check for load balancers
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString()
+    });
 });
 
 const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Error handling middleware (must be last)
+app.use(notFound);
+app.use(errorHandler);
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+});
+
+// Export for Railway deployment
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+}

@@ -68,3 +68,31 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Managing Application Form Questions (Frontend + Backend)
+
+When adding/removing fields in the application form (`src/Pages/ApplicationPage.js`), also update the backend to persist them.
+
+1) Frontend steps
+- Add field to the `formData` state in `ApplicationPage.js`
+- Add input UI (e.g., `<input>`/`<select>`/`<textarea>`) and bind to `formData`
+- Ensure field is appended in `handleSubmit` (we iterate keys, so new fields get included automatically)
+- If editing, update the view/edit page similarly (`src/Pages/ApplicationComponents/ApplicationViewEdit.js`)
+
+2) Backend steps
+- Update `backend/models/Application.js` (Mongoose schema) with the new field name and type
+- Update `backend/routes/applications.js`:
+  - In POST `/api/applications` payload mapping, include the field from `req.body`
+  - In PUT `/api/applications/email/:email`, include it in `updateData`
+
+3) Files to touch
+- Frontend: `frontend/src/Pages/ApplicationPage.js` (+ optionally `ApplicationViewEdit.js`)
+- Backend: `backend/models/Application.js`, `backend/routes/applications.js`
+
+4) Validation and limits
+- Enforce word/character limits in the frontend handlers
+- Optionally add backend validation (Mongoose validators) if needed
+
+5) Testing
+- Restart backend if schema changes (`cd backend && npm start`)
+- Submit a test application and verify in Associate portal
