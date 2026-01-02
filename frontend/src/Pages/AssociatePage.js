@@ -8,7 +8,7 @@ import API_BASE_URL from "../config/api";
 // Helper function to get signed URL for file access
 const getFileUrl = async (filePath) => {
   if (!filePath) return "";
-  
+
   try {
     const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
     return response.data.url;
@@ -152,7 +152,7 @@ const AssociatePage = () => {
       const response = await axios.get(`${API_BASE_URL}/api/case-groups/export`, {
         responseType: 'blob'
       });
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -162,7 +162,7 @@ const AssociatePage = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
+
       alert("Case group assignments exported successfully!");
     } catch (error) {
       console.error("Error exporting case groups:", error);
@@ -178,18 +178,18 @@ const AssociatePage = () => {
     console.log("🔍 Admin role:", adminInfo?.role);
     console.log("🔍 Admin permissions:", adminInfo?.permissions);
     console.log("🔍 Can change status:", adminInfo?.permissions?.canChangeStatus);
-    
+
     // Check if admin has permission to change status
     // Super admins always have permission, regular admins need explicit permission
     const hasPermission = adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus;
-    
+
     if (!hasPermission) {
       alert("❌ You don't have permission to change application status.");
       return;
     }
 
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
-    
+
     axios
       .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
         status: newStatus,
@@ -230,7 +230,7 @@ const AssociatePage = () => {
             Welcome, {adminInfo?.name || currentUser?.displayName} ({adminInfo?.role || "Admin"})
           </p>
           <div style={{ display: "flex", gap: "8px", marginTop: "5px" }}>
-            <button 
+            <button
               onClick={handleExportCaseGroups}
               disabled={exporting}
               style={{
@@ -246,7 +246,7 @@ const AssociatePage = () => {
             >
               {exporting ? "Exporting..." : "Export Case Groups"}
             </button>
-            <button 
+            <button
               onClick={fetchApplications}
               style={{
                 backgroundColor: "#007bff",
@@ -261,7 +261,7 @@ const AssociatePage = () => {
               Refresh Data
             </button>
             {adminInfo?.permissions?.canManageAdmins && (
-              <button 
+              <button
                 onClick={() => window.location.href = "/admin"}
                 style={{
                   backgroundColor: "#28a745",
@@ -404,7 +404,7 @@ const TableView = ({
       </thead>
       <tbody>
         {applications.map((app) => (
-          <tr 
+          <tr
             key={app._id}
             className="clickable-row"
             onClick={() => setSelectedApplication(app)}
@@ -454,7 +454,7 @@ const TableView = ({
                     if (url) setSelectedImage(url);
                   }
                 }}
-                style={{ 
+                style={{
                   cursor: app.image ? "pointer" : "default",
                   borderRadius: "4px",
                   objectFit: "cover"
@@ -504,14 +504,14 @@ const TableView = ({
         ))}
       </tbody>
     </table>
-    
+
     {/* Pagination Component */}
     {totalApplications > 0 && (
       <div className="pagination-container">
         <div className="pagination-info">
           Showing {((currentPage - 1) * applicationsPerPage) + 1} to {Math.min(currentPage * applicationsPerPage, totalApplications)} of {totalApplications} applications
         </div>
-        
+
         <div className="pagination-controls">
           <button
             onClick={() => onPageChange(1)}
@@ -521,7 +521,7 @@ const TableView = ({
           >
             First
           </button>
-          
+
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
@@ -529,7 +529,7 @@ const TableView = ({
           >
             Previous
           </button>
-          
+
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             let pageNumber;
             if (totalPages <= 5) {
@@ -541,7 +541,7 @@ const TableView = ({
             } else {
               pageNumber = currentPage - 2 + i;
             }
-            
+
             return (
               <button
                 key={pageNumber}
@@ -552,7 +552,7 @@ const TableView = ({
               </button>
             );
           })}
-          
+
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
@@ -560,7 +560,7 @@ const TableView = ({
           >
             Next
           </button>
-          
+
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
@@ -616,13 +616,13 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    
+
     // Check if admin has permission to add comments
     if (!adminInfo?.permissions?.canAddComments) {
       alert("❌ You don't have permission to add comments.");
       return;
     }
-    
+
     setIsSubmittingComment(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
@@ -648,338 +648,339 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
   };
 
   return (
-  <div className="modal-overlay">
-    <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
-      <button className="close-button" onClick={onClose}>
-        ×
-      </button>
-      <h2>{application.fullName}'s Application</h2>
-      
-      <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-        <div style={{ flex: 1 }}>
-          <img
-            src={imageUrl || "/default-profile.png"}
-            alt="Profile"
-            width="100"
-            height="100"
-            style={{ borderRadius: "8px" }}
-          />
-          <p>
-            <strong>Email:</strong> {application.email}
-          </p>
-          <p>
-            <strong>Year:</strong> {application.studentYear}
-          </p>
-          <p>
-            <strong>Major:</strong> {application.major}
-          </p>
-          <p>
-            <strong>Track:</strong> {application.candidateType}
-          </p>
-          <p>
-            <strong>Current Status:</strong> 
-            <span style={{
-              backgroundColor: "#28a745",
-              color: "white",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              marginLeft: "8px",
-              fontSize: "12px"
-            }}>
-              {application.status}
-            </span>
-          </p>
-          
-          {/* Case Night Availability Section */}
-          {application.caseNightPreferences && application.caseNightPreferences.length > 0 && (
-            <div style={{ marginTop: "15px" }}>
-              <p>
-                <strong>Case Night Availability:</strong>
-              </p>
-              <div style={{
-                backgroundColor: "#e3f2fd",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                border: "1px solid #bbdefb"
-              }}>
-                {application.caseNightPreferences.map((slot, index) => {
-                  const slotName = caseNightConfig?.slots?.[slot] || `Slot ${slot}`;
-                  return (
-                    <span
-                      key={slot}
-                      style={{
-                        backgroundColor: "#1976d2",
-                        color: "white",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        marginRight: "8px",
-                        marginBottom: "4px",
-                        display: "inline-block"
-                      }}
-                    >
-                      {slotName}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div style={{ flex: 1 }}>
-          <p>
-            <strong>Reason for Applying:</strong>
-          </p>
-          <div style={{
-            backgroundColor: "#f8f9fa",
-            padding: "12px",
-            borderRadius: "6px",
-            maxHeight: "150px",
-            overflowY: "auto"
-          }}>
-            {application.reason}
-          </div>
-          
-          {/* Zombie Apocalypse Question */}
-          {application.zombieAnswer && (
-            <div style={{ marginTop: "15px" }}>
-              <p>
-                <strong>How are you surviving the zombie apocalypse?</strong>
-              </p>
-              <div style={{
-                backgroundColor: "#f8f9fa",
-                padding: "12px",
-                borderRadius: "6px",
-                maxHeight: "100px",
-                overflowY: "auto"
-              }}>
-                {application.zombieAnswer}
-              </div>
-            </div>
-          )}
-          
-          {/* Additional Info Question */}
-          {application.additionalInfo && (
-            <div style={{ marginTop: "15px" }}>
-              <p>
-                <strong>Additional Information:</strong>
-              </p>
-              <div style={{
-                backgroundColor: "#f8f9fa",
-                padding: "12px",
-                borderRadius: "6px",
-                maxHeight: "100px",
-                overflowY: "auto"
-              }}>
-                {application.additionalInfo}
-              </div>
-            </div>
-          )}
-          
-          <div style={{ marginTop: "15px" }}>
-            <a
-              href="#"
-              onClick={async (e) => {
-                e.preventDefault();
-                const url = await getFileUrl(application.resume);
-                if (url) window.open(url, '_blank');
-              }}
-              style={{ 
-                marginRight: "15px",
-                backgroundColor: "#007bff",
-                color: "white",
-                padding: "8px 12px",
-                borderRadius: "4px",
-                textDecoration: "none",
-                fontSize: "14px"
-              }}
-            >
-              View Resume
-            </a>
-            <a
-              href="#"
-              onClick={async (e) => {
-                e.preventDefault();
-                const url = await getFileUrl(application.transcript);
-                if (url) window.open(url, '_blank');
-              }}
-              style={{
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
+        <button className="close-button" onClick={onClose}>
+          ×
+        </button>
+        <h2>{application.fullName}'s Application</h2>
+
+        <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
+          <div style={{ flex: 1 }}>
+            <img
+              src={imageUrl || "/default-profile.png"}
+              alt="Profile"
+              width="100"
+              height="100"
+              style={{ borderRadius: "8px" }}
+            />
+            <p>
+              <strong>Email:</strong> {application.email}
+            </p>
+            <p>
+              <strong>Year:</strong> {application.studentYear}
+            </p>
+            <p>
+              <strong>Major:</strong> {application.major}
+            </p>
+            <p>
+              <strong>Track:</strong> {application.candidateType}
+            </p>
+            <p>
+              <strong>Current Status:</strong>
+              <span style={{
                 backgroundColor: "#28a745",
                 color: "white",
-                padding: "8px 12px",
+                padding: "4px 8px",
                 borderRadius: "4px",
-                textDecoration: "none",
-                fontSize: "14px"
-              }}
-            >
-              View Transcript
-            </a>
+                marginLeft: "8px",
+                fontSize: "12px"
+              }}>
+                {application.status}
+              </span>
+            </p>
+
+            {/* Case Night Availability Section */}
+            {application.caseNightPreferences && application.caseNightPreferences.length > 0 && (
+              <div style={{ marginTop: "15px" }}>
+                <p>
+                  <strong>Case Night Availability:</strong>
+                </p>
+                <div style={{
+                  backgroundColor: "#e3f2fd",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #bbdefb"
+                }}>
+                  {application.caseNightPreferences.map((slot, index) => {
+                    const slotName = caseNightConfig?.slots?.[slot] || `Slot ${slot}`;
+                    return (
+                      <span
+                        key={slot}
+                        style={{
+                          backgroundColor: "#1976d2",
+                          color: "white",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          marginRight: "8px",
+                          marginBottom: "4px",
+                          display: "inline-block"
+                        }}
+                      >
+                        {slotName}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <p>
+              <strong>Reason for Applying:</strong>
+            </p>
+            <div style={{
+              backgroundColor: "#f8f9fa",
+              padding: "12px",
+              borderRadius: "6px",
+              maxHeight: "150px",
+              overflowY: "auto"
+            }}>
+              {application.reason}
+            </div>
+
+            {/* Zombie Apocalypse Question */}
+            {application.zombieAnswer && (
+              <div style={{ marginTop: "15px" }}>
+                <p>
+                  <strong>How are you surviving the zombie apocalypse?</strong>
+                </p>
+                <div style={{
+                  backgroundColor: "#f8f9fa",
+                  padding: "12px",
+                  borderRadius: "6px",
+                  maxHeight: "100px",
+                  overflowY: "auto"
+                }}>
+                  {application.zombieAnswer}
+                </div>
+              </div>
+            )}
+
+            {/* Additional Info Question */}
+            {application.additionalInfo && (
+              <div style={{ marginTop: "15px" }}>
+                <p>
+                  <strong>Additional Information:</strong>
+                </p>
+                <div style={{
+                  backgroundColor: "#f8f9fa",
+                  padding: "12px",
+                  borderRadius: "6px",
+                  maxHeight: "100px",
+                  overflowY: "auto"
+                }}>
+                  {application.additionalInfo}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginTop: "15px" }}>
+              <a
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const url = await getFileUrl(application.resume);
+                  if (url) window.open(url, '_blank');
+                }}
+                style={{
+                  marginRight: "15px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  textDecoration: "none",
+                  fontSize: "14px"
+                }}
+              >
+                View Resume
+              </a>
+              <a
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const url = await getFileUrl(application.transcript);
+                  if (url) window.open(url, '_blank');
+                }}
+                style={{
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  textDecoration: "none",
+                  fontSize: "14px"
+                }}
+              >
+                View Transcript
+              </a>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Status History Section */}
-      {application.statusHistory && application.statusHistory.length > 0 && (
+        {/* Status History Section */}
+        {application.statusHistory && application.statusHistory.length > 0 && (
+          <div style={{ marginTop: "20px" }}>
+            <h3>Status History</h3>
+            <div style={{
+              backgroundColor: "#f8f9fa",
+              padding: "12px",
+              borderRadius: "6px",
+              maxHeight: "200px",
+              overflowY: "auto"
+            }}>
+              {application.statusHistory.slice().reverse().map((entry, index) => (
+                <div
+                  key={index}
+                  style={{
+                    padding: "8px",
+                    margin: "4px 0",
+                    backgroundColor: "white",
+                    borderRadius: "4px",
+                    border: "1px solid #dee2e6"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      padding: "2px 6px",
+                      borderRadius: "3px",
+                      fontSize: "12px",
+                      fontWeight: "bold"
+                    }}>
+                      {entry.status}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                      {new Date(entry.changedAt).toLocaleString()}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#495057", marginTop: "4px" }}>
+                    <strong>Changed by:</strong> {entry.changedBy}
+                  </div>
+                  {entry.notes && (
+                    <div style={{ fontSize: "12px", color: "#6c757d", marginTop: "4px", fontStyle: "italic" }}>
+                      "{entry.notes}"
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Comments Section */}
         <div style={{ marginTop: "20px" }}>
-          <h3>Status History</h3>
+          <h3>Admin Comments ({comments.length})</h3>
+
+          {/* Add Comment Form */}
+          <div style={{ marginBottom: "20px" }}>
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={adminInfo?.permissions?.canAddComments ? "Add a comment about this applicant..." : "You don't have permission to add comments"}
+              disabled={!adminInfo?.permissions?.canAddComments}
+              style={{
+                width: "100%",
+                minHeight: "80px",
+                padding: "12px",
+                border: "2px solid #dee2e6",
+                borderRadius: "6px",
+                fontSize: "14px",
+                resize: "vertical",
+                backgroundColor: adminInfo?.permissions?.canAddComments ? "white" : "#f8f9fa",
+                color: adminInfo?.permissions?.canAddComments ? "#333" : "#6c757d",
+                opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "#007bff";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "#dee2e6";
+              }}
+            />
+            <div style={{ marginTop: "10px", textAlign: "right" }}>
+              <button
+                onClick={handleAddComment}
+                disabled={!newComment.trim() || isSubmittingComment || !adminInfo?.permissions?.canAddComments}
+                style={{
+                  backgroundColor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "#007bff" : "#6c757d",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "4px",
+                  cursor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "pointer" : "not-allowed",
+                  fontSize: "14px",
+                  opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
+                }}
+              >
+                {isSubmittingComment ? "Adding..." : adminInfo?.permissions?.canAddComments ? "Add Comment" : "No Permission"}
+              </button>
+            </div>
+          </div>
+
+          {/* Comments List */}
           <div style={{
             backgroundColor: "#f8f9fa",
             padding: "12px",
             borderRadius: "6px",
-            maxHeight: "200px",
+            maxHeight: "300px",
             overflowY: "auto"
           }}>
-            {application.statusHistory.slice().reverse().map((entry, index) => (
-              <div 
-                key={index} 
-                style={{
-                  padding: "8px",
-                  margin: "4px 0",
-                  backgroundColor: "white",
-                  borderRadius: "4px",
-                  border: "1px solid #dee2e6"
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    padding: "2px 6px",
-                    borderRadius: "3px",
-                    fontSize: "12px",
-                    fontWeight: "bold"
-                  }}>
-                    {entry.status}
-                  </span>
-                  <span style={{ fontSize: "12px", color: "#6c757d" }}>
-                    {new Date(entry.changedAt).toLocaleString()}
-                  </span>
-                </div>
-                <div style={{ fontSize: "12px", color: "#495057", marginTop: "4px" }}>
-                  <strong>Changed by:</strong> {entry.changedBy}
-                </div>
-                {entry.notes && (
-                  <div style={{ fontSize: "12px", color: "#6c757d", marginTop: "4px", fontStyle: "italic" }}>
-                    "{entry.notes}"
+            {comments.length === 0 ? (
+              <div style={{
+                textAlign: "center",
+                color: "#6c757d",
+                fontStyle: "italic",
+                padding: "20px"
+              }}>
+                No comments yet. Be the first to add a comment!
+              </div>
+            ) : (
+              comments.slice().reverse().map((comment, index) => (
+                <div
+                  key={index}
+                  style={{
+                    padding: "12px",
+                    margin: "8px 0",
+                    backgroundColor: "white",
+                    borderRadius: "6px",
+                    border: "1px solid #dee2e6",
+                    borderLeft: "4px solid #007bff"
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <span style={{
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: "bold"
+                    }}>
+                      {comment.adminName}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                      {new Date(comment.commentedAt).toLocaleString()}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Comments Section */}
-      <div style={{ marginTop: "20px" }}>
-        <h3>Admin Comments ({comments.length})</h3>
-        
-                    {/* Add Comment Form */}
-                    <div style={{ marginBottom: "20px" }}>
-                      <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder={adminInfo?.permissions?.canAddComments ? "Add a comment about this applicant..." : "You don't have permission to add comments"}
-                        disabled={!adminInfo?.permissions?.canAddComments}
-                        style={{
-                          width: "100%",
-                          minHeight: "80px",
-                          padding: "12px",
-                          border: "2px solid #dee2e6",
-                          borderRadius: "6px",
-                          fontSize: "14px",
-                          resize: "vertical",
-                          backgroundColor: adminInfo?.permissions?.canAddComments ? "white" : "#f8f9fa",
-                          color: adminInfo?.permissions?.canAddComments ? "#333" : "#6c757d",
-                          opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
-                        }}
-            onFocus={(e) => {
-              e.target.style.borderColor = "#007bff";
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = "#dee2e6";
-            }}
-          />
-          <div style={{ marginTop: "10px", textAlign: "right" }}>
-            <button
-              onClick={handleAddComment}
-              disabled={!newComment.trim() || isSubmittingComment || !adminInfo?.permissions?.canAddComments}
-              style={{
-                backgroundColor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "#007bff" : "#6c757d",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "4px",
-                cursor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "pointer" : "not-allowed",
-                fontSize: "14px",
-                opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
-              }}
-            >
-              {isSubmittingComment ? "Adding..." : adminInfo?.permissions?.canAddComments ? "Add Comment" : "No Permission"}
-            </button>
-          </div>
-        </div>
-
-        {/* Comments List */}
-        <div style={{
-          backgroundColor: "#f8f9fa",
-          padding: "12px",
-          borderRadius: "6px",
-          maxHeight: "300px",
-          overflowY: "auto"
-        }}>
-          {comments.length === 0 ? (
-            <div style={{ 
-              textAlign: "center", 
-              color: "#6c757d", 
-              fontStyle: "italic",
-              padding: "20px"
-            }}>
-              No comments yet. Be the first to add a comment!
-            </div>
-          ) : (
-            comments.slice().reverse().map((comment, index) => (
-              <div 
-                key={index} 
-                style={{
-                  padding: "12px",
-                  margin: "8px 0",
-                  backgroundColor: "white",
-                  borderRadius: "6px",
-                  border: "1px solid #dee2e6",
-                  borderLeft: "4px solid #007bff"
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontWeight: "bold"
-                  }}>
-                    {comment.adminName}
-                  </span>
-                  <span style={{ fontSize: "12px", color: "#6c757d" }}>
-                    {new Date(comment.commentedAt).toLocaleString()}
-                  </span>
+                  <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>
+                    {comment.comment}
+                  </div>
                 </div>
-                <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>
-                  {comment.comment}
-                </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
   );
 };
 
 // 🟢 **PhasesView Component**
 const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm, adminInfo }) => {
+  const [phaseGroup, setPhaseGroup] = useState(1);
   const [phasePages, setPhasePages] = useState({});
   const [techFilter, setTechFilter] = useState("all"); // Tech filter state
   const applicationsPerPhase = 10;
@@ -990,18 +991,33 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       color: "#e2e8f0"
     },
     {
-      title: "Case Night",
-      statuses: ["Case Night - Yes", "Case Night - No"],
+      title: "Case Night-No",
+      statuses: ["Case Night - No"],
+      color: "#f8d7da"
+    },
+    {
+      title: "Case Night-Yes",
+      statuses: ["Case Night - Yes"],
       color: "#bee3f8"
     },
     {
-      title: "Final Interview",
-      statuses: ["Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe"],
+      title: "Final Interview - No",
+      statuses: ["Final Interview - No"],
       color: "#fef5e7"
     },
     {
-      title: "Final Decision",
-      statuses: ["Accepted", "Rejected"],
+      title: "Final Interview-Yes",
+      statuses: ["Final Interview - Yes"],
+      color: "#fef5e7"
+    },
+    {
+      title: "Accepted",
+      statuses: ["Accepted"],
+      color: "#c6f6d5"
+    },
+    {
+      title: "Rejected",
+      statuses: ["Rejected"],
       color: "#c6f6d5"
     }
   ];
@@ -1012,7 +1028,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     const matchesSearch = !searchTerm || ["fullName", "major", "email"].some((key) =>
       app[key]?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    
+
     // Tech filter
     let matchesTechFilter = true;
     if (techFilter === "tech") {
@@ -1021,7 +1037,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       matchesTechFilter = app.candidateType === "Non-Tech";
     }
     // If techFilter is "all", matchesTechFilter remains true
-    
+
     return matchesSearch && matchesTechFilter;
   });
 
@@ -1040,7 +1056,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
   // Get applications for a specific phase with pagination
   const getPhaseApplications = (phase) => {
-    const phaseApps = filteredApplications.filter((app) => 
+    const phaseApps = filteredApplications.filter((app) =>
       phase.statuses.includes(app.status)
     );
     const currentPage = phasePages[phase.title] || 1;
@@ -1080,11 +1096,11 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
   const handleDrop = async (e, targetPhase) => {
     e.preventDefault();
-    
+
     // Check if admin has permission to change status
     // Super admins always have permission, regular admins need explicit permission
     const hasPermission = adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus;
-    
+
     if (!hasPermission) {
       alert("❌ You don't have permission to change application status.");
       return;
@@ -1092,51 +1108,38 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
     const applicationId = e.dataTransfer.getData("applicationId");
     const currentStatus = e.dataTransfer.getData("applicationStatus");
-    
+
     // Determine the new status based on the target phase
     let newStatus;
     switch (targetPhase.title) {
       case "Under Review":
         newStatus = "Under Review";
         break;
-      case "Case Night":
-        // If coming from Under Review, default to "Case Night - Yes"
-        // If already in Case Night, keep current status
-        if (currentStatus === "Under Review") {
-          newStatus = "Case Night - Yes";
-        } else if (targetPhase.statuses.includes(currentStatus)) {
-          newStatus = currentStatus;
-        } else {
-          newStatus = "Case Night - Yes";
-        }
+      case "Case Night-No":
+        newStatus = "Case Night - No";
         break;
-      case "Final Interview":
-        // If coming from Case Night - Yes, default to "Final Interview - Yes"
-        if (currentStatus === "Case Night - Yes") {
-          newStatus = "Final Interview - Yes";
-        } else if (targetPhase.statuses.includes(currentStatus)) {
-          newStatus = currentStatus;
-        } else {
-          newStatus = "Final Interview - Yes";
-        }
+      case "Case Night-Yes":
+        newStatus = "Case Night - Yes";
         break;
-      case "Final Decision":
-        // If coming from Final Interview - Yes, default to "Accepted"
-        if (currentStatus === "Final Interview - Yes") {
-          newStatus = "Accepted";
-        } else if (targetPhase.statuses.includes(currentStatus)) {
-          newStatus = currentStatus;
-        } else {
-          newStatus = "Accepted";
-        }
+      case "Final Interview - No":
+        newStatus = "Final Interview - No";
+        break;
+      case "Final Interview-Yes":
+        newStatus = "Final Interview - Yes";
+        break;
+      case "Accepted":
+        newStatus = "Accepted";
+        break;
+      case "Rejected":
+        newStatus = "Rejected";
         break;
       default:
-        newStatus = "Under Review";
+        newStatus = currentStatus; // Fallback to current status if title doesn't match
     }
 
     try {
       const adminEmail = localStorage.getItem("adminEmail") || "Unknown Admin";
-      
+
       // Update the application status
       await axios.put(`${API_BASE_URL}/api/applications/${applicationId}`, {
         status: newStatus,
@@ -1147,9 +1150,9 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
           'x-admin-email': adminEmail
         }
       });
-      
+
       // Update local state
-      const updatedApplications = applications.map(app => 
+      const updatedApplications = applications.map(app =>
         app._id === applicationId ? { ...app, status: newStatus } : app
       );
       setApplications(updatedApplications);
@@ -1163,12 +1166,13 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       }
     }
   };
-
+  //creating two seperate 'phase groups' to show each page in phasesView
+  const phasestoShow = phaseGroup == 1 ? phases.slice(0, 3) : phases.slice(3, 7)
   return (
     <div>
       {/* Search Bar and Tech Filter */}
-      <div style={{ 
-        marginBottom: "20px", 
+      <div style={{
+        marginBottom: "20px",
         padding: "0 20px",
         display: "flex",
         justifyContent: "center",
@@ -1224,11 +1228,11 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
           <option value="non-tech">Non-Tech Only</option>
         </select>
       </div>
-      
+
       {/* Search Results Counter */}
       {(searchTerm || techFilter !== "all") && (
-        <div style={{ 
-          textAlign: "center", 
+        <div style={{
+          textAlign: "center",
           marginBottom: "10px",
           color: "#6c757d",
           fontSize: "14px"
@@ -1237,9 +1241,9 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
           {techFilter !== "all" && ` (${techFilter === "tech" ? "Tech" : "Non-Tech"} only)`}
         </div>
       )}
-      
+
       <div className="application-phases" style={{ display: "flex", gap: "20px", padding: "20px" }}>
-        {phases.map((phase) => {
+        {phasestoShow.map((phase) => {
           const phaseData = getPhaseApplications(phase);
           return (
             <div
@@ -1264,100 +1268,100 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               } : undefined}
               data-phase-color={phase.color}
             >
-              <h3 style={{ 
-                margin: "0 0 16px 0", 
-                padding: "8px", 
-                backgroundColor: phase.color, 
+              <h3 style={{
+                margin: "0 0 16px 0",
+                padding: "8px",
+                backgroundColor: phase.color,
                 borderRadius: "4px",
                 textAlign: "center",
                 fontWeight: "bold"
               }}>
                 {phase.title} ({phaseData.totalApplications})
               </h3>
-              
+
               {/* Applications List */}
               <div style={{ flex: 1, minHeight: "200px" }}>
                 {phaseData.applications.map((app) => (
-                            <div 
-                              key={app._id} 
-                              draggable={adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus}
-                              onDragStart={(e) => handleDragStart(e, app)}
-                              style={{
-                                backgroundColor: "#f8f9fa",
-                                padding: "12px",
-                                margin: "8px 0",
-                                borderRadius: "6px",
-                                border: "1px solid #dee2e6",
-                                cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "grab" : "default",
-                                transition: "all 0.2s ease",
-                                userSelect: "none",
-                                opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.8
-                              }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = "translateY(-2px)";
-                    e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow = "none";
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                    <img
-                      src={app.image || "/default-profile.png"}
-                      alt="Profile"
-                      width="40"
-                      height="40"
-                      style={{ 
-                        borderRadius: "6px",
-                        objectFit: "cover",
-                        flexShrink: 0
-                      }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ margin: "0 0 4px 0", fontSize: "14px" }}>
-                        {app.fullName}
-                      </h4>
-                      <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "#6c757d" }}>
-                        {app.email}
-                      </p>
-                      <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
-                        {app.major} • {app.studentYear} • {app.candidateType}
-                      </p>
+                  <div
+                    key={app._id}
+                    draggable={adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus}
+                    onDragStart={(e) => handleDragStart(e, app)}
+                    style={{
+                      backgroundColor: "#f8f9fa",
+                      padding: "12px",
+                      margin: "8px 0",
+                      borderRadius: "6px",
+                      border: "1px solid #dee2e6",
+                      cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "grab" : "default",
+                      transition: "all 0.2s ease",
+                      userSelect: "none",
+                      opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.8
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "translateY(-2px)";
+                      e.target.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "translateY(0)";
+                      e.target.style.boxShadow = "none";
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                      <img
+                        src={app.image || "/default-profile.png"}
+                        alt="Profile"
+                        width="40"
+                        height="40"
+                        style={{
+                          borderRadius: "6px",
+                          objectFit: "cover",
+                          flexShrink: 0
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4 style={{ margin: "0 0 4px 0", fontSize: "14px" }}>
+                          {app.fullName}
+                        </h4>
+                        <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "#6c757d" }}>
+                          {app.email}
+                        </p>
+                        <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "#6c757d" }}>
+                          {app.major} • {app.studentYear} • {app.candidateType}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        style={{
+                          backgroundColor: "#007bff",
+                          color: "white",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontSize: "12px",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => setSelectedApplication(app)}
+                      >
+                        View
+                      </button>
+                      <span style={{
+                        backgroundColor: app.status === "Rejected" ? "#dc3545" : app.status === "Accepted" ? "#28a745" : "#6c757d",
+                        color: "white",
+                        padding: "2px 6px",
+                        borderRadius: "3px",
+                        fontSize: "10px",
+                        fontWeight: "bold"
+                      }}>
+                        {app.status}
+                      </span>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      style={{
-                        backgroundColor: "#007bff",
-                        color: "white",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        cursor: "pointer"
-                      }}
-                      onClick={() => setSelectedApplication(app)}
-                    >
-                      View
-                    </button>
-                    <span style={{
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      padding: "2px 6px",
-                      borderRadius: "3px",
-                      fontSize: "10px",
-                      fontWeight: "bold"
-                    }}>
-                      {app.status}
-                    </span>
-                  </div>
-                </div>
                 ))}
                 {phaseData.applications.length === 0 && (
-                  <div style={{ 
-                    textAlign: "center", 
-                    color: "#6c757d", 
+                  <div style={{
+                    textAlign: "center",
+                    color: "#6c757d",
                     fontStyle: "italic",
                     margin: "20px 0",
                     padding: "40px 20px",
@@ -1370,7 +1374,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                   </div>
                 )}
               </div>
-              
+
               {/* Pagination Controls */}
               {phaseData.totalPages > 1 && (
                 <div style={{
@@ -1400,7 +1404,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                   >
                     ← Prev
                   </button>
-                  
+
                   <div style={{
                     display: "flex",
                     flexDirection: "column",
@@ -1422,7 +1426,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                       of {phaseData.totalApplications}
                     </span>
                   </div>
-                  
+
                   <button
                     onClick={() => handlePhasePageChange(phase.title, phaseData.currentPage + 1)}
                     disabled={phaseData.currentPage === phaseData.totalPages}
@@ -1445,6 +1449,52 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
             </div>
           );
         })}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "20px", paddingBottom: "40px" }}>
+        {phaseGroup === 1 ? (
+          <button
+            onClick={() => {
+              setPhaseGroup(2);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            style={{
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              transition: "all 0.2s ease"
+            }}
+          >
+            Next View (Categories 4-7) →
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setPhaseGroup(1);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            style={{
+              backgroundColor: "#6c757d",
+              color: "white",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "16px",
+              fontWeight: "bold",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+              transition: "all 0.2s ease"
+            }}
+          >
+            ← Back to First View (Categories 1-3)
+          </button>
+        )}
       </div>
     </div>
   );
