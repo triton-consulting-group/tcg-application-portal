@@ -5,6 +5,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 
+// Feature flag: if true, show an inline status <select> in the "View Applicant" modal
+// Set to false to revert to the original display (plain status badge/span).
+const ENABLE_INLINE_STATUS_IN_MODAL = true;
+
 // Helper function to get signed URL for file access
 const getFileUrl = async (filePath) => {
   if (!filePath) return "";
@@ -592,8 +596,14 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo }) => {
+const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus }) => {
   const [comments, setComments] = useState(application.comments || []);
+  // Local, optimistic status so the modal updates immediately when admin changes status.
+  const [localStatus, setLocalStatus] = useState(application.status || "Under Review");
+
+  useEffect(() => {
+    setLocalStatus(application.status || "Under Review");
+  }, [application.status]);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -678,16 +688,48 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo })
             </p>
             <p>
               <strong>Current Status:</strong>
-              <span style={{
-                backgroundColor: "#28a745",
-                color: "white",
-                padding: "4px 8px",
-                borderRadius: "4px",
-                marginLeft: "8px",
-                fontSize: "12px"
-              }}>
-                {application.status}
-              </span>
+              {ENABLE_INLINE_STATUS_IN_MODAL ? (
+                <select
+                  value={localStatus}
+                  onChange={(e) => {
+                    const newStatus = e.target.value;
+                    setLocalStatus(newStatus);
+                    // Call parent's updateStatus handler (already does permission check & API call)
+                    if (typeof updateStatus === "function") {
+                      updateStatus(application._id, newStatus);
+                    }
+                  }}
+                  disabled={!(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus)}
+                  style={{
+                    marginLeft: "8px",
+                    padding: "4px 8px",
+                    borderRadius: "4px",
+                    fontSize: "12px",
+                    cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "pointer" : "not-allowed",
+                    opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.6
+                  }}
+                >
+                  <option value="Under Review">Under Review</option>
+                  <option value="Case Night - Yes">Case Night - Yes</option>
+                  <option value="Case Night - No">Case Night - No</option>
+                  <option value="Final Interview - Yes">Final Interview - Yes</option>
+                  <option value="Final Interview - No">Final Interview - No</option>
+                  <option value="Final Interview - Maybe">Final Interview - Maybe</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              ) : (
+                <span style={{
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  padding: "4px 8px",
+                  borderRadius: "4px",
+                  marginLeft: "8px",
+                  fontSize: "12px"
+                }}>
+                  {application.status}
+                </span>
+              )}
             </p>
 
             {/* Case Night Availability Section */}
