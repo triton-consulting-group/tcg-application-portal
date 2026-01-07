@@ -3,12 +3,12 @@ const DEADLINE_CONFIG = {
   isActive: true,
 
   // Application window start (ISO8601 with timezone)
-  // Example below keeps apps closed until 2025-10-09 8:00pm PDT
-  applicationStart: "2025-10-09T20:00:00-07:00",
+  // Monday, January 12, 2026 at 8:00 PM PST
+  applicationStart: "2026-01-12T20:00:00-08:00",
 
   // Application deadline (ISO8601 with timezone)
-  // Adjust as needed; example below is a placeholder
-  applicationDeadline: "2025-10-11T17:30:00-07:00",
+  // Thursday, January 15, 2026 at 11:59 PM PST
+  applicationDeadline: "2026-01-15T23:59:00-08:00",
 
   // Messages
   preStartMessage: "Applications are not open yet. Please check back later!",
