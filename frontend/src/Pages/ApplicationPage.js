@@ -407,7 +407,7 @@ const ApplicationPage = () => {
         backgroundColor: "white"
       }}>
         <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
-          APPLICATION - TCG FALL 25 RECRUITMENT
+          APPLICATION - TCG WINTER 26 RECRUITMENT
         </h1>
 
         {/* Deadline Status Display */}
@@ -431,7 +431,7 @@ const ApplicationPage = () => {
         <form onSubmit={handleSubmit}>
           {/* Email */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Email *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Email (UCSD email required) *</p>
             <input 
               type="email" 
               value={formData.email} 
@@ -448,6 +448,18 @@ const ApplicationPage = () => {
               type="text" 
               value={formData.fullName} 
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+              style={styles.input}
+              required
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div style={{ marginBottom: "16px" }}>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Phone Number *</p>
+            <input 
+              type="text" 
+              value={formData.phoneNumber} 
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} 
               style={styles.input}
               required
             />
@@ -527,7 +539,7 @@ const ApplicationPage = () => {
 
           {/* Transcript Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your transcript *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your transcript. If you are a first year, please submit your FALL 2025 transcript. *</p>
             <input 
               type="file" 
               onChange={(e) => handleFileChange(e, "transcript")} 
@@ -539,7 +551,7 @@ const ApplicationPage = () => {
 
           {/* Profile Picture Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (JPG/PNG) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (must be professional) (JPG/PNG) *</p>
             <input 
               type="file" 
               accept="image/png, image/jpeg"
