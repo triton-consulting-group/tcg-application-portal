@@ -1337,7 +1337,8 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                       cursor: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? "grab" : "default",
                       transition: "all 0.2s ease",
                       userSelect: "none",
-                      opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.8
+                      opacity: (adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? 1 : 0.8,
+                      position: "relative" 
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.transform = "translateY(-2px)";
@@ -1348,6 +1349,50 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                       e.target.style.boxShadow = "none";
                     }}
                   >
+                    {/* Comment Icon Badge */}
+                    {app.comments?.length > 0 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          right: "8px",
+                          backgroundColor: "#ff6b6b",
+                          borderRadius: "50%",
+                          width: "24px",
+                          height: "24px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          pointerEvents: "none",
+                          zIndex: 10,
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+                        }}
+                        title={`${app.comments.length} admin comment(s)`}
+                        aria-label={`Has ${app.comments.length} admin comment(s)`}
+                      >
+                        <span style={{ color: "white", fontSize: "12px" }}>💬</span>
+                        {app.comments.length > 1 && (
+                          <span style={{
+                            position: "absolute",
+                            top: "-4px",
+                            right: "-4px",
+                            backgroundColor: "#fff",
+                            color: "#ff6b6b",
+                            borderRadius: "50%",
+                            width: "16px",
+                            height: "16px",
+                            fontSize: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: "bold",
+                            border: "1px solid #ff6b6b"
+                          }}>
+                            {app.comments.length}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
                       <img
                         src={app.image || "/default-profile.png"}
