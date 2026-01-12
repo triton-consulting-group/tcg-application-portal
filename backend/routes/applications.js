@@ -595,7 +595,9 @@ router.get("/export-by-status", generalApiLimiter, async (req, res) => {
       'Zombie Answer',
       'Additional Info',
       'Created Date',
-      'Updated Date'
+      'Created Time',
+      'Updated Date',
+      'Updated Time'
     ];
 
     const csvRows = [csvHeaders.join(',')];
@@ -613,7 +615,7 @@ router.get("/export-by-status", generalApiLimiter, async (req, res) => {
         `"${(app.reason || '').replace(/"/g, '""')}"`,
         `"${(app.zombieAnswer || '').replace(/"/g, '""')}"`,
         `"${(app.additionalInfo || '').replace(/"/g, '""')}"`,
-        new Date(app.createdAt).toLocaleString(),
+        new Date(app.createdAt).toLocaleString(), // Splits across two cells due to comma
         new Date(app.updatedAt).toLocaleString()
       ];
       csvRows.push(row.join(','));

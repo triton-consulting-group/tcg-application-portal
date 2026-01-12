@@ -1245,7 +1245,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     }
   };
   //creating two seperate 'phase groups' to show each page in phasesView
-  const phasestoShow = phaseGroup == 1 ? phases.slice(0, 3) : phases.slice(3, 7)
+  const phasestoShow = phaseGroup === 1 ? phases.slice(0, 3) : phases.slice(3, 7)
   return (
     <div>
       {/* Search Bar and Tech Filter */}
