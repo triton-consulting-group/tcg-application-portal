@@ -1025,6 +1025,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
   const [phaseGroup, setPhaseGroup] = useState(1);
   const [phasePages, setPhasePages] = useState({});
   const [techFilter, setTechFilter] = useState("all"); // Tech filter state
+  const [exportingPhase, setExportingPhase] = useState(null);
   const applicationsPerPhase = 10;
   const phases = [
     {
@@ -1110,6 +1111,41 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       currentPage,
       totalApplications: phaseApps.length
     };
+  };
+
+  // Export function for a specific phase
+  const handleExportPhase = async (phase) => {
+    setExportingPhase(phase.title);
+    try {
+      // Build query string with all statuses for this phase
+      const statusesParam = phase.statuses.join(',');
+      const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
+        params: { statuses: statusesParam },
+        responseType: 'blob'
+      });
+  
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const phaseName = phase.title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+      link.setAttribute('download', `applicants-${phaseName}-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+  
+      alert(`Exported applicants from "${phase.title}" successfully!`);
+    } catch (error) {
+      console.error("Error exporting phase:", error);
+      if (error.response?.status === 404) {
+        alert(`No applicants found in "${phase.title}" phase to export.`);
+      } else {
+        alert(`Failed to export "${phase.title}" applicants. Please try again.`);
+      }
+    } finally {
+      setExportingPhase(null);
+    }
   };
 
   // Handle page change for a specific phase
@@ -1310,16 +1346,47 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               } : undefined}
               data-phase-color={phase.color}
             >
-              <h3 style={{
-                margin: "0 0 16px 0",
-                padding: "8px",
-                backgroundColor: phase.color,
-                borderRadius: "4px",
-                textAlign: "center",
-                fontWeight: "bold"
-              }}>
-                {phase.title} ({phaseData.totalApplications})
-              </h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <h3 style={{
+                  margin: "0",
+                  padding: "8px",
+                  backgroundColor: phase.color,
+                  borderRadius: "4px",
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  flex: 1
+                }}>
+                  {phase.title} ({phaseData.totalApplications})
+                </h3>
+                <button
+                  onClick={() => handleExportPhase(phase)}
+                  disabled={exportingPhase === phase.title || phaseData.totalApplications === 0}
+                  style={{
+                    backgroundColor: exportingPhase === phase.title ? "#6c757d" : "#28a745",
+                    color: "white",
+                    border: "none",
+                    padding: "6px 12px",
+                    borderRadius: "4px",
+                    cursor: exportingPhase === phase.title || phaseData.totalApplications === 0 ? "not-allowed" : "pointer",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    marginLeft: "8px",
+                    opacity: exportingPhase === phase.title || phaseData.totalApplications === 0 ? 0.6 : 1,
+                    alignSelf: "stretch",
+                    whiteSpace: "nowrap"
+                  }}
+                  title={phaseData.totalApplications === 0 ? "No applicants to export" : `Export all applicants in ${phaseData.totalApplications} phase to CSV`}
+                >
+                  <h3 style={{
+                    margin: "0",
+                    padding: "auto",
+                    fontSize: "13.5px",
+                    fontWeight: "200",
+                  }}>
+                    {exportingPhase === phase.title ? "Exporting..." : "Export"}
+                  </h3>
+                </button>
+              </div>
 
               {/* Applications List */}
               <div style={{ flex: 1, minHeight: "200px" }}>
@@ -1438,7 +1505,9 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                         padding: "2px 6px",
                         borderRadius: "3px",
                         fontSize: "10px",
-                        fontWeight: "bold"
+                        fontWeight: "bold",
+                        display: "inline-flex",
+                        alignItems: "center",
                       }}>
                         {app.status}
                       </span>

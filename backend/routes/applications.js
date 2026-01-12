@@ -558,6 +558,85 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
   }
 });
 
+router.get("/export-by-status", generalApiLimiter, async (req, res) => {
+  try {
+    let { statuses } = req.query;
+    
+    if (!statuses) {
+      return res.status(400).json({ error: "❌ Statuses parameter is required" });
+    }
+
+    // Parse applications by statuses, comma separated
+    const statusArray = Array.isArray(statuses) 
+      ? statuses.map(s => s.trim())
+      : statuses.split(',').map(s => s.trim());
+
+    const applications = await Application.find({ 
+      status: { $in: statusArray } 
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    if (applications.length === 0) {
+      return res.status(404).json({ error: "❌ No applications found for specified statuses" });
+    }
+
+    // Create CSV content
+    const csvHeaders = [
+      'Name',
+      'Email',
+      'Major',
+      'Student Year',
+      'Candidate Type',
+      'Case Night Preferences',
+      'Status',
+      'Applied Before',
+      'Reason',
+      'Zombie Answer',
+      'Additional Info',
+      'Created Date',
+      'Updated Date'
+    ];
+
+    const csvRows = [csvHeaders.join(',')];
+
+    applications.forEach(app => {
+      const row = [
+        `"${(app.fullName || '').replace(/"/g, '""')}"`, // Escape quotes in CSV
+        app.email || '',
+        `"${(app.major || '').replace(/"/g, '""')}"`,
+        app.studentYear || '',
+        app.candidateType || '',
+        `"${(app.caseNightPreferences || []).join(', ').replace(/"/g, '""')}"`,
+        app.status || '',
+        app.appliedBefore || '',
+        `"${(app.reason || '').replace(/"/g, '""')}"`,
+        `"${(app.zombieAnswer || '').replace(/"/g, '""')}"`,
+        `"${(app.additionalInfo || '').replace(/"/g, '""')}"`,
+        new Date(app.createdAt).toLocaleString(),
+        new Date(app.updatedAt).toLocaleString()
+      ];
+      csvRows.push(row.join(','));
+    });
+
+
+    const csvContent = csvRows.join('\n');
+
+    // Set response headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    const statusLabel = statusArray.length === 1 
+      ? statusArray[0].replace(/[^a-zA-Z0-9]/g, '-') 
+      : 'multiple-statuses';
+    res.setHeader('Content-Disposition', `attachment; filename="applicants-${statusLabel}-${new Date().toISOString().split('T')[0]}.csv"`);
+    
+    res.send(csvContent);
+
+  } catch (error) {
+    console.error("❌ Error exporting applications by status:", error);
+    res.status(500).json({ error: "❌ Failed to export applications by status/." });
+  }
+});
+
 // By ID
 router.get("/:id", generalApiLimiter, async (req, res) => {
   try {
