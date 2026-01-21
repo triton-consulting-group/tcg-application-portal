@@ -9,7 +9,6 @@ const AdminManagementPage = () => {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentAdmin, setCurrentAdmin] = useState(null);
   const [newAdmin, setNewAdmin] = useState({
     email: "",
     name: "",

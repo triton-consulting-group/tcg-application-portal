@@ -91,6 +91,7 @@ const ApplicationPage = () => {
         checkExistingApplication(emailToCheck);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, emailParam, currentUser, authLoading]);
 
   // Fetch case night configuration

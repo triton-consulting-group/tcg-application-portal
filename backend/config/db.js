@@ -5,7 +5,7 @@ const connectDB = async () => {
         console.log("Connecting to MongoDB with optimized settings...");
         
         // Optimized connection options for better performance (scaled for 300+ applications)
-        const conn = await mongoose.connect(process.env.MONGO_URI || "mongodb+srv://aprilhuang:TCGportal2024@portal.pz0ak06.mongodb.net/tcg-portal?retryWrites=true&w=majority", {
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             // Connection pool settings (scaled for higher volume)

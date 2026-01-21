@@ -1055,7 +1055,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
   const [techFilter, setTechFilter] = useState("all"); // Tech filter state
   const [exportingPhase, setExportingPhase] = useState(null);
   const applicationsPerPhase = 10;
-  const phases = [
+  const phases = useMemo(() => [
     {
       title: "Under Review",
       statuses: ["Under Review"],
@@ -1091,7 +1091,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       statuses: ["Rejected"],
       color: "#c6f6d5"
     }
-  ];
+  ], []);
 
   // Filter applications based on search term and tech filter
   const filteredApplications = applications.filter((app) => {

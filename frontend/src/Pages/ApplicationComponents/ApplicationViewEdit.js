@@ -4,11 +4,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
 import { 
-  Box, 
-  VStack, 
-  Text, 
-  Button, 
-  Stack
+  Box
 } from "@chakra-ui/react";
 
 // Helper function to get signed URL for file access
@@ -198,7 +194,7 @@ const ApplicationViewEdit = () => {
       setLoading(false);
       setError("No application identifier provided. Please log in or provide an email parameter.");
     }
-  }, [authLoading, fetchApplication]);
+  }, [authLoading, fetchApplication, id, email, currentUser?.email]);
 
   // Handle form field changes
   const handleInputChange = (e) => {
