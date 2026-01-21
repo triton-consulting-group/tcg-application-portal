@@ -29,7 +29,7 @@ const AdminManagementPage = () => {
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get("${API_BASE_URL}/api/admin", {
+      const response = await axios.get(`${API_BASE_URL}/api/admin`, {
         data: { email: localStorage.getItem("adminEmail") }
       });
       setAdmins(response.data);
@@ -43,7 +43,7 @@ const AdminManagementPage = () => {
 
   const handleCreateAdmin = async () => {
     try {
-      await axios.post("${API_BASE_URL}/api/admin", {
+      await axios.post(`${API_BASE_URL}/api/admin`, {
         ...newAdmin,
         email: localStorage.getItem("adminEmail")
       });

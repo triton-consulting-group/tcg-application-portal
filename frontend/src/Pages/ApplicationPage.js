@@ -622,14 +622,14 @@ const ApplicationPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={deadlineStatus && deadlineStatus.isDeadlinePassed || submitting}
+            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting}
             style={{
-              backgroundColor: deadlineStatus && deadlineStatus.isDeadlinePassed || submitting ? "#a0aec0" : "#3182ce",
+              backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "#a0aec0" : "#3182ce",
               color: "white",
               border: "none",
               padding: "12px 24px",
               borderRadius: "6px",
-              cursor: deadlineStatus && deadlineStatus.isDeadlinePassed || submitting ? "not-allowed" : "pointer",
+              cursor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "not-allowed" : "pointer",
               fontSize: "16px",
               width: "100%",
               marginTop: "16px",

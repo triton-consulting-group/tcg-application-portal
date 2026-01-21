@@ -99,7 +99,7 @@ const Navbar = () => {
 
       // First, try to register the user (this will create them if they don't exist)
       try {
-        await axios.post("${API_BASE_URL}/api/auth/register", {
+        await axios.post(`${API_BASE_URL}/api/auth/register`, {
           email: result.user.email,
           name: result.user.displayName || ""
         });

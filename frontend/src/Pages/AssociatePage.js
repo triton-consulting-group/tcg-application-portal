@@ -94,7 +94,7 @@ const AssociatePage = () => {
   const fetchApplications = async () => {
     try {
       // Use the backward-compatible endpoint to get all applications with auth token
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
       const response = await axios.get(`${API_BASE_URL}/api/applications/all`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -198,7 +198,7 @@ const AssociatePage = () => {
     }
 
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
-    const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
+    const token = process.env.REACT_APP_ADMIN_API_TOKEN;
 
     axios
       .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
@@ -430,30 +430,30 @@ const TableView = ({
             <td>{app.appliedBefore}</td>
             <td>{app.candidateType}</td>
             <td>
-              <a
-                href="#"
+              <button
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   const url = await getFileUrl(app.resume);
                   if (url) window.open(url, '_blank');
                 }}
+                style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 View Resume
-              </a>
+              </button>
             </td>
             <td>
-              <a
-                href="#"
+              <button
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   const url = await getFileUrl(app.transcript);
                   if (url) window.open(url, '_blank');
                 }}
+                style={{ background: 'none', border: 'none', color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 View Transcript
-              </a>
+              </button>
             </td>
             <td>
               <img
@@ -830,8 +830,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
             )}
 
             <div style={{ marginTop: "15px" }}>
-              <a
-                href="#"
+              <button
                 onClick={async (e) => {
                   e.preventDefault();
                   const url = await getFileUrl(application.resume);
@@ -844,13 +843,14 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                   padding: "8px 12px",
                   borderRadius: "4px",
                   textDecoration: "none",
-                  fontSize: "14px"
+                  fontSize: "14px",
+                  border: "none",
+                  cursor: "pointer"
                 }}
               >
                 View Resume
-              </a>
-              <a
-                href="#"
+              </button>
+              <button
                 onClick={async (e) => {
                   e.preventDefault();
                   const url = await getFileUrl(application.transcript);
@@ -862,11 +862,13 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                   padding: "8px 12px",
                   borderRadius: "4px",
                   textDecoration: "none",
-                  fontSize: "14px"
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  border: "none"
                 }}
               >
                 View Transcript
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -957,12 +959,12 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || isSubmittingComment || !adminInfo?.permissions?.canAddComments}
                 style={{
-                  backgroundColor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "#007bff" : "#6c757d",
+                  backgroundColor: ((newComment.trim() && !isSubmittingComment) && adminInfo?.permissions?.canAddComments) ? "#007bff" : "#6c757d",
                   color: "white",
                   border: "none",
                   padding: "8px 16px",
                   borderRadius: "4px",
-                  cursor: (newComment.trim() && !isSubmittingComment && adminInfo?.permissions?.canAddComments) ? "pointer" : "not-allowed",
+                  cursor: ((newComment.trim() && !isSubmittingComment) && adminInfo?.permissions?.canAddComments) ? "pointer" : "not-allowed",
                   fontSize: "14px",
                   opacity: adminInfo?.permissions?.canAddComments ? 1 : 0.6
                 }}
@@ -1105,7 +1107,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     if (Object.keys(newPhasePages).length > 0) {
       setPhasePages(prev => ({ ...prev, ...newPhasePages }));
     }
-  }, [applications]);
+  }, [applications, phasePages, phases]);
 
   // Get applications for a specific phase with pagination
   const getPhaseApplications = (phase) => {
@@ -1129,7 +1131,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     try {
       // Build query string with all statuses for this phase
       const statusesParam = phase.statuses.join(',');
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
       const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
         params: { statuses: statusesParam },
         responseType: 'blob',
