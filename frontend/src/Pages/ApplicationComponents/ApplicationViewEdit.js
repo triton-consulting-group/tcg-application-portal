@@ -125,8 +125,10 @@ const ApplicationViewEdit = () => {
       
       let applicationData;
       const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      const adminEmail = localStorage.getItem("adminEmail");
-      const headers = token ? { 'Authorization': `Bearer ${token}` } : (adminEmail ? { 'x-admin-email': adminEmail } : {});
+      if (!token) {
+        throw new Error("Missing admin token.");
+      }
+      const headers = { 'Authorization': `Bearer ${token}` };
       
       if (id) {
         console.log("Fetching by ID:", id);
