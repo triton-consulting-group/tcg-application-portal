@@ -93,8 +93,13 @@ const AssociatePage = () => {
 
   const fetchApplications = async () => {
     try {
-      // Use the backward-compatible endpoint to get all applications
-      const response = await axios.get(`${API_BASE_URL}/api/applications/all`);
+      // Use the backward-compatible endpoint to get all applications with auth token
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
+      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setApplications(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -193,6 +198,7 @@ const AssociatePage = () => {
     }
 
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
+    const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
 
     axios
       .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
@@ -205,7 +211,11 @@ const AssociatePage = () => {
         }
       })
       .then(() => {
-        return axios.get(`${API_BASE_URL}/api/applications/all`); // 🔹 Refetch all applications
+        return axios.get(`${API_BASE_URL}/api/applications/all`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }); // 🔹 Refetch all applications
       })
       .then((response) => {
         setApplications(response.data || []);
@@ -1119,9 +1129,13 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     try {
       // Build query string with all statuses for this phase
       const statusesParam = phase.statuses.join(',');
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
       const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
         params: { statuses: statusesParam },
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
   
       // Create download link

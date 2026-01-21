@@ -124,10 +124,15 @@ const ApplicationViewEdit = () => {
       console.log("Using API_BASE_URL:", API_BASE_URL);
       
       let applicationData;
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN || 'f8d9e3b7c2a1f6e4d5c8b9a3f7e2d1c0b5a9f3e7d2c6b1a8f4e9d3c7b2a1f';
       
       if (id) {
         console.log("Fetching by ID:", id);
-        const response = await axios.get(`${API_BASE_URL}/api/applications/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/applications/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         applicationData = response.data;
       } else if (email) {
         console.log("Fetching by email from query params:", email);

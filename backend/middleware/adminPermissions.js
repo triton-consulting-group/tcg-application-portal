@@ -35,6 +35,35 @@ const checkAdminPermission = (permission) => {
   };
 };
 
+// Middleware to verify admin exists (for sensitive read operations)
+const requireAdminAuth = async (req, res, next) => {
+  try {
+    // Check Bearer token first (preferred method)
+    const bearerToken = req.headers['authorization']?.replace('Bearer ', '');
+    const validToken = process.env.ADMIN_API_TOKEN;
+    
+    if (bearerToken && validToken && bearerToken === validToken) {
+      req.isAdmin = true;
+      return next();
+    }
+
+    // Fall back to email header (legacy method - keeps working)
+    const adminEmail = req.headers['x-admin-email'];
+    if (adminEmail) {
+      const admin = await Admin.findOne({ email: adminEmail, isActive: true });
+      if (admin) {
+        req.admin = admin;
+        return next();
+      }
+    }
+
+    return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+  } catch (error) {
+    console.error("❌ Error checking admin authentication:", error);
+    res.status(500).json({ error: "❌ Failed to verify authentication" });
+  }
+};
+
 // Specific permission checkers
 const requireStatusChangePermission = checkAdminPermission('canChangeStatus');
 const requireCommentPermission = checkAdminPermission('canAddComments');
@@ -42,6 +71,7 @@ const requireDragDropPermission = checkAdminPermission('canDragDrop');
 
 module.exports = {
   checkAdminPermission,
+  requireAdminAuth,
   requireStatusChangePermission,
   requireCommentPermission,
   requireDragDropPermission

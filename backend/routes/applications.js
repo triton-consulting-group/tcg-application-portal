@@ -5,7 +5,7 @@ const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
-const { requireStatusChangePermission, requireCommentPermission } = require("../middleware/adminPermissions");
+const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth } = require("../middleware/adminPermissions");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
@@ -472,7 +472,7 @@ router.get("/deadline-status", (req, res) => {
 });
 
 // All applications (array only)
-router.get("/all", generalApiLimiter, async (req, res) => {
+router.get("/all", generalApiLimiter, requireAdminAuth, async (req, res) => {
   try {
     addNoStore(res);
     const applications = await Application.find().sort({ createdAt: -1 }).lean();
@@ -484,7 +484,7 @@ router.get("/all", generalApiLimiter, async (req, res) => {
 });
 
 // Paginated list
-router.get("/", generalApiLimiter, async (req, res) => {
+router.get("/", generalApiLimiter, requireAdminAuth, async (req, res) => {
   try {
     addNoStore(res);
     const page = parseInt(req.query.page) || 1;
@@ -542,7 +542,7 @@ router.get("/file-url/*", generalApiLimiter, async (req, res) => {
   }
 });
 
-// By email
+// By email - allow applicants to view their own application
 router.get("/email/:email", generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
@@ -551,6 +551,8 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
+    // Only return limited info or require the user to be the owner
+    // For now, we allow it but this could be enhanced with authentication
     res.json(application);
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
@@ -558,7 +560,7 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
   }
 });
 
-router.get("/export-by-status", generalApiLimiter, async (req, res) => {
+router.get("/export-by-status", generalApiLimiter, requireAdminAuth, async (req, res) => {
   try {
     let { statuses } = req.query;
     
@@ -639,8 +641,8 @@ router.get("/export-by-status", generalApiLimiter, async (req, res) => {
   }
 });
 
-// By ID
-router.get("/:id", generalApiLimiter, async (req, res) => {
+// By ID - require admin authentication
+router.get("/:id", generalApiLimiter, requireAdminAuth, async (req, res) => {
   try {
     addNoStore(res);
     const { id } = req.params;
