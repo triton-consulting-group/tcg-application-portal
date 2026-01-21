@@ -125,14 +125,12 @@ const ApplicationViewEdit = () => {
       
       let applicationData;
       const token = process.env.REACT_APP_ADMIN_API_TOKEN;
+      const adminEmail = localStorage.getItem("adminEmail");
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : (adminEmail ? { 'x-admin-email': adminEmail } : {});
       
       if (id) {
         console.log("Fetching by ID:", id);
-        const response = await axios.get(`${API_BASE_URL}/api/applications/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await axios.get(`${API_BASE_URL}/api/applications/${id}`, { headers });
         applicationData = response.data;
       } else if (email) {
         console.log("Fetching by email from query params:", email);

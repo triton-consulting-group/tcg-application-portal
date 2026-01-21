@@ -95,11 +95,18 @@ const AssociatePage = () => {
     try {
       // Use the backward-compatible endpoint to get all applications with auth token
       const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email;
+      
+      const headers = {};
+      
+      // Prefer token auth if available, otherwise fall back to email auth
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      } else if (adminEmail) {
+        headers['x-admin-email'] = adminEmail;
+      }
+      
+      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, { headers });
       setApplications(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -211,11 +218,8 @@ const AssociatePage = () => {
         }
       })
       .then(() => {
-        return axios.get(`${API_BASE_URL}/api/applications/all`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }); // 🔹 Refetch all applications
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : { 'x-admin-email': adminEmail };
+        return axios.get(`${API_BASE_URL}/api/applications/all`, { headers }); // 🔹 Refetch all applications
       })
       .then((response) => {
         setApplications(response.data || []);
@@ -1132,12 +1136,12 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       // Build query string with all statuses for this phase
       const statusesParam = phase.statuses.join(',');
       const token = process.env.REACT_APP_ADMIN_API_TOKEN;
+      const adminEmail = localStorage.getItem("adminEmail");
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : { 'x-admin-email': adminEmail };
       const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
         params: { statuses: statusesParam },
         responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers
       });
   
       // Create download link
