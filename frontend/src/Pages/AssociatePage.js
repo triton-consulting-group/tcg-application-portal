@@ -216,7 +216,8 @@ const AssociatePage = () => {
         notes: notes
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'x-admin-email': adminEmail
         }
       })
       .then(() => {
@@ -661,13 +662,15 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
     }
 
     try {
+      const adminEmail = adminInfo?.email || localStorage.getItem("adminEmail") || "unknown@admin.com";
       const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
         comment: newComment,
-        adminEmail: adminInfo?.email || "unknown@admin.com",
+        adminEmail: adminEmail,
         adminName: adminInfo?.name || "Unknown Admin"
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'x-admin-email': adminEmail
         }
       });
 
@@ -1264,7 +1267,8 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'x-admin-email': adminEmail
         }
       });
 
