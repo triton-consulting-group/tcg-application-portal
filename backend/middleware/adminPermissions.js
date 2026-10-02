@@ -1,4 +1,5 @@
 const Admin = require('../models/Admin');
+const { getFirebaseAuth } = require('../config/firebaseAdmin');
 
 // Middleware to check if admin has specific permission
 const checkAdminPermission = (permission) => {
@@ -35,19 +36,41 @@ const checkAdminPermission = (permission) => {
   };
 };
 
-// Middleware to verify admin exists (for sensitive read operations)
+// Middleware to verify the caller is an active admin (Firebase ID token)
 const requireAdminAuth = async (req, res, next) => {
   try {
-    // Token-based admin auth only
-    const bearerToken = req.headers['authorization']?.replace('Bearer ', '');
-    const validToken = process.env.ADMIN_API_TOKEN;
-    
-    if (bearerToken && validToken && bearerToken === validToken) {
+    const header = req.headers['authorization'] || '';
+    if (!header.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+    }
+    const token = header.slice('Bearer '.length);
+
+    // Legacy shared token — accepted only until the frontend stops sending it (removed in step 2)
+    const legacyToken = process.env.ADMIN_API_TOKEN;
+    if (legacyToken && token === legacyToken) {
       req.isAdmin = true;
       return next();
     }
 
-    return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+    let decoded;
+    try {
+      decoded = await getFirebaseAuth().verifyIdToken(token);
+    } catch (verifyError) {
+      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+    }
+
+    if (!decoded.email || !decoded.email_verified) {
+      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+    }
+
+    const admin = await Admin.findOne({ email: decoded.email, isActive: true });
+    if (!admin) {
+      return res.status(403).json({ error: "❌ Admin not found or inactive" });
+    }
+
+    req.admin = admin;
+    req.isAdmin = true;
+    next();
   } catch (error) {
     console.error("❌ Error checking admin authentication:", error);
     res.status(500).json({ error: "❌ Failed to verify authentication" });
