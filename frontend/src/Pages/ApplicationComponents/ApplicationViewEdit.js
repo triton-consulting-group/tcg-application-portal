@@ -120,17 +120,8 @@ const ApplicationViewEdit = () => {
       console.log("Using API_BASE_URL:", API_BASE_URL);
       
       let applicationData;
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      if (!token) {
-        throw new Error("Missing admin token.");
-      }
-      const headers = { 'Authorization': `Bearer ${token}` };
-      
-      if (id) {
-        console.log("Fetching by ID:", id);
-        const response = await axios.get(`${API_BASE_URL}/api/applications/${id}`, { headers });
-        applicationData = response.data;
-      } else if (email) {
+
+      if (email) {
         console.log("Fetching by email from query params:", email);
         const emailHeaders = currentUser ? { Authorization: `Bearer ${await currentUser.getIdToken()}` } : {};
         const response = await axios.get(`${API_BASE_URL}/api/applications/email/${email}`, { headers: emailHeaders });
