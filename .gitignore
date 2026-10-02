@@ -41,3 +41,6 @@ Thumbs.db
 .eslintcache
 .vscode/
 .idea/
+
+# Local planning docs
+/docs/
