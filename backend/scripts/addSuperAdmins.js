@@ -14,7 +14,8 @@ const addSuperAdmins = async () => {
     const superAdminsToAdd = [
       { email: "justinzelu@gmail.com", name: "Justin Zelu" },
       { email: "aanarayanan@ucsd.edu", name: "A A Narayanan" },
-      { email: "lanaphamnguy@gmail.com", name: "Lana Pham Nguyen" }
+      { email: "lanaphamnguy@gmail.com", name: "Lana Pham Nguyen" },
+      { email: "sbhatnagar@ucsd.edu", name: "S Bhatnagar" }
     ];
 
     console.log(`\n📋 Adding ${superAdminsToAdd.length} super admins...\n`);
