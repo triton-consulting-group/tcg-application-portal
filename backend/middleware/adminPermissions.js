@@ -45,13 +45,6 @@ const requireAdminAuth = async (req, res, next) => {
     }
     const token = header.slice('Bearer '.length);
 
-    // Legacy shared token — accepted only until the frontend stops sending it (removed in step 2)
-    const legacyToken = process.env.ADMIN_API_TOKEN;
-    if (legacyToken && token === legacyToken) {
-      req.isAdmin = true;
-      return next();
-    }
-
     let decoded;
     try {
       decoded = await getFirebaseAuth().verifyIdToken(token);
