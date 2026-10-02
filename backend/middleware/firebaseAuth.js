@@ -1,4 +1,4 @@
-const admin = require("../config/firebaseAdmin");
+const { getFirebaseAuth } = require("../config/firebaseAdmin");
 
 // Verifies the request carries a valid, email-verified Firebase ID token
 // belonging to the applicant named by req.params.email.
@@ -9,7 +9,7 @@ const verifyFirebaseOwner = async (req, res, next) => {
       return res.status(401).json({ error: "❌ Missing authentication token." });
     }
 
-    const decoded = await admin.auth().verifyIdToken(bearerToken);
+    const decoded = await getFirebaseAuth().verifyIdToken(bearerToken);
 
     // Firebase's client API key is public, so anyone can self-register an
     // arbitrary email via the Identity Toolkit REST API and get back a
