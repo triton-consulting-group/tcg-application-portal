@@ -162,8 +162,10 @@ const AssociatePage = () => {
   const handleExportCaseGroups = async () => {
     setExporting(true);
     try {
+      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
       const response = await axios.get(`${API_BASE_URL}/api/case-groups/export`, {
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       // Create download link
