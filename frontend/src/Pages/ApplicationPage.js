@@ -167,7 +167,11 @@ const ApplicationPage = () => {
     setCheckingExisting(true);
     try {
       const emailToUse = email || emailParam;
-      const response = await axios.get(`${API_BASE_URL}/api/applications/email/${emailToUse}`);
+      const headers = {};
+      if (currentUser) {
+        headers.Authorization = `Bearer ${await currentUser.getIdToken()}`;
+      }
+      const response = await axios.get(`${API_BASE_URL}/api/applications/email/${emailToUse}`, { headers });
       setExistingApplication(response.data);
     } catch (error) {
       // No existing application found, which is fine

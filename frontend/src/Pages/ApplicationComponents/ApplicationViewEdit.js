@@ -132,11 +132,13 @@ const ApplicationViewEdit = () => {
         applicationData = response.data;
       } else if (email) {
         console.log("Fetching by email from query params:", email);
-        const response = await axios.get(`${API_BASE_URL}/api/applications/email/${email}`);
+        const emailHeaders = currentUser ? { Authorization: `Bearer ${await currentUser.getIdToken()}` } : {};
+        const response = await axios.get(`${API_BASE_URL}/api/applications/email/${email}`, { headers: emailHeaders });
         applicationData = response.data;
       } else if (currentUser?.email) {
         console.log("Fetching by current user email:", currentUser.email);
-        const response = await axios.get(`${API_BASE_URL}/api/applications/email/${currentUser.email}`);
+        const selfHeaders = { Authorization: `Bearer ${await currentUser.getIdToken()}` };
+        const response = await axios.get(`${API_BASE_URL}/api/applications/email/${currentUser.email}`, { headers: selfHeaders });
         applicationData = response.data;
       } else {
         throw new Error("No application identifier provided (need ID, email param, or logged-in user)");
@@ -183,7 +185,7 @@ const ApplicationViewEdit = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, email, currentUser?.email, navigate]);
+  }, [id, email, currentUser, navigate]);
 
   useEffect(() => {
     // Wait for auth to load, then fetch if we have an identifier

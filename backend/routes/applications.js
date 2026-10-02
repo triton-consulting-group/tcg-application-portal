@@ -6,6 +6,7 @@ const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth } = require("../middleware/adminPermissions");
+const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
@@ -543,7 +544,7 @@ router.get("/file-url/*", generalApiLimiter, async (req, res) => {
 });
 
 // By email - allow applicants to view their own application
-router.get("/email/:email", generalApiLimiter, async (req, res) => {
+router.get("/email/:email", generalApiLimiter, verifyFirebaseOwner, async (req, res) => {
   try {
     addNoStore(res);
     const { email } = req.params;
@@ -551,8 +552,6 @@ router.get("/email/:email", generalApiLimiter, async (req, res) => {
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
-    // Only return limited info or require the user to be the owner
-    // For now, we allow it but this could be enhanced with authentication
     res.json(application);
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
@@ -675,7 +674,7 @@ router.get("/:id", generalApiLimiter, requireAdminAuth, async (req, res) => {
 });
 
 // Update by email
-router.put("/email/:email", generalApiLimiter, upload.fields([
+router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },
