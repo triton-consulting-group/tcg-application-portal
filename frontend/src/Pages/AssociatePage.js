@@ -749,7 +749,11 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                 </select>
               ) : (
                 <span style={{
-                  backgroundColor: "#28a745",
+                  backgroundColor:
+                    application.status === "Under Review" ? "#808080" :
+                      (application.status.includes("Yes") || application.status === "Accepted") ? "#3bb143" :
+                        (application.status.includes("No") || application.status === "Rejected") ? "#c21807" :
+                          "#6c757d",
                   color: "white",
                   padding: "4px 8px",
                   borderRadius: "4px",
@@ -1062,37 +1066,37 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     {
       title: "Under Review",
       statuses: ["Under Review"],
-      color: "#e2e8f0"
+      color: "#808080"
     },
     {
       title: "Case Night-No",
       statuses: ["Case Night - No"],
-      color: "#f8d7da"
+      color: "#c21807"
     },
     {
       title: "Case Night-Yes",
       statuses: ["Case Night - Yes"],
-      color: "#bee3f8"
+      color: "#3bb143"
     },
     {
       title: "Final Interview - No",
       statuses: ["Final Interview - No"],
-      color: "#fef5e7"
+      color: "#c21807"
     },
     {
       title: "Final Interview-Yes",
       statuses: ["Final Interview - Yes"],
-      color: "#fef5e7"
+      color: "#3bb143"
     },
     {
       title: "Accepted",
       statuses: ["Accepted"],
-      color: "#c6f6d5"
+      color: "#3bb143"
     },
     {
       title: "Rejected",
       statuses: ["Rejected"],
-      color: "#c6f6d5"
+      color: "#c21807"
     }
   ], []);
 
@@ -1202,12 +1206,12 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
   const handleDragOver = (e) => {
     e.preventDefault();
     e.currentTarget.style.backgroundColor = "#f8f9fa";
-    e.currentTarget.style.border = "3px dashed #007bff";
+    e.currentTarget.style.border = "2px dashed #007bff";
   };
 
   const handleDragLeave = (e) => {
     e.currentTarget.style.backgroundColor = "white";
-    e.currentTarget.style.border = `3px solid ${e.currentTarget.dataset.phaseColor}`;
+    e.currentTarget.style.border = `2px solid ${e.currentTarget.dataset.phaseColor}`;
   };
 
   const handleDrop = async (e, targetPhase) => {
@@ -1375,7 +1379,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                 borderRadius: "8px",
                 padding: "16px",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                border: `3px solid ${phase.color}`,
+                border: `2px solid ${phase.color}`,
                 minHeight: "400px",
                 display: "flex",
                 flexDirection: "column"
@@ -1385,7 +1389,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               onDrop={(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canChangeStatus) ? (e) => {
                 handleDrop(e, phase);
                 e.currentTarget.style.backgroundColor = "white";
-                e.currentTarget.style.border = `3px solid ${phase.color}`;
+                e.currentTarget.style.border = `2px solid ${phase.color}`;
               } : undefined}
               data-phase-color={phase.color}
             >
@@ -1543,7 +1547,11 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
                         View
                       </button>
                       <span style={{
-                        backgroundColor: app.status === "Rejected" ? "#dc3545" : app.status === "Accepted" ? "#28a745" : "#6c757d",
+                        backgroundColor:
+                          app.status === "Under Review" ? "#808080" :
+                            (app.status.includes("Yes") || app.status === "Accepted") ? "#3bb143" :
+                              (app.status.includes("No") || app.status === "Rejected") ? "#c21807" :
+                                "#6c757d",
                         color: "white",
                         padding: "2px 6px",
                         borderRadius: "3px",
