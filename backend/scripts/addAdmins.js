@@ -15,7 +15,8 @@ const addAdmins = async () => {
       { email: "ngolder@ucsd.edu", name: "N Golder" },
       { email: "spodugu@ucsd.edu", name: "S Podugu" },
       { email: "georgema2020@gmail.com", name: "George Ma" },
-      { email: "justinzelu@gmail.com", name: "Justin Zelu" }
+      { email: "justinzelu@gmail.com", name: "Justin Zelu" },
+      { email: "sbhatnagar@ucsd.edu", name: "S Bhatnagar" }
     ];
 
     console.log(`\n📋 Adding ${adminsToAdd.length} admins...\n`);
