@@ -4,6 +4,7 @@ import "./associatePage.css";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
+import { getAdminAuthHeaders } from "../config/adminAuth";
 
 // Feature flag: if true, show an inline status <select> in the "View Applicant" modal
 // Set to false to revert to the original display (plain status badge/span).
@@ -93,17 +94,8 @@ const AssociatePage = () => {
 
   const fetchApplications = async () => {
     try {
-      // Use the backward-compatible endpoint to get all applications with auth token
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      if (!token) {
-        throw new Error("Missing admin token. Please set REACT_APP_ADMIN_API_TOKEN.");
-      }
-
-      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const headers = await getAdminAuthHeaders();
+      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, { headers });
       setApplications(response.data || []);
       setLoading(false);
     } catch (error) {
@@ -162,10 +154,10 @@ const AssociatePage = () => {
   const handleExportCaseGroups = async () => {
     setExporting(true);
     try {
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
+      const headers = await getAdminAuthHeaders();
       const response = await axios.get(`${API_BASE_URL}/api/case-groups/export`, {
         responseType: 'blob',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers
       });
 
       // Create download link
@@ -204,31 +196,19 @@ const AssociatePage = () => {
     }
 
     const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
-    const token = process.env.REACT_APP_ADMIN_API_TOKEN;
 
-    if (!token) {
-      alert("Admin token missing. Please configure REACT_APP_ADMIN_API_TOKEN.");
-      return;
-    }
-
-    axios
-      .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
-        status: newStatus,
-        changedBy: adminEmail,
-        notes: notes
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-admin-email': adminEmail
-        }
-      })
-      .then(() => {
-        return axios.get(`${API_BASE_URL}/api/applications/all`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }); // 🔹 Refetch all applications
-      })
+    getAdminAuthHeaders()
+      .then((authHeaders) =>
+        axios
+          .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
+            status: newStatus,
+            changedBy: adminEmail,
+            notes: notes
+          }, {
+            headers: { ...authHeaders, 'x-admin-email': adminEmail }
+          })
+          .then(() => axios.get(`${API_BASE_URL}/api/applications/all`, { headers: authHeaders })) // 🔹 Refetch all applications
+      )
       .then((response) => {
         setApplications(response.data || []);
         console.log(`✅ Successfully updated application ${applicationId} status to ${newStatus}`);
@@ -656,24 +636,16 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
     }
 
     setIsSubmittingComment(true);
-    const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-    if (!token) {
-      alert("Admin token missing. Please configure REACT_APP_ADMIN_API_TOKEN.");
-      setIsSubmittingComment(false);
-      return;
-    }
 
     try {
       const adminEmail = adminInfo?.email || localStorage.getItem("adminEmail") || "unknown@admin.com";
+      const authHeaders = await getAdminAuthHeaders();
       const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
         comment: newComment,
         adminEmail: adminEmail,
         adminName: adminInfo?.name || "Unknown Admin"
       }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-admin-email': adminEmail
-        }
+        headers: { ...authHeaders, 'x-admin-email': adminEmail }
       });
 
       if (response.data) {
@@ -1156,16 +1128,11 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     try {
       // Build query string with all statuses for this phase
       const statusesParam = phase.statuses.join(',');
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      if (!token) {
-        throw new Error("Missing admin token. Please set REACT_APP_ADMIN_API_TOKEN.");
-      }
+      const headers = await getAdminAuthHeaders();
       const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
         params: { statuses: statusesParam },
         responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers
       });
   
       // Create download link
@@ -1261,10 +1228,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
 
     try {
       const adminEmail = localStorage.getItem("adminEmail") || "Unknown Admin";
-      const token = process.env.REACT_APP_ADMIN_API_TOKEN;
-      if (!token) {
-        throw new Error("Missing admin token. Please set REACT_APP_ADMIN_API_TOKEN.");
-      }
+      const authHeaders = await getAdminAuthHeaders();
 
       // Update the application status
       await axios.put(`${API_BASE_URL}/api/applications/${applicationId}`, {
@@ -1272,10 +1236,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
         changedBy: adminEmail,
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
       }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-admin-email': adminEmail
-        }
+        headers: { ...authHeaders, 'x-admin-email': adminEmail }
       });
 
       // Update local state
