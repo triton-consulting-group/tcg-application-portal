@@ -3,14 +3,13 @@ jest.mock("../config/firebaseAdmin", () => ({
   getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
 }));
 jest.mock("../models/Admin", () => ({ findOne: jest.fn() }));
-jest.mock("../models/User", () => ({ findOne: jest.fn() }));
 jest.mock("../models/CaseGroupAssignment", () => ({
   find: jest.fn(), aggregate: jest.fn(), distinct: jest.fn()
 }));
 jest.mock("../models/Application", () => ({ find: jest.fn() }));
 
 const express = require("express");
-const User = require("../models/User");
+const Admin = require("../models/Admin");
 const CaseGroupAssignment = require("../models/CaseGroupAssignment");
 const Application = require("../models/Application");
 const caseGroups = require("../routes/caseGroups");
@@ -58,17 +57,17 @@ test.each(paths)("GET %s with an invalid bearer token is 401", async (path) => {
   expectNoDbAccess();
 });
 
-test.each(paths)("GET %s as a signed-in non-associate is 403", async (path) => {
+test.each(paths)("GET %s as a signed-in non-admin is 403", async (path) => {
   mockVerifyIdToken.mockResolvedValue({ email: "applicant@ucsd.edu", email_verified: true });
-  User.findOne.mockResolvedValue(null);
+  Admin.findOne.mockResolvedValue(null);
   const res = await fetch(base + path, bearer);
   expect(res.status).toBe(403);
   expectNoDbAccess();
 });
 
-test("GET /summary as an associate reaches the handler", async () => {
+test("GET /summary as an active admin reaches the handler", async () => {
   mockVerifyIdToken.mockResolvedValue({ email: "member@ucsd.edu", email_verified: true });
-  User.findOne.mockResolvedValue({ email: "member@ucsd.edu", role: "associate" });
+  Admin.findOne.mockResolvedValue({ email: "member@ucsd.edu", role: "admin" });
   CaseGroupAssignment.aggregate.mockResolvedValue([{ _id: { candidateType: "Tech" }, count: 3 }]);
   const res = await fetch(base + "/summary", bearer);
   expect(res.status).toBe(200);

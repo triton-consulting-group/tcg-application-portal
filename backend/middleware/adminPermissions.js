@@ -1,5 +1,4 @@
 const Admin = require('../models/Admin');
-const User = require('../models/User');
 const { getFirebaseAuth } = require('../config/firebaseAdmin');
 
 // Middleware to check if admin has specific permission
@@ -76,27 +75,6 @@ const requireAdminAuth = async (req, res, next) => {
   }
 };
 
-// Middleware to verify the caller is a signed-in associate (Firebase ID token)
-const requireAssociateAuth = async (req, res, next) => {
-  try {
-    const email = await getVerifiedEmail(req);
-    if (!email) {
-      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
-    }
-
-    const associate = await User.findOne({ email, role: "associate" });
-    if (!associate) {
-      return res.status(403).json({ error: "❌ Associate access required" });
-    }
-
-    req.associate = associate;
-    next();
-  } catch (error) {
-    console.error("❌ Error checking associate authentication:", error);
-    res.status(500).json({ error: "❌ Failed to verify authentication" });
-  }
-};
-
 // Specific permission checkers
 const requireStatusChangePermission = checkAdminPermission('canChangeStatus');
 const requireCommentPermission = checkAdminPermission('canAddComments');
@@ -105,7 +83,6 @@ const requireDragDropPermission = checkAdminPermission('canDragDrop');
 module.exports = {
   checkAdminPermission,
   requireAdminAuth,
-  requireAssociateAuth,
   requireStatusChangePermission,
   requireCommentPermission,
   requireDragDropPermission

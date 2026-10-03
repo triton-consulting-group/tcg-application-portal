@@ -184,7 +184,7 @@ This creates a CSV file in `backend/exports/` with:
 
 ### API Endpoints
 
-The system provides several API endpoints for managing case groups. All of them require a signed-in associate (`Authorization: Bearer <Firebase ID token>` for a user with the `associate` role):
+The system provides several API endpoints for managing case groups. All of them require a signed-in admin (`Authorization: Bearer <Firebase ID token>` for an active admin):
 
 - `GET /api/case-groups/assignments` - Get all assignments
 - `GET /api/case-groups/summary` - Get assignment summary statistics
