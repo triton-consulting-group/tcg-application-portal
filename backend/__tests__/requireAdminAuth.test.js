@@ -94,11 +94,12 @@ test("returns 500 when the admin lookup fails", async () => {
   expect(res.status).toHaveBeenCalledWith(500);
 });
 
-// Transitional: removed in Task 4
-test("still accepts the legacy shared token during rollout", async () => {
+test("rejects the retired shared token even if ADMIN_API_TOKEN is still set", async () => {
   process.env.ADMIN_API_TOKEN = "legacy-token";
+  verifyIdToken.mockRejectedValue(new Error("Decoding Firebase ID token failed"));
+  const res = mockRes();
   const next = jest.fn();
-  await requireAdminAuth(reqWith("Bearer legacy-token"), mockRes(), next);
-  expect(next).toHaveBeenCalled();
-  expect(verifyIdToken).not.toHaveBeenCalled();
+  await requireAdminAuth(reqWith("Bearer legacy-token"), res, next);
+  expect(res.status).toHaveBeenCalledWith(401);
+  expect(next).not.toHaveBeenCalled();
 });
