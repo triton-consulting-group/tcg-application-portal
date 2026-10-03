@@ -1,4 +1,7 @@
-/backend/.env
+uploads/
+exports/
+*.env
+.env*
 # --- Node / React standard ignores ---
 
 # Dependency directories
