@@ -1,41 +1,6 @@
 const Admin = require('../models/Admin');
 const { getFirebaseAuth } = require('../config/firebaseAdmin');
 
-// Middleware to check if admin has specific permission
-const checkAdminPermission = (permission) => {
-  return async (req, res, next) => {
-    try {
-      const adminEmail = req.headers['x-admin-email'];
-      
-      if (!adminEmail) {
-        return res.status(401).json({ error: "❌ Admin email required in headers" });
-      }
-
-      const admin = await Admin.findOne({ email: adminEmail, isActive: true });
-      
-      if (!admin) {
-        return res.status(403).json({ error: "❌ Admin not found or inactive" });
-      }
-
-      // Super admins have all permissions, regular admins need explicit permission
-      if (admin.role !== "super_admin" && !admin.permissions[permission]) {
-        return res.status(403).json({ 
-          error: `❌ Permission denied. You need ${permission} permission to perform this action.`,
-          requiredPermission: permission,
-          adminRole: admin.role
-        });
-      }
-
-      // Add admin info to request for use in route handlers
-      req.admin = admin;
-      next();
-    } catch (error) {
-      console.error("❌ Error checking admin permission:", error);
-      res.status(500).json({ error: "❌ Failed to verify admin permissions" });
-    }
-  };
-};
-
 // Returns the verified email from the request's Firebase ID token, or null if there is none
 const getVerifiedEmail = async (req) => {
   const header = req.headers['authorization'] || '';
@@ -73,6 +38,22 @@ const requireAdminAuth = async (req, res, next) => {
     console.error("❌ Error checking admin authentication:", error);
     res.status(500).json({ error: "❌ Failed to verify authentication" });
   }
+};
+
+// Middleware to check the verified admin (from requireAdminAuth) has a specific permission
+const checkAdminPermission = (permission) => {
+  return (req, res, next) =>
+    requireAdminAuth(req, res, () => {
+      // Super admins have all permissions, regular admins need explicit permission
+      if (req.admin.role !== "super_admin" && !req.admin.permissions?.[permission]) {
+        return res.status(403).json({
+          error: `❌ Permission denied. You need ${permission} permission to perform this action.`,
+          requiredPermission: permission,
+          adminRole: req.admin.role
+        });
+      }
+      next();
+    });
 };
 
 // Specific permission checkers
