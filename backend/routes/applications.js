@@ -737,7 +737,7 @@ router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.field
 router.put("/:id", requireStatusChangePermission, async (req, res) => {
   try {
     addNoStore(res);
-    const { status, changedBy, notes } = req.body;
+    const { status, notes } = req.body;
 
     if (!["Under Review", "Case Night - Yes", "Case Night - No", "Final Interview - Yes", "Final Interview - No", "Final Interview - Maybe", "Accepted", "Rejected"].includes(status)) {
       return res.status(400).json({ error: "❌ Invalid status value" });
@@ -750,7 +750,7 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
 
     const statusHistoryEntry = {
       status,
-      changedBy: changedBy || "Unknown Admin",
+      changedBy: req.admin.email,
       changedAt: new Date(),
       notes: notes || ""
     };
@@ -775,10 +775,10 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
 router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   try {
     addNoStore(res);
-    const { comment, adminEmail, adminName } = req.body;
+    const { comment } = req.body;
 
-    if (!comment || !adminEmail || !adminName) {
-      return res.status(400).json({ error: "❌ Comment, admin email, and admin name are required." });
+    if (!comment) {
+      return res.status(400).json({ error: "❌ Comment is required." });
     }
 
     const application = await Application.findById(req.params.id);
@@ -788,9 +788,9 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
 
     const commentEntry = {
       comment: comment.trim(),
-      commentedBy: adminEmail,
+      commentedBy: req.admin.email,
       commentedAt: new Date(),
-      adminName: adminName.trim()
+      adminName: req.admin.name
     };
 
     const updatedApplication = await Application.findByIdAndUpdate(
