@@ -7,6 +7,30 @@ import axios from "axios";
 import API_BASE_URL from "../../config/api";
 import TCGLogo from "../../assets/Images/TCGLogo.png";
 
+// Registers the signed-in user and returns their role. Both calls carry the Firebase ID token;
+// the backend takes the email from the token, so users can only register or look up themselves.
+const registerAndFetchRole = async (firebaseUser) => {
+  const headers = { Authorization: `Bearer ${await firebaseUser.getIdToken()}` };
+
+  // First, try to register the user (this will create them if they don't exist)
+  try {
+    await axios.post(`${API_BASE_URL}/api/auth/register`, {
+      name: firebaseUser.displayName || ""
+    }, { headers });
+  } catch (error) {
+    console.error("Error registering user:", error);
+  }
+
+  // Then get their role
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/auth/role/${encodeURIComponent(firebaseUser.email)}`, { headers });
+    return response.data.role || "applicant";
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return "applicant"; // Default to applicant if role fetch fails
+  }
+};
+
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("applicant");
@@ -18,24 +42,7 @@ const Navbar = () => {
       setUser(currentUser);
 
       if (currentUser) {
-        // First, try to register the user (this will create them if they don't exist)
-        try {
-          await axios.post(`${API_BASE_URL}/api/auth/register`, {
-            email: currentUser.email,
-            name: currentUser.displayName || ""
-          });
-        } catch (error) {
-          console.error("Error registering user:", error);
-        }
-
-        // Then get their role
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/auth/role/${currentUser.email}`);
-          setRole(response.data.role || "applicant");
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setRole("applicant"); // Default to applicant if role fetch fails
-        }
+        setRole(await registerAndFetchRole(currentUser));
       } else {
         setRole("applicant");
       }
@@ -56,24 +63,7 @@ const Navbar = () => {
       try {
         const result = await signInWithPopup(auth, provider);
         
-        // First, try to register the user (this will create them if they don't exist)
-        try {
-          await axios.post(`${API_BASE_URL}/api/auth/register`, {
-            email: result.user.email,
-            name: result.user.displayName || ""
-          });
-        } catch (error) {
-          console.error("Error registering user:", error);
-        }
-
-        // Then get their role
-        try {
-          const response = await axios.get(`${API_BASE_URL}/api/auth/role/${result.user.email}`);
-          setRole(response.data.role || "applicant");
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setRole("applicant");
-        }
+        setRole(await registerAndFetchRole(result.user));
 
         // After successful login, navigate to their application
         navigate(`/application/view?email=${encodeURIComponent(result.user.email)}`);
@@ -97,24 +87,7 @@ const Navbar = () => {
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
 
-      // First, try to register the user (this will create them if they don't exist)
-      try {
-        await axios.post(`${API_BASE_URL}/api/auth/register`, {
-          email: result.user.email,
-          name: result.user.displayName || ""
-        });
-      } catch (error) {
-        console.error("Error registering user:", error);
-      }
-
-      // Then get their role
-      try {
-        const response = await axios.get(`${API_BASE_URL}/api/auth/role/${result.user.email}`);
-        setRole(response.data.role || "applicant");
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-        setRole("applicant"); // Default to applicant if role fetch fails
-      }
+      setRole(await registerAndFetchRole(result.user));
 
       // Redirect user after login
       navigate("/");
