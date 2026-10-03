@@ -196,17 +196,14 @@ const AssociatePage = () => {
       return;
     }
 
-    const adminEmail = localStorage.getItem("adminEmail") || currentUser?.email || "Unknown Admin";
-
     getAdminAuthHeaders()
       .then((authHeaders) =>
         axios
           .put(`${API_BASE_URL}/api/applications/${applicationId}`, {
             status: newStatus,
-            changedBy: adminEmail,
             notes: notes
           }, {
-            headers: { ...authHeaders, 'x-admin-email': adminEmail }
+            headers: authHeaders
           })
           .then(() => axios.get(`${API_BASE_URL}/api/applications/all`, { headers: authHeaders })) // 🔹 Refetch all applications
       )
@@ -639,14 +636,11 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
     setIsSubmittingComment(true);
 
     try {
-      const adminEmail = adminInfo?.email || localStorage.getItem("adminEmail") || "unknown@admin.com";
       const authHeaders = await getAdminAuthHeaders();
       const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
-        comment: newComment,
-        adminEmail: adminEmail,
-        adminName: adminInfo?.name || "Unknown Admin"
+        comment: newComment
       }, {
-        headers: { ...authHeaders, 'x-admin-email': adminEmail }
+        headers: authHeaders
       });
 
       if (response.data) {
@@ -1228,16 +1222,14 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     }
 
     try {
-      const adminEmail = localStorage.getItem("adminEmail") || "Unknown Admin";
       const authHeaders = await getAdminAuthHeaders();
 
       // Update the application status
       await axios.put(`${API_BASE_URL}/api/applications/${applicationId}`, {
         status: newStatus,
-        changedBy: adminEmail,
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
       }, {
-        headers: { ...authHeaders, 'x-admin-email': adminEmail }
+        headers: authHeaders
       });
 
       // Update local state
