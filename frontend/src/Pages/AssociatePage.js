@@ -45,7 +45,8 @@ const AssociatePage = () => {
 
   const checkAdminStatus = useCallback(async (email) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/admin/check`, { email });
+      const headers = await getAdminAuthHeaders();
+      const response = await axios.post(`${API_BASE_URL}/api/admin/check`, { email }, { headers });
       if (response.data.isAdmin) {
         setIsAdmin(true);
         setAdminInfo(response.data.admin);

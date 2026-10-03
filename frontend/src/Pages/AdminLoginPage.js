@@ -17,10 +17,12 @@ const AdminLoginPage = () => {
       const result = await signInWithPopup(auth, provider);
       
       // Check if the user is an admin
+      const idToken = await result.user.getIdToken();
       const response = await fetch(`${API_BASE_URL}/api/admin/check`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({ email: result.user.email }),
       });

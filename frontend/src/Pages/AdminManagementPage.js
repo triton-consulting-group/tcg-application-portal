@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import API_BASE_URL from "../config/api";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./Home/firebaseConfig";
+import { getAdminAuthHeaders } from "../config/adminAuth";
 
 const AdminManagementPage = () => {
   const navigate = useNavigate();
@@ -23,14 +26,22 @@ const AdminManagementPage = () => {
   });
 
   useEffect(() => {
-    fetchAdmins();
+    // Firebase restores the session asynchronously; fetch only once a user exists
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchAdmins();
+      } else {
+        setError("Please sign in as an admin");
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin`, {
-        data: { email: localStorage.getItem("adminEmail") }
-      });
+      const headers = await getAdminAuthHeaders();
+      const response = await axios.get(`${API_BASE_URL}/api/admin`, { headers });
       setAdmins(response.data);
       setLoading(false);
     } catch (error) {
@@ -42,10 +53,9 @@ const AdminManagementPage = () => {
 
   const handleCreateAdmin = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/api/admin`, {
-        ...newAdmin,
-        email: localStorage.getItem("adminEmail")
-      });
+      // Send the form as-is (this previously overwrote the new admin's email with the caller's)
+      const headers = await getAdminAuthHeaders();
+      await axios.post(`${API_BASE_URL}/api/admin`, newAdmin, { headers });
       
       setNewAdmin({
         email: "",
@@ -71,9 +81,8 @@ const AdminManagementPage = () => {
   const handleDeactivateAdmin = async (email) => {
     if (window.confirm(`Are you sure you want to deactivate ${email}?`)) {
       try {
-        await axios.delete(`${API_BASE_URL}/api/admin/${email}`, {
-          data: { email: localStorage.getItem("adminEmail") }
-        });
+        const headers = await getAdminAuthHeaders();
+        await axios.delete(`${API_BASE_URL}/api/admin/${encodeURIComponent(email)}`, { headers });
         fetchAdmins();
       } catch (error) {
         console.error("Error deactivating admin:", error);
