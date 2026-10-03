@@ -1,4 +1,5 @@
 const Admin = require('../models/Admin');
+const User = require('../models/User');
 const { getFirebaseAuth } = require('../config/firebaseAdmin');
 
 // Middleware to check if admin has specific permission
@@ -36,27 +37,32 @@ const checkAdminPermission = (permission) => {
   };
 };
 
+// Returns the verified email from the request's Firebase ID token, or null if there is none
+const getVerifiedEmail = async (req) => {
+  const header = req.headers['authorization'] || '';
+  if (!header.startsWith('Bearer ')) {
+    return null;
+  }
+
+  let decoded;
+  try {
+    decoded = await getFirebaseAuth().verifyIdToken(header.slice('Bearer '.length));
+  } catch (verifyError) {
+    return null;
+  }
+
+  return decoded.email && decoded.email_verified ? decoded.email : null;
+};
+
 // Middleware to verify the caller is an active admin (Firebase ID token)
 const requireAdminAuth = async (req, res, next) => {
   try {
-    const header = req.headers['authorization'] || '';
-    if (!header.startsWith('Bearer ')) {
-      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
-    }
-    const token = header.slice('Bearer '.length);
-
-    let decoded;
-    try {
-      decoded = await getFirebaseAuth().verifyIdToken(token);
-    } catch (verifyError) {
+    const email = await getVerifiedEmail(req);
+    if (!email) {
       return res.status(401).json({ error: "❌ Invalid or missing authentication" });
     }
 
-    if (!decoded.email || !decoded.email_verified) {
-      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
-    }
-
-    const admin = await Admin.findOne({ email: decoded.email, isActive: true });
+    const admin = await Admin.findOne({ email, isActive: true });
     if (!admin) {
       return res.status(403).json({ error: "❌ Admin not found or inactive" });
     }
@@ -70,6 +76,27 @@ const requireAdminAuth = async (req, res, next) => {
   }
 };
 
+// Middleware to verify the caller is a signed-in associate (Firebase ID token)
+const requireAssociateAuth = async (req, res, next) => {
+  try {
+    const email = await getVerifiedEmail(req);
+    if (!email) {
+      return res.status(401).json({ error: "❌ Invalid or missing authentication" });
+    }
+
+    const associate = await User.findOne({ email, role: "associate" });
+    if (!associate) {
+      return res.status(403).json({ error: "❌ Associate access required" });
+    }
+
+    req.associate = associate;
+    next();
+  } catch (error) {
+    console.error("❌ Error checking associate authentication:", error);
+    res.status(500).json({ error: "❌ Failed to verify authentication" });
+  }
+};
+
 // Specific permission checkers
 const requireStatusChangePermission = checkAdminPermission('canChangeStatus');
 const requireCommentPermission = checkAdminPermission('canAddComments');
@@ -78,6 +105,7 @@ const requireDragDropPermission = checkAdminPermission('canDragDrop');
 module.exports = {
   checkAdminPermission,
   requireAdminAuth,
+  requireAssociateAuth,
   requireStatusChangePermission,
   requireCommentPermission,
   requireDragDropPermission

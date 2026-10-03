@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const CaseGroupAssignment = require("../models/CaseGroupAssignment");
 const Application = require("../models/Application");
+const { requireAssociateAuth } = require("../middleware/adminPermissions");
+
+// Every case-group route exposes applicant data — signed-in associates only
+router.use(requireAssociateAuth);
 
 // 🟢 Get all case group assignments
 router.get("/assignments", async (req, res) => {
