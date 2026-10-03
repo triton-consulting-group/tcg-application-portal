@@ -82,6 +82,7 @@ const requireDragDropPermission = checkAdminPermission('canDragDrop');
 
 module.exports = {
   checkAdminPermission,
+  getVerifiedEmail,
   requireAdminAuth,
   requireStatusChangePermission,
   requireCommentPermission,
