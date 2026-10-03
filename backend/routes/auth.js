@@ -1,9 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const { getVerifiedEmail } = require("../middleware/adminPermissions");
+const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 
-// Get user role based on email
-router.get("/role/:email", async (req, res) => {
+// Get the signed-in user's own role (the token's email must match :email)
+router.get("/role/:email", verifyFirebaseOwner, async (req, res) => {
   try {
     const { email } = req.params;
     const user = await User.findOne({ email });
@@ -18,18 +20,18 @@ router.get("/role/:email", async (req, res) => {
   }
 });
 
-// Create or update user
+// Create or update the signed-in user (email comes from the verified token, never the body)
 router.post("/register", async (req, res) => {
   try {
-    const { email, name } = req.body;
-    
+    const email = await getVerifiedEmail(req);
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(401).json({ message: "Invalid or missing authentication" });
     }
+    const { name } = req.body;
 
     // Check if user already exists
     let user = await User.findOne({ email });
-    
+
     if (user) {
       // Update existing user
       user.name = name || user.name;
