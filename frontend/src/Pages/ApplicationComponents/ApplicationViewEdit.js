@@ -7,12 +7,14 @@ import {
   Box
 } from "@chakra-ui/react";
 
-// Helper function to get signed URL for file access
+// Helper function to get signed URL for file access (sends the applicant's ID token)
 const getFileUrl = async (filePath) => {
   if (!filePath) return "";
-  
+
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    const user = getAuth().currentUser;
+    const headers = user ? { Authorization: `Bearer ${await user.getIdToken()}` } : {};
+    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`, { headers });
     return response.data.url;
   } catch (error) {
     console.error("Error getting file URL:", error);

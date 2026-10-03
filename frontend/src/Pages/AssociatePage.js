@@ -10,12 +10,13 @@ import { getAdminAuthHeaders } from "../config/adminAuth";
 // Set to false to revert to the original display (plain status badge/span).
 const ENABLE_INLINE_STATUS_IN_MODAL = true;
 
-// Helper function to get signed URL for file access
+// Helper function to get signed URL for file access (admin-only view)
 const getFileUrl = async (filePath) => {
   if (!filePath) return "";
 
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`);
+    const headers = await getAdminAuthHeaders();
+    const response = await axios.get(`${API_BASE_URL}/api/applications/file-url/${encodeURIComponent(filePath)}`, { headers });
     return response.data.url;
   } catch (error) {
     console.error("Error getting file URL:", error);
