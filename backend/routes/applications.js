@@ -138,6 +138,8 @@ if (isS3Configured()) {
   });
 } else {
   console.log("⚠️ S3 not configured, falling back to local storage");
+  // uploads/ is gitignored, so create it on first run (multer does not when destination is a function)
+  require("fs").mkdirSync("uploads", { recursive: true });
   storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "uploads/"),
     filename: (req, file, cb) => {
