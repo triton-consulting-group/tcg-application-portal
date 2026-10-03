@@ -7,6 +7,7 @@ const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth } = require("../middleware/adminPermissions");
 const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
+const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
@@ -524,17 +525,13 @@ router.get("/", generalApiLimiter, requireAdminAuth, async (req, res) => {
   }
 });
 
-// Signed file URL
-router.get("/file-url/*", generalApiLimiter, async (req, res) => {
+// Signed file URL - admins, or the applicant who owns the file
+router.get("/file-url/*", generalApiLimiter, requireFileAccess, async (req, res) => {
   try {
     addNoStore(res);
-    const filePath = req.params[0];
+    const s3Key = req.fileKey; // normalized and authorized by requireFileAccess
     if (!isS3Configured()) {
-      return res.json({ url: `${process.env.BACKEND_URL || 'http://localhost:5002'}/${filePath}` });
-    }
-    let s3Key = filePath;
-    if (filePath.includes('amazonaws.com/')) {
-      s3Key = filePath.split('amazonaws.com/')[1];
+      return res.json({ url: `${process.env.BACKEND_URL || 'http://localhost:5002'}/${s3Key}` });
     }
     const { getSignedUrl } = require("../config/s3Config");
     const signedUrl = getSignedUrl(s3Key, 3600);
