@@ -171,7 +171,7 @@ const Navbar = () => {
             loadingText="Signing in..."
             disabled={isSigningIn}
           >
-            Login
+            Sign in
           </Button>
         )}
       </Box>

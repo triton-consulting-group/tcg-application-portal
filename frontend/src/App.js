@@ -1,6 +1,7 @@
 import React from "react";
 import { Provider } from "./components/ui/provider";
 import Navbar from "./components/ui/Navbar";
+import Footer from "./components/ui/Footer";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./Pages/Home/Homepage";
 import ApplicationPage from "./Pages/ApplicationPage";
@@ -39,6 +40,7 @@ const App = () => {
           <Route path="/admin-login" element={<AdminLoginPage />} />
 
         </Routes>
+        <Footer />
       </Router>
     </Provider>
   );

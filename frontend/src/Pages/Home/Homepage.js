@@ -132,25 +132,6 @@ function HomePage() {
                     >
                         Apply Now
                     </Button>
-                    
-                    <Button 
-                        backgroundColor="#718096" 
-                        color="white"
-                        _hover={{ backgroundColor: "#5a6268" }}
-                        border="none"
-                        padding="10px 20px"
-                        borderRadius="6px"
-                        fontSize="14px"
-                        fontWeight="500"
-                        height="40px"
-                        minWidth="140px"
-                        onClick={() => navigate("/admin-login")}
-                        boxShadow="0 2px 6px rgba(113, 128, 150, 0.2)"
-                        _active={{ transform: "translateY(1px)" }}
-                        mt="10px"
-                    >
-                        Admin Login
-                    </Button>
                 </VStack>
 
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
