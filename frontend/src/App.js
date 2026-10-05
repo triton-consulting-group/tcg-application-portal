@@ -38,6 +38,9 @@ const App = () => {
           {/*Admin Login Page Route*/}
           <Route path="/admin-login" element={<AdminLoginPage />} />
 
+          {/* 404 Catch-all Route*/}
+          <Route path="*" element={<h1>Page not found</h1>} />
+
         </Routes>
       </Router>
     </Provider>
