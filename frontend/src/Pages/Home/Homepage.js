@@ -13,6 +13,7 @@ import {
     Text, 
     Flex, 
     Image,
+    Alert,
 } from "@chakra-ui/react";
 import logo from "../../assets/Images/TCGLogo.png";
 import API_BASE_URL from "../../config/api";
@@ -21,6 +22,7 @@ function HomePage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [shouldNavigateAfterLogin, setShouldNavigateAfterLogin] = useState(false);
+    const [applyMessage, setApplyMessage] = useState(null);
 
     const navigate = useNavigate();
 
@@ -49,6 +51,7 @@ function HomePage() {
 
     // Check if application window is open
     const handleApplyClick = async () => {
+        setApplyMessage(null);
         try {
             const base = API_BASE_URL.replace(/\/$/, ""); // strip trailing slash just in case
             const url = `${base}/api/applications/window-status`;
@@ -60,14 +63,21 @@ function HomePage() {
             // Enforce only when gating is active
             if (data.isActive && !data.isOpen) {
                 if (data.isBeforeStart) {
-                    alert("Applications are not open yet. Please check back later!");
+                    if (data.start) {
+                        const start = new Date(data.start);
+                        const day = start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+                        const time = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+                        setApplyMessage(`Applications open ${day} at ${time}`);
+                    } else {
+                        setApplyMessage("Applications are not open yet. Please check back later!");
+                    }
                     return;
                 } 
                 if (data.isAfterDeadline) {
-                    alert("The application deadline has passed.");
+                    setApplyMessage("The application deadline has passed.");
                     return;
                 }
-                alert("Applications are currently closed.");
+                setApplyMessage("Applications are currently closed.");
                 return;
             }
 
@@ -82,7 +92,7 @@ function HomePage() {
             }
         } catch (err) {
             console.error("Error checking window status:", err);
-            alert("Unable to check application window right now. Please try again.");
+            setApplyMessage("Unable to check application window right now. Please try again.");
         }
     };
 
@@ -151,6 +161,13 @@ function HomePage() {
                     >
                         Admin Login
                     </Button>
+
+                    {applyMessage && (
+                        <Alert.Root status="warning" maxWidth="400px">
+                            <Alert.Indicator />
+                            <Alert.Title>{applyMessage}</Alert.Title>
+                        </Alert.Root>
+                    )}
                 </VStack>
 
                 <Modal isOpen={isModalOpen} onClose={closeModal}>
