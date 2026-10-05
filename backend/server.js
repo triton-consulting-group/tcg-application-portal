@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const helmet = require("helmet");
 const connectDB = require("./config/db");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 const { isS3Configured } = require("./config/s3Config");
@@ -14,6 +15,8 @@ const app = express();
 app.set('trust proxy', true);
 
 // Security and performance middleware
+app.use(helmet());
+
 app.use(cors({
   origin: [
     'http://localhost:3000',
