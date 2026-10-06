@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 
 const AdminManagementPage = () => {
@@ -23,18 +25,35 @@ const AdminManagementPage = () => {
   });
 
   useEffect(() => {
-    fetchAdmins();
-  }, []);
+    // Wait for Firebase to resolve sign-in before calling the API
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/admin-login");
+        return;
+      }
+      fetchAdmins();
+    });
+    return unsubscribe;
+  }, [navigate]);
+
+  // The server reads the caller's identity from this token, not from the request body
+  const getAuthHeaders = async () => ({
+    Authorization: `Bearer ${await auth.currentUser.getIdToken()}`
+  });
 
   const fetchAdmins = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/admin`, {
-        data: { email: localStorage.getItem("adminEmail") }
+        headers: await getAuthHeaders()
       });
       setAdmins(response.data);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching admins:", error);
+      if ([401, 403].includes(error.response?.status)) {
+        navigate("/associate");
+        return;
+      }
       setError("Failed to fetch admins");
       setLoading(false);
     }
@@ -42,9 +61,8 @@ const AdminManagementPage = () => {
 
   const handleCreateAdmin = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/api/admin`, {
-        ...newAdmin,
-        email: localStorage.getItem("adminEmail")
+      await axios.post(`${API_BASE_URL}/api/admin`, newAdmin, {
+        headers: await getAuthHeaders()
       });
       
       setNewAdmin({
@@ -72,7 +90,7 @@ const AdminManagementPage = () => {
     if (window.confirm(`Are you sure you want to deactivate ${email}?`)) {
       try {
         await axios.delete(`${API_BASE_URL}/api/admin/${email}`, {
-          data: { email: localStorage.getItem("adminEmail") }
+          headers: await getAuthHeaders()
         });
         fetchAdmins();
       } catch (error) {

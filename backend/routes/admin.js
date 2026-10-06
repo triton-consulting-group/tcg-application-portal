@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 const Admin = require("../models/Admin");
 const User = require("../models/User");
+const { requireFirebaseUser } = require("../middleware/firebaseAuth");
 
-// Middleware to check if user is admin
+// Middleware to check if user is admin. Runs after requireFirebaseUser,
+// so the email comes from the verified token, not the request body.
 const isAdmin = async (req, res, next) => {
   try {
-    const { email } = req.body;
-    const admin = await Admin.findOne({ email, isActive: true });
+    const admin = await Admin.findOne({ email: req.firebaseEmail, isActive: true });
     
     if (!admin) {
       return res.status(403).json({ error: "Access denied. Admin privileges required." });
@@ -50,7 +51,7 @@ router.post("/check", async (req, res) => {
 });
 
 // Get all admins (super admin only)
-router.get("/", isAdmin, async (req, res) => {
+router.get("/", requireFirebaseUser, isAdmin, async (req, res) => {
   try {
     if (req.admin.role !== "super_admin" && !req.admin.permissions.canManageAdmins) {
       return res.status(403).json({ error: "Insufficient permissions" });
@@ -65,7 +66,7 @@ router.get("/", isAdmin, async (req, res) => {
 });
 
 // Create new admin (super admin only)
-router.post("/", isAdmin, async (req, res) => {
+router.post("/", requireFirebaseUser, isAdmin, async (req, res) => {
   try {
     if (req.admin.role !== "super_admin" && !req.admin.permissions.canManageAdmins) {
       return res.status(403).json({ error: "Insufficient permissions" });
@@ -111,7 +112,7 @@ router.post("/", isAdmin, async (req, res) => {
 });
 
 // Update admin (super admin only)
-router.put("/:email", isAdmin, async (req, res) => {
+router.put("/:email", requireFirebaseUser, isAdmin, async (req, res) => {
   try {
     if (req.admin.role !== "super_admin" && !req.admin.permissions.canManageAdmins) {
       return res.status(403).json({ error: "Insufficient permissions" });
@@ -146,7 +147,7 @@ router.put("/:email", isAdmin, async (req, res) => {
 });
 
 // Deactivate admin (super admin only)
-router.delete("/:email", isAdmin, async (req, res) => {
+router.delete("/:email", requireFirebaseUser, isAdmin, async (req, res) => {
   try {
     if (req.admin.role !== "super_admin" && !req.admin.permissions.canManageAdmins) {
       return res.status(403).json({ error: "Insufficient permissions" });
