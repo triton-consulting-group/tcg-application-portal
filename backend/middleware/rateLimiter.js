@@ -21,18 +21,21 @@ const applicationSubmissionLimiter = rateLimit({
   }
 });
 
-// Rate limiter for general API requests (scaled for 300+ applications)
+// Rate limiter for signed-in API requests, counted per verified user (not per IP), so a whole board
+// reviewing on one network doesn't share one budget and a spoofed X-Forwarded-For can't dodge it.
+// Must run after the route's sign-in check, which sets req.verifiedEmail.
 const generalApiLimiter = rateLimit({
   windowMs: scalingConfig.rateLimits.generalApi.windowMs,
-  max: scalingConfig.rateLimits.generalApi.max, // 3000 requests per 15 minutes
+  max: scalingConfig.rateLimits.generalApi.max,
+  keyGenerator: (req) => (req.verifiedEmail ? `user:${req.verifiedEmail.toLowerCase()}` : `ip:${req.ip}`),
   message: {
-    error: 'Too many requests from this IP, please try again after 15 minutes.'
+    error: 'Too many requests from this account, please try again after 15 minutes.'
   },
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
     res.status(429).json({
-      error: 'Rate limit exceeded. Please try again later.',
+      error: '❌ Too many requests from this account. Please wait a few minutes and try again.',
       retryAfter: Math.ceil(req.rateLimit.resetTime / 1000)
     });
   }

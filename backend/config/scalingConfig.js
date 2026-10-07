@@ -10,7 +10,7 @@ const scalingConfig = {
     },
     generalApi: {
       windowMs: 15 * 60 * 1000,
-      max: 3000, // Increased from 1000 to 3000
+      max: 1000, // per signed-in user (load test: a busy reviewer makes ~140 per 15 min)
       skipSuccessfulRequests: false,
       skipFailedRequests: false
     },
