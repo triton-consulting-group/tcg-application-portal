@@ -1,0 +1,15 @@
+{
+  "name": "tcg-loadtest",
+  "private": true,
+  "description": "Local bottleneck tests for the TCG application portal (never touches production)",
+  "scripts": {
+    "stack": "node stack.js",
+    "rush": "node run.js rush",
+    "rush:shared-ip": "node run.js rush --shared-ip",
+    "review": "node run.js review",
+    "clean": "node -e \"require('fs').rmSync('.tmp',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.4"
+  }
+}
