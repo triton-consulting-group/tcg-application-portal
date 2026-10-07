@@ -17,6 +17,7 @@ const ApplicationPage = () => {
   const [formData, setFormData] = useState({
     email: emailParam || "",
     fullName: "",
+    phoneNumber: "",
     studentYear: "",
     major: "",
     appliedBefore: "",
@@ -462,7 +463,8 @@ const ApplicationPage = () => {
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Phone Number *</p>
             <input 
-              type="text" 
+              type="tel" 
+              autoComplete="tel"
               value={formData.phoneNumber} 
               onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} 
               style={styles.input}

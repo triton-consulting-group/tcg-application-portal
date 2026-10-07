@@ -11,6 +11,10 @@ const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
+const { normalizePhone } = require("../utils/phone");
+
+const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
+const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
 
 /* =========================
    NEW: date helpers + no-cache
@@ -375,10 +379,16 @@ router.post(
         return res.status(400).json({ error: "❌ Full Name and Email are required." });
       }
 
+      const phoneNumber = normalizePhone(req.body.phoneNumber);
+      if (!phoneNumber) {
+        return res.status(400).json({ error: INVALID_PHONE_ERROR });
+      }
+
       // Create application
       const newApplication = new Application({
         email: req.body.email,
         fullName: req.body.fullName,
+        phoneNumber,
         studentYear: req.body.studentYear || "",
         major: req.body.major || "",
         appliedBefore: req.body.appliedBefore || "No",
@@ -419,9 +429,14 @@ router.post(
       console.log(`⏱️ Total request time: ${afterResponse - startTime}ms`);
     } catch (error) {
       console.error("❌ Error submitting application:", error);
-      
-      // Check for specific S3 signature errors
-      if (error.message && error.message.includes('signature')) {
+
+      if (error.code === 11000) {
+        // Unique index on email
+        res.status(409).json({ error: DUPLICATE_APPLICATION_ERROR });
+      } else if (error.name === 'ValidationError') {
+        res.status(400).json({ error: `❌ ${Object.values(error.errors).map(e => e.message).join(', ')}` });
+      } else if (error.message && error.message.includes('signature')) {
+        // Check for specific S3 signature errors
         console.error("🔐 S3 Signature Error - likely caused by special characters in filename");
         res.status(400).json({ 
           error: "❌ File upload failed. Please make sure your file names don't contain special characters."
@@ -547,7 +562,7 @@ router.get("/email/:email", generalApiLimiter, verifyFirebaseOwner, async (req, 
   try {
     addNoStore(res);
     const { email } = req.params;
-    const application = await Application.findOne({ email: email });
+    const application = await Application.findOne({ email: email.toLowerCase() });
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
@@ -585,6 +600,7 @@ router.get("/export-by-status", generalApiLimiter, requireAdminAuth, async (req,
     const csvHeaders = [
       'Name',
       'Email',
+      'Phone',
       'Major',
       'Student Year',
       'Candidate Type',
@@ -606,6 +622,7 @@ router.get("/export-by-status", generalApiLimiter, requireAdminAuth, async (req,
       const row = [
         `"${(app.fullName || '').replace(/"/g, '""')}"`, // Escape quotes in CSV
         app.email || '',
+        app.phoneNumber || '',
         `"${(app.major || '').replace(/"/g, '""')}"`,
         app.studentYear || '',
         app.candidateType || '',
@@ -681,13 +698,23 @@ router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.field
   try {
     addNoStore(res);
     const { email } = req.params;
-    const existingApplication = await Application.findOne({ email: email });
+    const existingApplication = await Application.findOne({ email: email.toLowerCase() });
     if (!existingApplication) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
 
+    // Phone is optional on edit (only validated when sent)
+    let phoneNumber;
+    if (req.body.phoneNumber !== undefined) {
+      phoneNumber = normalizePhone(req.body.phoneNumber);
+      if (!phoneNumber) {
+        return res.status(400).json({ error: INVALID_PHONE_ERROR });
+      }
+    }
+
     const updateData = {
       fullName: req.body.fullName,
+      phoneNumber,
       studentYear: req.body.studentYear,
       major: req.body.major,
       appliedBefore: req.body.appliedBefore,
@@ -715,9 +742,9 @@ router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.field
     }
 
     const updatedApplication = await Application.findOneAndUpdate(
-      { email: email },
+      { email: email.toLowerCase() },
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     res.json({
@@ -726,6 +753,9 @@ router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.field
     });
   } catch (error) {
     console.error("❌ Error updating application:", error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: `❌ ${Object.values(error.errors).map(e => e.message).join(', ')}` });
+    }
     res.status(500).json({ error: "❌ Failed to update application." });
   }
 });
