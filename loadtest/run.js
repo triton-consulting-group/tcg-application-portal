@@ -1,6 +1,6 @@
 // Runs one bottleneck scenario end to end against the local stack (start it first with `npm run stack`).
 //   node run.js rush [--shared-ip]     applicant deadline rush
-//   node run.js review [--no-refetch]  30 admins reviewing 700 applications
+//   node run.js review [--legacy-refetch] [--shared-ip]  30 admins reviewing 700 applications
 // Extra env: RATE, HOLD (rush), DURATION (review), REVIEW_STATUS_CHANGES (projection, default 6000)
 const fs = require("fs");
 const path = require("path");
@@ -14,12 +14,12 @@ const MB = 1024 ** 2;
 
 const [scenario, ...flags] = process.argv.slice(2);
 const sharedIp = flags.includes("--shared-ip");
-const noRefetch = flags.includes("--no-refetch");
+const legacyRefetch = flags.includes("--legacy-refetch");
 if (!["rush", "review"].includes(scenario)) {
-  console.error("usage: node run.js rush [--shared-ip] | review [--no-refetch]");
+  console.error("usage: node run.js rush [--shared-ip] | review [--legacy-refetch] [--shared-ip]");
   process.exit(2);
 }
-const name = [scenario, sharedIp && "shared-ip", noRefetch && "no-refetch"].filter(Boolean).join("-");
+const name = [scenario, sharedIp && "shared-ip", legacyRefetch && "legacy-refetch"].filter(Boolean).join("-");
 
 const exitOf = (child) => new Promise((resolve) => child.on("exit", (code) => resolve(code)));
 const node = (script, args = []) => execFileSync(process.execPath, [path.join(cfg.ROOT, script), ...args], { stdio: "inherit" });
@@ -46,7 +46,7 @@ const pass = (ok) => (ok ? "PASS" : "FAIL");
   const script = path.join(cfg.ROOT, "k6", scenario === "rush" ? "applicant-rush.js" : "admin-review.js");
   const k6 = spawn("k6", ["run", "--summary-export", k6File, script], {
     stdio: "inherit",
-    env: { ...process.env, BASE_URL: cfg.BACKEND_URL, SHARED_IP: sharedIp ? "1" : "0", NO_REFETCH: noRefetch ? "1" : "0" },
+    env: { ...process.env, BASE_URL: cfg.BACKEND_URL, SHARED_IP: sharedIp ? "1" : "0", LEGACY_REFETCH: legacyRefetch ? "1" : "0" },
   });
   const k6Code = await exitOf(k6);
   monitor.kill("SIGINT");
@@ -99,8 +99,8 @@ const pass = (ok) => (ok ? "PASS" : "FAIL");
       const p95 = metric(k, key, "p(95)");
       lines.push(`| ${label} | ${ms(p95)} | ${ms(metric(k, key, "p(99)"))} | ${ms(metric(k, key, "max"))} | < ${target} ms | ${pass(p95 !== undefined && p95 < target)} |`);
     }
-    lines.push("", `Status changes: **${changes}** | dashboard loads: **${metric(k, "dashboard_loads", "count") ?? 0}** | avg dashboard response: **${((metric(k, "dashboard_response_bytes", "avg") ?? 0) / MB).toFixed(2)} MB** | failed requests: **${(failedRate * 100).toFixed(2)}%**`);
-    dbRows.push(["DB data out per status change", `${(perChange / MB).toFixed(2)} MB`, noRefetch ? "without refetch" : "with the frontend's full refetch", ""]);
+    lines.push("", `Status changes: **${changes}** | dashboard loads: **${metric(k, "dashboard_loads", "count") ?? 0}** | avg dashboard response: **${((metric(k, "dashboard_response_bytes", "avg") ?? 0) / MB).toFixed(2)} MB** | failed requests: **${(failedRate * 100).toFixed(2)}%** | rate-limited (429): **${metric(k, "rate_limited_429", "count") ?? 0}**`);
+    dbRows.push(["DB data out per status change", `${(perChange / MB).toFixed(2)} MB`, legacyRefetch ? "legacy: full refetch after each change" : "current frontend: merges the one changed application", ""]);
     dbRows.push([`Projected DB data out for ${planned} status changes`, `${weekly.toFixed(2)} GB`, `limit ${ATLAS_FREE.gbPerWeekEachWay} GB/week`, pass(weekly < 5)]);
   }
 

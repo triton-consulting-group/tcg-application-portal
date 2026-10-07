@@ -26,8 +26,9 @@ Terminal 2:
 | --- | --- |
 | `npm run rush` | Applicant deadline rush: ramps to 120 submissions/minute (2x the assumed real peak) with 3 files each, plus every read an applicant makes |
 | `npm run rush:shared-ip` | The same rush with every applicant behind one IP (shared campus network) |
-| `npm run review` | 30 admins working through 700 seeded applications, exactly like the dashboard does today |
-| `node run.js review --no-refetch` | The same, without re-downloading every application after each status change |
+| `npm run review` | 30 admins working through 700 seeded applications, exactly like the dashboard does |
+| `node run.js review --shared-ip` | The same with every admin behind one IP (the board reviewing together on one network) |
+| `node run.js review --legacy-refetch` | The pre-fix dashboard, which re-downloaded every application after each status change |
 
 Each run creates fresh test users (tokens last 1 hour) and fresh data, then prints a report and saves it to `.tmp/results/`. Tunables: `RATE` and `HOLD` (rush), `DURATION` (review), `APPLICANTS`, `ADMINS`, `RESUME_KB` / `TRANSCRIPT_KB` / `IMAGE_KB`, `REVIEW_STATUS_CHANGES` (weekly projection, default 6000).
 
