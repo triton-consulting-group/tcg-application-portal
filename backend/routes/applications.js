@@ -5,7 +5,7 @@ const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
-const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth } = require("../middleware/adminPermissions");
+const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
 const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
@@ -91,7 +91,6 @@ if (isS3Configured()) {
 
         // Special handling for images - more aggressive sanitization
         if (file.fieldname === 'image') {
-          console.log(`🖼️ Processing profile picture: ${originalName}`);
           // For images, use an even more conservative approach
           let safeName = nameWithoutExt
             .replace(/[^\x00-\x7F]/g, "") // Remove all non-ASCII completely
@@ -105,8 +104,6 @@ if (isS3Configured()) {
           const finalName = `${safeName}${ext}`;
           const s3Key = `${s3Path}${Date.now()}-${finalName}`; // No encoding for images
           
-          console.log(`🖼️ Image S3 upload key: ${s3Key}`);
-          console.log(`🖼️ Image sanitized filename: ${finalName}`);
           cb(null, s3Key);
           return;
         }
@@ -123,9 +120,6 @@ if (isS3Configured()) {
         const finalName = `${safeName}${ext}`;
         const s3Key = `${s3Path}${Date.now()}-${encodeURIComponent(finalName)}`;
 
-        console.log(`📁 S3 upload key: ${s3Key}`);
-        console.log(`🔤 Original filename: ${originalName}`);
-        console.log(`🔤 Sanitized filename: ${finalName}`);
         
         cb(null, s3Key);
       } catch (err) {
@@ -165,9 +159,6 @@ if (isS3Configured()) {
       }
       
       const finalFilename = `${Date.now()}-${sanitizedName}${fileExtension}`;
-      console.log(`📁 Local storage filename: ${finalFilename}`);
-      console.log(`🔤 Original filename: ${originalName}`);
-      console.log(`🔤 Sanitized filename: ${sanitizedName}${fileExtension}`);
       cb(null, finalFilename);
     },
   });
@@ -183,7 +174,7 @@ upload = multer({
       const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx'];
       const fileExtension = path.extname(file.originalname).toLowerCase();
       if (allowedExtensions.includes(fileExtension)) {
-        console.log(`⚠️ File ${file.originalname} has MIME type ${file.mimetype} but extension ${fileExtension} is allowed`);
+        console.log(`⚠️ Upload has MIME type ${file.mimetype} but extension ${fileExtension} is allowed`);
         cb(null, true);
       } else {
         cb(new Error(`File type ${file.mimetype} and extension ${fileExtension} are not allowed`), false);
@@ -195,44 +186,6 @@ upload = multer({
 /* =========================
    Routes
    ========================= */
-
-// Debug route to test S3 upload configuration
-router.post("/debug-s3", async (req, res) => {
-  try {
-    const region = process.env.AWS_REGION || 'us-west-1';
-    
-    console.log('🧪 Testing S3 upload configuration...');
-    console.log('📍 Region:', region);
-    console.log('🪣 Bucket:', process.env.S3_BUCKET_NAME);
-    
-    // Test a simple putObject operation
-    const testParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: 'test/debug-test.txt',
-      Body: 'Debug test file',
-      ContentType: 'text/plain',
-      ServerSideEncryption: 'AES256'
-    };
-    
-    const result = await s3.putObject(testParams).promise();
-    console.log('✅ S3 upload test successful:', result);
-    
-    res.json({
-      success: true,
-      message: 'S3 upload test successful',
-      region: region,
-      bucket: process.env.S3_BUCKET_NAME
-    });
-  } catch (error) {
-    console.error('❌ S3 upload test failed:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      code: error.code,
-      region: error.region
-    });
-  }
-});
 
 // Case night config
 router.get("/case-night-config", (req, res) => {
@@ -285,6 +238,48 @@ router.get("/window-status", (req, res) => {
 });
 
 /* ===================================================
+   Application window + applicant sign-in (run before any upload)
+   =================================================== */
+// Rejects submissions and edits outside the window in deadlineConfig, before files reach S3
+const requireApplicationWindow = (req, res, next) => {
+  if (!DEADLINE_CONFIG.isActive) return next();
+  const now = nowUtc();
+  const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
+  const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+
+  if (start && now < start) {
+    addNoStore(res);
+    return res.status(400).json({
+      error: "Applications are not open yet.",
+      message: DEADLINE_CONFIG.preStartMessage || "Please check back when the application opens.",
+      start: start.toISOString(),
+      serverTime: now.toISOString(),
+      timeUntilStart: start - now
+    });
+  }
+  if (deadline && now > deadline) {
+    addNoStore(res);
+    return res.status(400).json({
+      error: "Application deadline has passed.",
+      message: DEADLINE_CONFIG.message,
+      deadline: deadline.toISOString(),
+      serverTime: now.toISOString()
+    });
+  }
+  next();
+};
+
+// Submissions must come from a signed-in Google account; its verified email is the application's email
+const requireSignedInApplicant = async (req, res, next) => {
+  const email = await getVerifiedEmail(req);
+  if (!email) {
+    return res.status(401).json({ error: "❌ Please sign in with Google before submitting your application." });
+  }
+  req.applicantEmail = email.toLowerCase();
+  next();
+};
+
+/* ===================================================
    File Upload Error Handler Middleware
    =================================================== */
 const handleUploadError = (error, req, res, next) => {
@@ -330,6 +325,8 @@ const handleUploadError = (error, req, res, next) => {
 router.post(
   "/",
   applicationSubmissionLimiter,
+  requireApplicationWindow,
+  requireSignedInApplicant,
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
@@ -339,44 +336,9 @@ router.post(
   async (req, res) => {
     try {
       const startTime = Date.now();
-      console.log("✅ Received application data:", req.body);
-      console.log("✅ Received files:", req.files);
-
-      // --- NEW: Start-time gate ---
-      if (DEADLINE_CONFIG.isActive) {
-        const now = nowUtc();
-        const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
-        if (start && now < start) {
-          addNoStore(res);
-          return res.status(400).json({
-            error: "Applications are not open yet.",
-            message: DEADLINE_CONFIG.preStartMessage || "Please check back when the application opens.",
-            start: start.toISOString(),
-            serverTime: now.toISOString(),
-            timeUntilStart: start - now
-          });
-        }
-      }
-
-      // Existing: deadline gate
-      if (DEADLINE_CONFIG.isActive) {
-        const now = nowUtc();
-        const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
-
-        if (deadline && now > deadline) {
-          addNoStore(res);
-          return res.status(400).json({ 
-            error: "Application deadline has passed.",
-            message: DEADLINE_CONFIG.message,
-            deadline: deadline.toISOString(),
-            serverTime: now.toISOString()
-          });
-        }
-      }
-
       // Validate required fields
-      if (!req.body.fullName || !req.body.email) {
-        return res.status(400).json({ error: "❌ Full Name and Email are required." });
+      if (!req.body.fullName) {
+        return res.status(400).json({ error: "❌ Full Name is required." });
       }
 
       const phoneNumber = normalizePhone(req.body.phoneNumber);
@@ -386,7 +348,7 @@ router.post(
 
       // Create application
       const newApplication = new Application({
-        email: req.body.email,
+        email: req.applicantEmail, // from the verified sign-in, never the form
         fullName: req.body.fullName,
         phoneNumber,
         studentYear: req.body.studentYear || "",
@@ -428,7 +390,12 @@ router.post(
       console.log(`⏱️ Response sent (${afterResponse - beforeResponse}ms)`);
       console.log(`⏱️ Total request time: ${afterResponse - startTime}ms`);
     } catch (error) {
-      console.error("❌ Error submitting application:", error);
+      if (error.code === 11000 || error.name === 'ValidationError') {
+        // These errors echo the applicant's email / field values, so don't log them in full
+        console.warn(`⚠️ Submission rejected: ${error.name}${error.code ? ` (${error.code})` : ''}`);
+      } else {
+        console.error("❌ Error submitting application:", error);
+      }
 
       if (error.code === 11000) {
         // Unique index on email
@@ -690,7 +657,7 @@ router.get("/:id", generalApiLimiter, requireAdminAuth, async (req, res) => {
 });
 
 // Update by email
-router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, upload.fields([
+router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, requireApplicationWindow, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },

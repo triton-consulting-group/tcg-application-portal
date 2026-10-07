@@ -69,21 +69,28 @@ afterEach(() => {
 });
 
 describe("POST /api/applications phone number", () => {
+  const signedIn = { Authorization: "Bearer applicant-token" };
+  const post = (body) => send("POST", "/", body, signedIn);
+
+  beforeEach(() => {
+    mockVerifyIdToken.mockResolvedValue({ email: "applicant@ucsd.edu", email_verified: true });
+  });
+
   test("rejects a submission with no phone number", async () => {
-    const res = await send("POST", "/", submission);
+    const res = await post(submission);
     expect(res.status).toBe(400);
     expect((await res.json()).error).toMatch(/phone number/i);
     expect(mockSave).not.toHaveBeenCalled();
   });
 
   test("rejects an invalid phone number", async () => {
-    const res = await send("POST", "/", { ...submission, phoneNumber: "555-0123" });
+    const res = await post({ ...submission, phoneNumber: "555-0123" });
     expect(res.status).toBe(400);
     expect(mockSave).not.toHaveBeenCalled();
   });
 
   test("saves a valid phone number in E.164 form", async () => {
-    const res = await send("POST", "/", { ...submission, phoneNumber: "(858) 555-0123" });
+    const res = await post({ ...submission, phoneNumber: "(858) 555-0123" });
     expect(res.status).toBe(201);
     expect(Application).toHaveBeenCalledWith(expect.objectContaining({ phoneNumber: "+18585550123" }));
     expect(mockSave).toHaveBeenCalledTimes(1);
@@ -91,7 +98,7 @@ describe("POST /api/applications phone number", () => {
 
   test("returns 409 when the email has already applied", async () => {
     mockSave.mockRejectedValue(Object.assign(new Error("E11000 duplicate key"), { code: 11000 }));
-    const res = await send("POST", "/", { ...submission, phoneNumber: "8585550123" });
+    const res = await post({ ...submission, phoneNumber: "8585550123" });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toMatch(/already submitted/i);
   });

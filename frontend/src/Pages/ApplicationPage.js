@@ -5,6 +5,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
  // ✅ Import useNavigate for redirection
 import axios from "axios";
 import API_BASE_URL from "../config/api";
+import { getAdminAuthHeaders } from "../config/adminAuth";
 
 const ApplicationPage = () => {
   const navigate = useNavigate(); // ✅ Initialize useNavigate
@@ -238,6 +239,15 @@ const ApplicationPage = () => {
       return;
     }
     
+    // Submissions are tied to the signed-in Google account (the backend takes the email from this token)
+    let authHeaders;
+    try {
+      authHeaders = await getAdminAuthHeaders();
+    } catch {
+      alert("Please sign in with Google before submitting your application.");
+      return;
+    }
+
     setSubmitting(true); // Start loading
     
     const formDataToSend = new FormData();
@@ -249,7 +259,7 @@ const ApplicationPage = () => {
     try {
       console.log("Submitting application...");
       const response = await axios.post(`${API_BASE_URL}/api/applications`, formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { ...authHeaders, "Content-Type": "multipart/form-data" },
       });
       console.log("Application submitted successfully:", response.status);
       
@@ -546,7 +556,15 @@ const ApplicationPage = () => {
 
           {/* Transcript Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your transcript. If you are a first year, please submit your FALL 2025 transcript. *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your most recent college transcript. *</p>
+            <p style={{
+              margin: "0 0 8px 0", fontSize: "14px", padding: "6px 10px", borderRadius: "4px",
+              color: formData.studentYear === "1st" ? "#744210" : "#4a5568",
+              backgroundColor: formData.studentYear === "1st" ? "#fefcbf" : "transparent",
+              fontWeight: formData.studentYear === "1st" ? "bold" : "normal"
+            }}>
+              If you are currently a freshman, please attach a copy of your high school transcript.
+            </p>
             <input 
               type="file" 
               onChange={(e) => handleFileChange(e, "transcript")} 

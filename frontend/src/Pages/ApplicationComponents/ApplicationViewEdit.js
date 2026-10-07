@@ -815,8 +815,16 @@ const ApplicationViewEdit = () => {
           {/* Transcript Upload */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Please submit your transcript *
+              Please submit your most recent college transcript *
             </label>
+            <p style={{
+              margin: "0 0 8px 0", fontSize: "14px", padding: "6px 10px", borderRadius: "4px",
+              color: formData.studentYear === "1st" ? "#744210" : "#4a5568",
+              backgroundColor: formData.studentYear === "1st" ? "#fefcbf" : "transparent",
+              fontWeight: formData.studentYear === "1st" ? "bold" : "normal"
+            }}>
+              If you are currently a freshman, please attach a copy of your high school transcript.
+            </p>
             <input 
               type="file" 
               onChange={(e) => handleFileChange(e, "transcript")} 
