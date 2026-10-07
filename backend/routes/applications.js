@@ -324,9 +324,9 @@ const handleUploadError = (error, req, res, next) => {
    =================================================== */
 router.post(
   "/",
-  applicationSubmissionLimiter,
   requireApplicationWindow,
   requireSignedInApplicant,
+  applicationSubmissionLimiter, // keyed by the signed-in account, so it runs after sign-in
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
