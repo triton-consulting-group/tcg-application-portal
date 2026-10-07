@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
+import { replaceApplication } from "../utils/applications";
 
 // Feature flag: if true, show an inline status <select> in the "View Applicant" modal
 // Set to false to revert to the original display (plain status badge/span).
@@ -206,10 +207,11 @@ const AssociatePage = () => {
           }, {
             headers: authHeaders
           })
-          .then(() => axios.get(`${API_BASE_URL}/api/applications/all`, { headers: authHeaders })) // 🔹 Refetch all applications
       )
       .then((response) => {
-        setApplications(response.data || []);
+        // The PUT returns the updated application; merge just that one instead of
+        // re-downloading every application (~3 MB at 700 applicants) on each change
+        setApplications((prev) => replaceApplication(prev, response.data));
         console.log(`✅ Successfully updated application ${applicationId} status to ${newStatus}`);
       })
       .catch((error) => {
