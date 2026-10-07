@@ -324,9 +324,9 @@ const handleUploadError = (error, req, res, next) => {
    =================================================== */
 router.post(
   "/",
-  applicationSubmissionLimiter,
   requireApplicationWindow,
   requireSignedInApplicant,
+  applicationSubmissionLimiter, // keyed by the signed-in account, so it runs after sign-in
   upload.fields([
     { name: "resume", maxCount: 1 },
     { name: "transcript", maxCount: 1 },
@@ -458,7 +458,7 @@ router.get("/deadline-status", (req, res) => {
 });
 
 // All applications (array only)
-router.get("/all", generalApiLimiter, requireAdminAuth, async (req, res) => {
+router.get("/all", requireAdminAuth, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const applications = await Application.find().sort({ createdAt: -1 }).lean();
@@ -470,7 +470,7 @@ router.get("/all", generalApiLimiter, requireAdminAuth, async (req, res) => {
 });
 
 // Paginated list
-router.get("/", generalApiLimiter, requireAdminAuth, async (req, res) => {
+router.get("/", requireAdminAuth, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const page = parseInt(req.query.page) || 1;
@@ -508,7 +508,7 @@ router.get("/", generalApiLimiter, requireAdminAuth, async (req, res) => {
 });
 
 // Signed file URL - admins, or the applicant who owns the file
-router.get("/file-url/*", generalApiLimiter, requireFileAccess, async (req, res) => {
+router.get("/file-url/*", requireFileAccess, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const s3Key = req.fileKey; // normalized and authorized by requireFileAccess
@@ -525,7 +525,7 @@ router.get("/file-url/*", generalApiLimiter, requireFileAccess, async (req, res)
 });
 
 // By email - allow applicants to view their own application
-router.get("/email/:email", generalApiLimiter, verifyFirebaseOwner, async (req, res) => {
+router.get("/email/:email", verifyFirebaseOwner, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const { email } = req.params;
@@ -540,7 +540,7 @@ router.get("/email/:email", generalApiLimiter, verifyFirebaseOwner, async (req, 
   }
 });
 
-router.get("/export-by-status", generalApiLimiter, requireAdminAuth, async (req, res) => {
+router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req, res) => {
   try {
     let { statuses } = req.query;
     
@@ -624,7 +624,7 @@ router.get("/export-by-status", generalApiLimiter, requireAdminAuth, async (req,
 });
 
 // By ID - require admin authentication
-router.get("/:id", generalApiLimiter, requireAdminAuth, async (req, res) => {
+router.get("/:id", requireAdminAuth, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const { id } = req.params;
@@ -657,7 +657,7 @@ router.get("/:id", generalApiLimiter, requireAdminAuth, async (req, res) => {
 });
 
 // Update by email
-router.put("/email/:email", generalApiLimiter, verifyFirebaseOwner, requireApplicationWindow, upload.fields([
+router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireApplicationWindow, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },

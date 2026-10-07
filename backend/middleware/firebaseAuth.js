@@ -24,6 +24,7 @@ const verifyFirebaseOwner = async (req, res, next) => {
       return res.status(403).json({ error: "❌ You can only access your own application." });
     }
 
+    req.verifiedEmail = decoded.email; // used by the per-user rate limiter
     next();
   } catch (error) {
     console.error("❌ Error verifying Firebase token:", error);

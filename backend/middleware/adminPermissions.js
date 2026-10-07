@@ -26,6 +26,7 @@ const requireAdminAuth = async (req, res, next) => {
       return res.status(401).json({ error: "❌ Invalid or missing authentication" });
     }
 
+    req.verifiedEmail = email; // used by the per-user rate limiter
     const admin = await Admin.findOne({ email, isActive: true });
     if (!admin) {
       return res.status(403).json({ error: "❌ Admin not found or inactive" });

@@ -20,6 +20,7 @@ const requireFileAccess = async (req, res, next) => {
     if (!email) {
       return res.status(401).json({ error: "❌ Invalid or missing authentication" });
     }
+    req.verifiedEmail = email; // used by the per-user rate limiter
 
     const key = toFileKey(req.params[0]);
     if (!key) {
