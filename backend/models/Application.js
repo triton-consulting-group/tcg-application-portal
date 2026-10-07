@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
+const { PHONE_PATTERN } = require("../utils/phone");
 
 const ApplicationSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, index: true }, // Index for email lookups
+    // One application per email; stored lowercase so lookups don't depend on how it was typed
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     fullName: { type: String, required: true },
+    phoneNumber: { type: String, required: true, trim: true, match: PHONE_PATTERN }, // E.164, normalized by the routes
     studentYear: { type: String, required: true },
     major: { type: String, required: true },
     appliedBefore: { type: String, required: true }, 
