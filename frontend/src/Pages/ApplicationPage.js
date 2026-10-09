@@ -423,7 +423,7 @@ const ApplicationPage = () => {
         backgroundColor: "white"
       }}>
         <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
-          APPLICATION - TCG WINTER 26 RECRUITMENT
+          APPLICATION - TCG FALL 2026 RECRUITMENT
         </h1>
 
         {/* Deadline Status Display */}
