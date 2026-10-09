@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "./Home/firebaseConfig";
+import { auth, provider, getSignInErrorMessage } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 
 const AdminLoginPage = () => {
@@ -37,7 +37,9 @@ const AdminLoginPage = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("Failed to sign in. Please try again.");
+      setError(error.code === "auth/popup-blocked"
+        ? getSignInErrorMessage(error)
+        : "Failed to sign in. Please try again.");
     } finally {
       setLoading(false);
     }
