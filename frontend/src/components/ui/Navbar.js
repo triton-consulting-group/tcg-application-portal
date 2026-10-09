@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { Flex, Box, Link, Button, Image } from "@chakra-ui/react";
-import { auth, provider } from "../../Pages/Home/firebaseConfig";
+import { auth, provider, getSignInErrorMessage } from "../../Pages/Home/firebaseConfig";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
@@ -71,7 +71,7 @@ const Navbar = () => {
         console.error("Error signing in:", error.message);
         // Handle cancelled popup more gracefully
         if (error.code !== "auth/cancelled-popup-request") {
-          alert("Failed to sign in: " + error.message);
+          alert(getSignInErrorMessage(error));
         }
       } finally {
         setIsSigningIn(false);
@@ -95,7 +95,7 @@ const Navbar = () => {
       console.error("Error signing in:", error.message);
       // Handle cancelled popup more gracefully
       if (error.code !== "auth/cancelled-popup-request") {
-        alert("Failed to sign in: " + error.message);
+        alert(getSignInErrorMessage(error));
       }
     } finally {
       setIsSigningIn(false);
