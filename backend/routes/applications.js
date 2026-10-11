@@ -12,6 +12,7 @@ const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { normalizePhone } = require("../utils/phone");
+const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
 
 const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
 const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
@@ -358,13 +359,7 @@ router.post(
         reason: req.body.reason || "",
         zombieAnswer: req.body.zombieAnswer || "",
         additionalInfo: req.body.additionalInfo || "",
-        caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
-          ? req.body.caseNightPreferences 
-          : (req.body.caseNightPreferences ? 
-              (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
-                JSON.parse(req.body.caseNightPreferences) : 
-                [req.body.caseNightPreferences]) : 
-              []),
+        caseNightPreferences: parseCaseNightPreferences(req.body.caseNightPreferences),
         status: "Under Review",
         resume: req.files && req.files["resume"] ? 
           (isS3Configured() ? req.files["resume"][0].location : `/uploads/${req.files["resume"][0].filename}`) : null,
@@ -689,13 +684,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
       reason: req.body.reason,
       zombieAnswer: req.body.zombieAnswer,
       additionalInfo: req.body.additionalInfo,
-      caseNightPreferences: Array.isArray(req.body.caseNightPreferences) 
-        ? req.body.caseNightPreferences 
-        : (req.body.caseNightPreferences ? 
-            (typeof req.body.caseNightPreferences === 'string' && req.body.caseNightPreferences.startsWith('[') ? 
-              JSON.parse(req.body.caseNightPreferences) : 
-              [req.body.caseNightPreferences]) : 
-            []),
+      caseNightPreferences: parseCaseNightPreferences(req.body.caseNightPreferences),
     };
 
     if (req.files && req.files["resume"]) {
