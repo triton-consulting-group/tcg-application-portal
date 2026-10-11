@@ -6,6 +6,10 @@ import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
 import { replaceApplication } from "../utils/applications";
+import { getErrorMessage } from "../utils/caseGroups";
+import BuildCaseGroupsModal from "./ApplicationComponents/BuildCaseGroupsModal";
+import ModalErrorBoundary from "./ApplicationComponents/ModalErrorBoundary";
+import CaseGroupsModal from "./ApplicationComponents/CaseGroupsModal";
 
 // Feature flag: if true, show an inline status <select> in the "View Applicant" modal
 // Set to false to revert to the original display (plain status badge/span).
@@ -43,6 +47,8 @@ const AssociatePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [applicationsPerPage] = useState(30);
   const [exporting, setExporting] = useState(false);
+  const [showBuildCaseGroups, setShowBuildCaseGroups] = useState(false);
+  const [showCaseGroups, setShowCaseGroups] = useState(false);
   const [caseNightConfig, setCaseNightConfig] = useState(null);
 
   const checkAdminStatus = useCallback(async (email) => {
@@ -176,7 +182,7 @@ const AssociatePage = () => {
       alert("Case group assignments exported successfully!");
     } catch (error) {
       console.error("Error exporting case groups:", error);
-      alert("Failed to export case groups. Please try again.");
+      alert(await getErrorMessage(error, "Failed to export case groups. Please try again."));
     } finally {
       setExporting(false);
     }
@@ -253,6 +259,38 @@ const AssociatePage = () => {
             >
               {exporting ? "Exporting..." : "Export Case Groups"}
             </button>
+            {adminInfo?.role === "super_admin" && (
+              <>
+                <button
+                  onClick={() => setShowBuildCaseGroups(true)}
+                  style={{
+                    backgroundColor: "#6f42c1",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "14px"
+                  }}
+                >
+                  Build Case Groups
+                </button>
+                <button
+                  onClick={() => setShowCaseGroups(true)}
+                  style={{
+                    backgroundColor: "#17a2b8",
+                    color: "white",
+                    border: "none",
+                    padding: "8px 16px",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "14px"
+                  }}
+                >
+                  Case Groups
+                </button>
+              </>
+            )}
             <button
               onClick={fetchApplications}
               style={{
@@ -346,6 +384,24 @@ const AssociatePage = () => {
           imageUrl={selectedImage}
           onClose={() => setSelectedImage(null)}
         />
+      )}
+
+      {showBuildCaseGroups && (
+        <ModalErrorBoundary onClose={() => setShowBuildCaseGroups(false)}>
+          <BuildCaseGroupsModal
+            onClose={() => setShowBuildCaseGroups(false)}
+            onBuilt={(created) => {
+              setShowBuildCaseGroups(false);
+              alert(`Built ${created} case group assignments. You can export them now.`);
+            }}
+          />
+        </ModalErrorBoundary>
+      )}
+
+      {showCaseGroups && (
+        <ModalErrorBoundary onClose={() => setShowCaseGroups(false)}>
+          <CaseGroupsModal caseNightConfig={caseNightConfig} onClose={() => setShowCaseGroups(false)} />
+        </ModalErrorBoundary>
       )}
     </div>
   );

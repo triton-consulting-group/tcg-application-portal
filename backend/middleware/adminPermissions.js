@@ -62,11 +62,20 @@ const requireStatusChangePermission = checkAdminPermission('canChangeStatus');
 const requireCommentPermission = checkAdminPermission('canAddComments');
 const requireDragDropPermission = checkAdminPermission('canDragDrop');
 
+// Use after requireAdminAuth: only super admins get through
+const requireSuperAdmin = (req, res, next) => {
+  if (req.admin?.role !== "super_admin") {
+    return res.status(403).json({ error: "❌ Only super admins can change case groups." });
+  }
+  next();
+};
+
 module.exports = {
   checkAdminPermission,
   getVerifiedEmail,
   requireAdminAuth,
   requireStatusChangePermission,
   requireCommentPermission,
-  requireDragDropPermission
+  requireDragDropPermission,
+  requireSuperAdmin
 };

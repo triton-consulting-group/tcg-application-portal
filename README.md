@@ -164,11 +164,14 @@ cd backend
 node scripts/assignCaseGroups.js
 ```
 
-This script will:
-- Clear existing assignments (optional)
-- Process all applications with case night preferences
-- Create groups of 4 people per time slot
-- Generate a detailed summary report
+This script previews by default; add `--apply` to save. It:
+- Groups only applicants with status "Case Night - Yes"
+- Keeps Tech and Non-Tech in separate groups
+- Makes groups of 4, using groups of 3 only when needed
+- Backs up the assignments it replaces
+- Prints every group and anyone who couldn't be placed
+
+Super admins can do the same from the consultant page: **Build Case Groups** (preview, then confirm) and **Case Groups** (add, move or remove people by hand).
 
 #### Step 2: Export Assignments
 ```bash
@@ -264,8 +267,7 @@ The CSV export includes:
 To clear all assignments and start fresh:
 ```bash
 cd backend
-node scripts/resetCaseGroups.js
-node scripts/assignCaseGroups.js
+node scripts/assignCaseGroups.js --apply
 ```
 
 ### Future Enhancements

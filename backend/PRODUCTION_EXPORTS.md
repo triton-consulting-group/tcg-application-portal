@@ -19,11 +19,13 @@ When running export scripts locally, they connect to your local MongoDB instance
    ```bash
    # For case group assignments
    cd backend
-   node scripts/assignCaseGroups.js --production
+   node scripts/assignCaseGroups.js --production --apply
    
    # For exporting case groups
    node scripts/exportCaseGroups.js --production
    ```
+
+   `assignCaseGroups.js` only previews unless you add `--apply`. Super admins can also build groups from the consultant page with **Build Case Groups**.
 
 ### Method 2: Direct Environment Variable Override
 
@@ -34,7 +36,7 @@ You can also override the environment variable directly when running the script:
 MONGO_URI="your-production-mongodb-connection-string" node scripts/exportCaseGroups.js
 
 # Or for assignments
-MONGO_URI="your-production-mongodb-connection-string" node scripts/assignCaseGroups.js
+MONGO_URI="your-production-mongodb-connection-string" node scripts/assignCaseGroups.js --apply
 ```
 
 ### Method 3: Using Production Environment Variables
@@ -47,7 +49,7 @@ export MONGO_URI="mongodb+srv://username:password@cluster.mongodb.net/database"
 
 # Then run the scripts normally
 node scripts/exportCaseGroups.js
-node scripts/assignCaseGroups.js
+node scripts/assignCaseGroups.js --apply
 ```
 
 ## Important Notes
@@ -91,7 +93,7 @@ cd backend
 # (Edit the file with your actual production connection string)
 
 # 3. Run case group assignments against production data
-node scripts/assignCaseGroups.js --production
+node scripts/assignCaseGroups.js --production --apply
 
 # 4. Export the assignments to CSV
 node scripts/exportCaseGroups.js --production

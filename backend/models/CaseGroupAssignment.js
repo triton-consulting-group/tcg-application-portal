@@ -26,7 +26,7 @@ const CaseGroupAssignmentSchema = new mongoose.Schema(
     
     // Group assignment
     groupNumber: { type: Number, required: true },
-    groupId: { type: String, required: true, index: true }, // e.g., "A-1", "B-3", "C-2"
+    groupId: { type: String, required: true, index: true }, // e.g., "Tech-A-1", "Non-Tech-B-3"
     
     // Assignment metadata
     assignedAt: { type: Date, default: Date.now },
@@ -45,6 +45,10 @@ const CaseGroupAssignmentSchema = new mongoose.Schema(
       index: true 
     },
     
+    // Set when a super admin adds or moves this person by hand
+    lastEditedBy: { type: String },
+    lastEditedAt: { type: Date },
+
     // Notes for admin use
     notes: { type: String }
   },
