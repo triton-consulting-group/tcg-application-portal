@@ -82,3 +82,5 @@ Thumbs.db
 
 # Uploads
 uploads/ 
+# Backups written by cleanup scripts (contain applicant data)
+backups/
