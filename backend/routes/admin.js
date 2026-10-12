@@ -7,7 +7,7 @@ const { requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermi
 const ROLES = ["admin", "super_admin"];
 const PERMISSION_KEYS = [
   "canViewApplications", "canEditApplications", "canDeleteApplications", "canManageAdmins",
-  "canViewAnalytics", "canChangeStatus", "canAddComments", "canDragDrop"
+  "canViewAnalytics", "canChangeStatus", "canAddComments", "canDeleteComments", "canDragDrop"
 ];
 
 // Admin management needs super_admin or canManageAdmins (runs after requireAdminAuth)

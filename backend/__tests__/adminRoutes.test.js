@@ -124,6 +124,21 @@ test("a super admin can create an admin; email is normalized and createdBy is th
   expect(created.permissions).toEqual({ canAddComments: true });
 });
 
+test("canDeleteComments is an allowlisted permission on create", async () => {
+  signInAs(SUPER);
+  const res = await call("POST", "/", { email: "new@ucsd.edu", name: "N", role: "admin", permissions: { canDeleteComments: true, bogus: 1 } });
+  expect(res.status).toBe(201);
+  expect(Admin.mock.calls[0][0].permissions).toEqual({ canDeleteComments: true });
+});
+
+test("PUT can set canDeleteComments", async () => {
+  signInAs(SUPER, REGULAR);
+  Admin.findOneAndUpdate.mockResolvedValue({ ...REGULAR, permissions: { canDeleteComments: false } });
+  const res = await call("PUT", "/reg@ucsd.edu", { permissions: { canDeleteComments: false } });
+  expect(res.status).toBe(200);
+  expect(Admin.findOneAndUpdate.mock.calls[0][1]).toEqual({ $set: { "permissions.canDeleteComments": false } });
+});
+
 test("PUT applies only allowlisted fields and never renames the target", async () => {
   signInAs(SUPER, REGULAR);
   Admin.findOneAndUpdate.mockResolvedValue({ ...REGULAR, permissions: { canAddComments: true } });

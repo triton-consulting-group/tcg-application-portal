@@ -63,7 +63,7 @@ const main = async () => {
     email: a.email, name: a.name, role: "admin", isActive: true, createdBy: "loadtest",
     permissions: {
       canViewApplications: true, canEditApplications: true, canDeleteApplications: false, canManageAdmins: false,
-      canViewAnalytics: true, canChangeStatus: true, canAddComments: true, canDragDrop: true,
+      canViewAnalytics: true, canChangeStatus: true, canAddComments: true, canDeleteComments: true, canDragDrop: true,
     },
     createdAt: now, updatedAt: now, __v: 0,
   })));

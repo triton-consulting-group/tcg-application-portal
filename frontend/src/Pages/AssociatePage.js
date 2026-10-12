@@ -230,6 +230,14 @@ const AssociatePage = () => {
       });
   };
 
+  // Keeps the list (kanban badges) and the open modal's application in sync when comments
+  // are added or deleted. `updater` maps the previous comments array to the next one.
+  const handleCommentsChange = (applicationId, updater) => {
+    const withComments = (app) => ({ ...app, comments: updater(app.comments || []) });
+    setApplications((prev) => prev.map((app) => (app._id === applicationId ? withComments(app) : app)));
+    setSelectedApplication((prev) => (prev && prev._id === applicationId ? withComments(prev) : prev));
+  };
+
   if (loading) return <p>Loading applications...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!isAdmin) return <p style={{ color: "red" }}>Access denied. Admin privileges required.</p>;
@@ -374,6 +382,7 @@ const AssociatePage = () => {
           application={selectedApplication}
           onClose={() => setSelectedApplication(null)}
           updateStatus={updateStatus}
+          onCommentsChange={handleCommentsChange}
           caseNightConfig={caseNightConfig}
           adminInfo={adminInfo}
         />
@@ -655,8 +664,17 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus }) => {
+const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus, onCommentsChange }) => {
   const [comments, setComments] = useState(application.comments || []);
+  const [deletingCommentIds, setDeletingCommentIds] = useState([]);
+  const canDeleteComments = adminInfo?.role === "super_admin" || !!adminInfo?.permissions?.canDeleteComments;
+
+  // Runs one change on both copies of the comments: this modal's list and the parent's
+  // application list (which the kanban badges read). `updater` maps old comments -> new comments.
+  const applyCommentsUpdate = (updater) => {
+    setComments(updater);
+    onCommentsChange?.(application._id, updater);
+  };
   // Local, optimistic status so the modal updates immediately when admin changes status.
   const [localStatus, setLocalStatus] = useState(application.status || "Under Review");
 
@@ -703,7 +721,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
       });
 
       if (response.data) {
-        setComments(prev => [...prev, response.data.comment]);
+        applyCommentsUpdate(prev => [...prev, response.data.comment]);
         setNewComment("");
       }
     } catch (error) {
@@ -711,6 +729,28 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
       alert("Failed to add comment. Please try again.");
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!canDeleteComments) {
+      alert("❌ You don't have permission to delete comments.");
+      return;
+    }
+    if (!window.confirm("Delete this comment? This cannot be undone.")) return;
+
+    setDeletingCommentIds(prev => [...prev, commentId]);
+    try {
+      const authHeaders = await getAdminAuthHeaders();
+      await axios.delete(`${API_BASE_URL}/api/applications/${application._id}/comments/${commentId}`, {
+        headers: authHeaders
+      });
+      applyCommentsUpdate(prev => prev.filter(c => c._id !== commentId));
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert(error.response?.data?.error || "Failed to delete comment. Please try again.");
+    } finally {
+      setDeletingCommentIds(prev => prev.filter(id => id !== commentId));
     }
   };
 
@@ -1043,9 +1083,9 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                 No comments yet. Be the first to add a comment!
               </div>
             ) : (
-              comments.slice().reverse().map((comment, index) => (
+              comments.slice().reverse().map((comment) => (
                 <div
-                  key={index}
+                  key={comment._id}
                   style={{
                     padding: "12px",
                     margin: "8px 0",
@@ -1066,8 +1106,29 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                     }}>
                       {comment.adminName}
                     </span>
-                    <span style={{ fontSize: "12px", color: "#6c757d" }}>
-                      {new Date(comment.commentedAt).toLocaleString()}
+                    <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                        {new Date(comment.commentedAt).toLocaleString()}
+                      </span>
+                      {canDeleteComments && (
+                        <button
+                          onClick={() => handleDeleteComment(comment._id)}
+                          disabled={deletingCommentIds.includes(comment._id)}
+                          aria-label={`Delete comment by ${comment.adminName}`}
+                          style={{
+                            backgroundColor: "transparent",
+                            color: "#dc3545",
+                            border: "1px solid #dc3545",
+                            borderRadius: "4px",
+                            padding: "2px 8px",
+                            fontSize: "12px",
+                            cursor: deletingCommentIds.includes(comment._id) ? "not-allowed" : "pointer",
+                            opacity: deletingCommentIds.includes(comment._id) ? 0.6 : 1
+                          }}
+                        >
+                          {deletingCommentIds.includes(comment._id) ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
                     </span>
                   </div>
                   <div style={{ fontSize: "14px", color: "#333", lineHeight: "1.4" }}>

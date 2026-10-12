@@ -60,7 +60,8 @@ const checkAdminPermission = (permission) => {
 // Specific permission checkers
 const requireStatusChangePermission = checkAdminPermission('canChangeStatus');
 const requireCommentPermission = checkAdminPermission('canAddComments');
-const requireDragDropPermission = checkAdminPermission('canDragDrop');
+const requireDeleteCommentPermission = checkAdminPermission('canDeleteComments');
+const requireDragDropPermission =checkAdminPermission('canDragDrop');
 
 // Use after requireAdminAuth: only super admins get through
 const requireSuperAdmin = (req, res, next) => {
@@ -76,6 +77,7 @@ module.exports = {
   requireAdminAuth,
   requireStatusChangePermission,
   requireCommentPermission,
+  requireDeleteCommentPermission,
   requireDragDropPermission,
   requireSuperAdmin
 };
