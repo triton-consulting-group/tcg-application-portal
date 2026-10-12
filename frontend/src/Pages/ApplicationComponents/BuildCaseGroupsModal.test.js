@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import axios from "axios";
 import BuildCaseGroupsModal from "./BuildCaseGroupsModal";
 
@@ -43,7 +43,20 @@ test("shows the preview, existing-assignment warning and who wasn't placed", asy
   expect(screen.getByText(/replaces the 12 current assignments/)).toBeInTheDocument();
   expect(screen.getByText(/3 of them were already emailed/)).toBeInTheDocument();
   expect(screen.getByText(/2 hand edits since the last build/)).toBeInTheDocument();
-  expect(screen.getByText(/Zed \(z@ucsd.edu\): No track/)).toBeInTheDocument();
+  const tray = screen.getByRole("region", { name: "Not placed" });
+  expect(within(tray).getByText("Zed")).toBeInTheDocument();
+  expect(within(tray).getByText("No track")).toBeInTheDocument();
+});
+
+test("the preview shows the proposed groups on the same board, read-only, opening the busiest track", async () => {
+  axios.post.mockResolvedValueOnce(preview("fp1"));
+  render(<BuildCaseGroupsModal onClose={jest.fn()} onBuilt={jest.fn()} />);
+  const card = await screen.findByRole("group", { name: "Group 1 at 6:00 PM – 7:00 PM, 1 person" });
+  expect(within(card).getByText("Ada")).toBeInTheDocument();
+  expect(screen.getByRole("tab", { name: "Tech · 2" })).toHaveAttribute("aria-selected", "true");
+  fireEvent.click(screen.getByText("Ada"));
+  expect(screen.queryByText(/Moving Ada/)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /New group/ })).not.toBeInTheDocument();
 });
 
 test("confirm builds with the preview's fingerprint", async () => {
