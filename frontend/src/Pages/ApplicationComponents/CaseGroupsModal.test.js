@@ -21,7 +21,7 @@ const assignment = (id, name, track, slot, groupNumber, prefs = ["A", "B"]) => (
   groupNumber,
   groupId: `${track}-${slot}-${groupNumber}`,
   emailSent: false,
-  applicationId: { _id: `app-${id}`, candidateType: track, caseNightPreferences: prefs }
+  applicationId: { _id: `app-${id}`, candidateType: track, caseNightPreferences: prefs, studentYear: "2nd" }
 });
 const assignments = [
   assignment("as1", "Bo", "Tech", "A", 1),
@@ -30,7 +30,7 @@ const assignments = [
   assignment("as4", "Eve", "Tech", "B", 1, ["A"]),
   assignment("as5", "Nora", "Non-Tech", "A", 1)
 ];
-const waiting = [{ _id: "app-ada", fullName: "Ada", candidateType: "Tech", caseNightPreferences: ["B"] }];
+const waiting = [{ _id: "app-ada", fullName: "Ada", candidateType: "Tech", caseNightPreferences: ["B"], studentYear: "1st" }];
 
 const mockLoad = () =>
   axios.get.mockImplementation(async (url) => ({ data: url.endsWith("/assignments") ? assignments : waiting }));
@@ -40,6 +40,7 @@ const renderModal = async () => {
   fireEvent.click(await screen.findByRole("tab", { name: /^Tech/ }));
 };
 const group = (name) => screen.getByRole("button", { name });
+const chip = (name) => screen.getByText(name).closest("[data-person-id]");
 const lastRequest = () => axios.mock.calls[axios.mock.calls.length - 1][0];
 
 beforeEach(() => {
@@ -59,7 +60,7 @@ test("shows tabs with counts, a column per slot, group sizes and the unassigned 
 
 test("flags someone placed in a slot they didn't pick", async () => {
   await renderModal();
-  expect(screen.getByText("Eve")).toHaveAttribute("title", expect.stringContaining("Didn't pick 7:00 PM – 8:00 PM"));
+  expect(chip("Eve")).toHaveAttribute("title", expect.stringContaining("Didn't pick 7:00 PM – 8:00 PM"));
 });
 
 test("click a person, then a group, moves them", async () => {
@@ -132,7 +133,7 @@ test("search switches to the right track and counts matches", async () => {
   fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "nor" } });
   expect(screen.getByText("1 match")).toBeInTheDocument();
   expect(screen.getByRole("tab", { name: /^Non-Tech/ })).toHaveAttribute("aria-selected", "true");
-  expect(screen.getByText("Nora")).toHaveAttribute("data-match", "true");
+  expect(chip("Nora")).toHaveAttribute("data-match", "true");
 });
 
 test("a server error is shown", async () => {
@@ -148,4 +149,10 @@ test("while searching you can still switch tabs yourself", async () => {
   fireEvent.change(screen.getByLabelText("Search by name"), { target: { value: "nor" } });
   fireEvent.click(screen.getByRole("tab", { name: /^Tech/ }));
   expect(screen.getByRole("tab", { name: /^Tech/ })).toHaveAttribute("aria-selected", "true");
+});
+
+test("each name shows a year tag", async () => {
+  await renderModal();
+  expect(within(chip("Bo")).getByText("2nd")).toBeInTheDocument();
+  expect(within(chip("Ada")).getByText("1st")).toBeInTheDocument();
 });

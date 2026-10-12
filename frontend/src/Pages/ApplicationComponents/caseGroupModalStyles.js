@@ -140,7 +140,16 @@ export const boardStyles = {
     backgroundColor: unavailable ? "white" : "#eff6ff"
   }),
   cardTitle: { display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 600, marginBottom: "6px" },
-  badge: (tone) => ({ ...TONES[tone], borderRadius: "999px", padding: "1px 9px", fontSize: "13px", fontWeight: 700 }),
+  yearTag: (selected) => ({
+    marginLeft: "6px",
+    padding: "0 6px",
+    borderRadius: "999px",
+    fontSize: "11px",
+    fontWeight: 600,
+    backgroundColor: selected ? "rgba(255, 255, 255, 0.25)" : "#e2e8f0",
+    color: selected ? "white" : "#475569"
+  }),
+  badge: (tone) =>({ ...TONES[tone], borderRadius: "999px", padding: "1px 9px", fontSize: "13px", fontWeight: 700 }),
   chip: ({ selected, mismatch, match, dimmed, clickable }) => ({
     display: "inline-block",
     margin: "0 4px 4px 0",

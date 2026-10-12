@@ -78,7 +78,8 @@ export const boardFromAssignments = (assignments, unassigned, slotKeys) => {
       track: application?.candidateType ?? null,
       prefs: application ? parsePrefs(application.caseNightPreferences) : null,
       emailSent: Boolean(a.emailSent),
-      reason: null
+      reason: null,
+      year: application?.studentYear || null
     });
   }
 
@@ -93,7 +94,8 @@ export const boardFromAssignments = (assignments, unassigned, slotKeys) => {
         track: u.candidateType,
         prefs: parsePrefs(u.caseNightPreferences),
         emailSent: false,
-        reason: null
+        reason: null,
+        year: u.studentYear || null
       },
       u.candidateType
     );
@@ -114,7 +116,8 @@ export const boardFromPlan = (plan) => {
     track: m.candidateType ?? null,
     prefs: null,
     emailSent: false,
-    reason
+    reason,
+    year: m.studentYear || null
   });
 
   for (const track of TRACKS) {

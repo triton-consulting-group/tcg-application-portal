@@ -230,3 +230,60 @@ test("stays fast when capacity is far below demand", () => {
   expect(Date.now() - started).toBeLessThan(2000);
   expect(plan.summary.placed).toBe(24);
 });
+
+describe("groupByYear", () => {
+  const years = (plan, track = "Tech") =>
+    Object.values(plan.tracks[track].slots).flatMap(({ groups }) =>
+      groups.map((g) => g.members.map((m) => m.studentYear).join(","))
+    );
+  const withYears = (list) => list.map((studentYear) => app("Tech", ["A"], { studentYear }));
+
+  test("members carry their year", () => {
+    const plan = buildCaseGroupPlan(withYears(["2nd", "2nd", "2nd"]), config);
+    expect(plan.tracks.Tech.slots.A.groups[0].members[0].studentYear).toBe("2nd");
+  });
+
+  test("orders 4s and 3s so years don't mix: three 1st-years and four 2nd-years", () => {
+    const apps = withYears(["2nd", "1st", "2nd", "1st", "2nd", "1st", "2nd"]);
+    const plan = buildCaseGroupPlan(apps, config, { groupByYear: true });
+    expect(years(plan)).toEqual(["1st,1st,1st", "2nd,2nd,2nd,2nd"]);
+    expect(plan.summary.mixedYearGroups).toBe(0);
+  });
+
+  test("when years must mix, neighbouring years go together", () => {
+    const apps = withYears(["4th", "1st", "4th", "2nd", "4th", "1st", "4th", "2nd"]);
+    const plan = buildCaseGroupPlan(apps, config, { groupByYear: true });
+    expect(years(plan)).toEqual(["1st,1st,2nd,2nd", "4th,4th,4th,4th"]);
+    expect(plan.summary.mixedYearGroups).toBe(1);
+  });
+
+  test("people without a year go last", () => {
+    const apps = withYears([undefined, "3rd", "3rd", "3rd"]);
+    const plan = buildCaseGroupPlan(apps, config, { groupByYear: true });
+    expect(years(plan)).toEqual(["3rd,3rd,3rd,"]);
+  });
+
+  test("off by default: groups follow submission order, as before", () => {
+    const apps = withYears(["2nd", "1st", "2nd", "1st", "2nd", "1st", "2nd"]);
+    const plan = buildCaseGroupPlan(apps, config);
+    expect(years(plan)).toEqual(["2nd,1st,2nd,1st", "2nd,1st,2nd"]);
+    expect(plan.summary.mixedYearGroups).toBe(2);
+  });
+
+  test("never changes slot sizes, groups of 3, or who is placed", () => {
+    const pool = ["1st", "2nd", "3rd", "4th", "5th+"];
+    const apps = Array.from({ length: 47 }, (_, i) =>
+      app(i % 3 ? "Tech" : "Non-Tech", [["A"], ["A", "B"], ["B", "C"], ["A", "B", "C"]][i % 4], { studentYear: pool[(i * 7) % 5] })
+    );
+    const off = buildCaseGroupPlan(apps, config);
+    const on = buildCaseGroupPlan(apps, config, { groupByYear: true });
+    for (const track of ["Tech", "Non-Tech"]) {
+      for (const slot of ["A", "B", "C"]) {
+        expect(on.tracks[track].slots[slot].count).toBe(off.tracks[track].slots[slot].count);
+      }
+      expect(on.tracks[track].groupsOf3).toBe(off.tracks[track].groupsOf3);
+    }
+    expect(on.excluded).toEqual(off.excluded);
+    expect(on.summary.mixedYearGroups).toBeLessThanOrEqual(off.summary.mixedYearGroups);
+  });
+});

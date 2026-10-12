@@ -31,11 +31,17 @@ const PersonChip = ({ person, from, slotLabels, mismatch, moving, matchIds, edit
     : null;
   const title = [mismatch, person.reason, availability].filter(Boolean).join(". ") || undefined;
   const style = s.chip({ selected, mismatch: Boolean(mismatch), match, dimmed: matchIds && !match, clickable: editable });
+  const label = (
+    <>
+      <span>{person.name}</span>
+      {person.year && <span style={s.yearTag(selected)}>{person.year}</span>}
+    </>
+  );
 
   if (!editable) {
     return (
       <span style={style} title={title} data-person-id={person.id} data-match={match || undefined}>
-        {person.name}
+        {label}
       </span>
     );
   }
@@ -59,7 +65,7 @@ const PersonChip = ({ person, from, slotLabels, mismatch, moving, matchIds, edit
         onPick(person, from);
       }}
     >
-      {person.name}
+      {label}
     </button>
   );
 };

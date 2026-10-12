@@ -244,8 +244,10 @@ describe("remove", () => {
 
 test("unassigned lists only Case Night - Yes applicants without a group", async () => {
   CaseGroupAssignment.distinct.mockResolvedValue(["x"]);
-  Application.find.mockReturnValue({ select: async () => [ada] });
+  const select = jest.fn(async () => [ada]);
+  Application.find.mockReturnValue({ select });
   const res = await fetch(base + "/unassigned", { headers: { Authorization: "Bearer t" } });
   expect(res.status).toBe(200);
   expect(Application.find).toHaveBeenCalledWith({ _id: { $nin: ["x"] }, status: "Case Night - Yes" });
+  expect(select.mock.calls[0][0]).toContain("studentYear"); // year tags on the board
 });
