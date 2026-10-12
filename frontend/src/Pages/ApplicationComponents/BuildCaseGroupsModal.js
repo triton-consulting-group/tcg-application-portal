@@ -22,13 +22,14 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
   const [notice, setNotice] = useState("");
   const [track, setTrack] = useState(TRACKS[0]);
   const [query, setQuery] = useState("");
+  const [groupByYear, setGroupByYear] = useState(true);
 
   const loadPreview = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const headers = await getAdminAuthHeaders();
-      const response = await axios.post(`${API_BASE_URL}/api/case-groups/preview`, {}, { headers });
+      const response = await axios.post(`${API_BASE_URL}/api/case-groups/preview`, { groupByYear }, { headers });
       setPreview(response.data);
       setTrack(busiestTrack(boardFromPlan(response.data.plan)));
     } catch (err) {
@@ -36,7 +37,7 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [groupByYear]);
 
   useEffect(() => {
     loadPreview();
@@ -49,7 +50,7 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
       const headers = await getAdminAuthHeaders();
       const response = await axios.post(
         `${API_BASE_URL}/api/case-groups/build`,
-        { fingerprint: preview.fingerprint },
+        { fingerprint: preview.fingerprint, groupByYear },
         { headers }
       );
       onBuilt(response.data.created);
@@ -93,6 +94,15 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
               {matches.length} {matches.length === 1 ? "match" : "matches"}
             </span>
           )}
+          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "14px", marginLeft: "auto" }}>
+            <input
+              type="checkbox"
+              checked={groupByYear}
+              disabled={loading || building}
+              onChange={(e) => setGroupByYear(e.target.checked)}
+            />
+            Keep years together in each time slot
+          </label>
         </div>
 
         {notice && <div style={styles.notice}>{notice}</div>}
@@ -104,6 +114,7 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
             <p style={{ margin: "0 0 8px" }}>
               {plan.summary.eligible} "Case Night - Yes" applicants · <strong>{plan.summary.placed} placed</strong>
               {plan.summary.excluded > 0 && ` · ${plan.summary.excluded} not placed`}
+              {` · ${plan.summary.mixedYearGroups} ${plan.summary.mixedYearGroups === 1 ? "group mixes" : "groups mix"} years`}
               {trackPlan && (
                 <span style={styles.status}>
                   {" "}

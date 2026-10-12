@@ -17,9 +17,13 @@ const { checkEditWarnings } = require("../services/caseGroupEdits");
 const CaseGroupEditLog = require("../models/CaseGroupEditLog");
 const mongoose = require("mongoose");
 
+// Builds the plan for the current Case Night - Yes applicants. "Keep years together" is on unless the request turns it off.
+const planFromRequest = async (req) =>
+  buildCaseGroupPlan(await loadEligibleApplications(), CASE_NIGHT_CONFIG, { groupByYear: req.body?.groupByYear !== false });
+
 const loadEligibleApplications = () =>
   Application.find({ status: ELIGIBLE_STATUS })
-    .select("fullName email candidateType caseNightPreferences createdAt status")
+    .select("fullName email candidateType caseNightPreferences studentYear createdAt status")
     .lean();
 
 // Every case-group route exposes applicant data — admins only
@@ -148,7 +152,7 @@ router.get("/unassigned", async (req, res) => {
     const unassigned = await Application.find({
       _id: { $nin: await CaseGroupAssignment.distinct('applicationId') },
       status: ELIGIBLE_STATUS
-    }).select('email fullName candidateType caseNightPreferences');
+    }).select('email fullName candidateType caseNightPreferences studentYear');
 
     res.json(unassigned);
   } catch (error) {
@@ -160,7 +164,7 @@ router.get("/unassigned", async (req, res) => {
 // 🟢 Preview automatic case groups (super admins; writes nothing)
 router.post("/preview", requireSuperAdmin, async (req, res) => {
   try {
-    const plan = buildCaseGroupPlan(await loadEligibleApplications(), CASE_NIGHT_CONFIG);
+    const plan = await planFromRequest(req);
     res.json({ plan, fingerprint: planFingerprint(plan), existing: await getExistingStatus() });
   } catch (error) {
     console.error("Error previewing case groups:", error);
@@ -171,7 +175,7 @@ router.post("/preview", requireSuperAdmin, async (req, res) => {
 // 🟢 Build case groups, replacing all current assignments (super admins)
 router.post("/build", requireSuperAdmin, async (req, res) => {
   try {
-    const plan = buildCaseGroupPlan(await loadEligibleApplications(), CASE_NIGHT_CONFIG);
+    const plan = await planFromRequest(req);
     if (!req.body?.fingerprint || req.body.fingerprint !== planFingerprint(plan)) {
       return res.status(409).json({ error: "Applicants changed since the preview. Preview again before building." });
     }

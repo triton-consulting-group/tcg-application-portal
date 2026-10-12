@@ -93,7 +93,7 @@ test("build with the preview's fingerprint replaces the assignments", async () =
   const { fingerprint } = await (await post("/preview")).json();
   const res = await post("/build", { fingerprint });
   expect(res.status).toBe(200);
-  expect(await res.json()).toEqual({ created: 4, summary: { eligible: 4, placed: 4, excluded: 0 } });
+  expect(await res.json()).toEqual({ created: 4, summary: { eligible: 4, placed: 4, excluded: 0, mixedYearGroups: 0 } });
   const [docs, by] = replaceAssignments.mock.calls[0];
   expect(by).toBe("boss@ucsd.edu");
   expect(docs).toHaveLength(4);
@@ -116,4 +116,43 @@ test("build refuses a plan that places nobody, so existing groups aren't wiped",
   const res = await post("/build", { fingerprint });
   expect(res.status).toBe(400);
   expect(replaceAssignments).not.toHaveBeenCalled();
+});
+
+describe("keep years together", () => {
+  // Seven people in one slot whose years alternate, so grouping by year changes the groups
+  const mixed = ["2nd", "1st", "2nd", "1st", "2nd", "1st", "2nd"].map((studentYear, i) => ({
+    ...applications[0],
+    _id: `64b00000000000000000001${i}`,
+    studentYear,
+    createdAt: new Date(2026, 0, 2, 0, i)
+  }));
+  let select;
+  beforeEach(() => {
+    select = jest.fn(() => ({ lean: async () => mixed }));
+    Application.find.mockReturnValue({ select });
+  });
+
+  test("the query fetches each applicant's year", async () => {
+    signInAs("super_admin");
+    await post("/preview");
+    expect(select.mock.calls[0][0]).toContain("studentYear");
+  });
+
+  test("is on by default and changes the groups", async () => {
+    signInAs("super_admin");
+    const byDefault = await (await post("/preview")).json();
+    const on = await (await post("/preview", { groupByYear: true })).json();
+    const off = await (await post("/preview", { groupByYear: false })).json();
+    expect(byDefault.fingerprint).toBe(on.fingerprint);
+    expect(off.fingerprint).not.toBe(on.fingerprint);
+    expect(on.plan.summary.mixedYearGroups).toBe(0);
+    expect(off.plan.summary.mixedYearGroups).toBe(2);
+  });
+
+  test("build uses the option that was previewed", async () => {
+    signInAs("super_admin");
+    const { fingerprint } = await (await post("/preview", { groupByYear: false })).json();
+    expect((await post("/build", { fingerprint })).status).toBe(409); // default (on) gives different groups
+    expect((await post("/build", { fingerprint, groupByYear: false })).status).toBe(200);
+  });
 });

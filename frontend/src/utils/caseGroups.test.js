@@ -37,7 +37,7 @@ const assignment = (id, candidateType, timeSlot, groupNumber, name, application 
   groupId: `${candidateType}-${timeSlot}-${groupNumber}`,
   applicantName: name,
   emailSent: false,
-  applicationId: { _id: `app-${id}`, candidateType, caseNightPreferences: ["A"], ...application }
+  applicationId: { _id: `app-${id}`, candidateType, caseNightPreferences: ["A"], studentYear: "2nd", ...application }
 });
 
 describe("boardFromAssignments", () => {
@@ -50,7 +50,7 @@ describe("boardFromAssignments", () => {
       { ...assignment("a5", "Tech", "B", 1, "Gone"), applicationId: null }
     ],
     [
-      { _id: "u1", fullName: "Ada", candidateType: "Tech", caseNightPreferences: ["B"] },
+      { _id: "u1", fullName: "Ada", candidateType: "Tech", caseNightPreferences: ["B"], studentYear: "1st" },
       { _id: "u2", fullName: "Nobody", candidateType: "Unknown", caseNightPreferences: [] }
     ],
     ["A", "B", "C"]
@@ -72,18 +72,19 @@ describe("boardFromAssignments", () => {
       track: "Tech",
       prefs: ["A", "B"],
       emailSent: false,
-      reason: null
+      reason: null,
+      year: "2nd"
     });
   });
 
   test("a deleted application still shows, with unknown availability", () => {
-    expect(board.Tech.slots.B[0].members[0]).toMatchObject({ name: "Gone", applicationId: null, prefs: null });
+    expect(board.Tech.slots.B[0].members[0]).toMatchObject({ name: "Gone", applicationId: null, prefs: null, year: null });
   });
 
   test("unassigned go to their track's tray; no-track people go in both", () => {
     expect(board.Tech.unassigned.map((p) => p.name)).toEqual(["Ada", "Nobody"]);
     expect(board["Non-Tech"].unassigned.map((p) => p.name)).toEqual(["Nobody"]);
-    expect(board.Tech.unassigned[0]).toMatchObject({ id: "u1", assignmentId: null, applicationId: "u1", prefs: ["B"] });
+    expect(board.Tech.unassigned[0]).toMatchObject({ id: "u1", assignmentId: null, applicationId: "u1", prefs: ["B"], year: "1st" });
   });
 });
 
@@ -92,7 +93,7 @@ test("boardFromPlan shows proposed groups and who wasn't placed, with reasons", 
     tracks: {
       "Non-Tech": { slots: { A: { groups: [] } } },
       Tech: {
-        slots: { A: { groups: [{ groupNumber: 1, groupId: "Tech-A-1", members: [{ applicationId: "1", fullName: "Ada" }] }] } }
+        slots: { A: { groups: [{ groupNumber: 1, groupId: "Tech-A-1", members: [{ applicationId: "1", fullName: "Ada", studentYear: "3rd" }] }] } }
       }
     },
     excluded: [
@@ -101,7 +102,7 @@ test("boardFromPlan shows proposed groups and who wasn't placed, with reasons", 
     ]
   };
   const board = boardFromPlan(plan);
-  expect(board.Tech.slots.A[0].members[0]).toMatchObject({ id: "1", name: "Ada", prefs: null });
+  expect(board.Tech.slots.A[0].members[0]).toMatchObject({ id: "1", name: "Ada", prefs: null, year: "3rd" });
   expect(board.Tech.unassigned.map((p) => [p.name, p.reason])).toEqual([
     ["Zed", "Could not be placed"],
     ["Yan", "No track"]

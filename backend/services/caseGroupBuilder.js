@@ -30,7 +30,63 @@ const byCreated = (a, b) => a.createdAt - b.createdAt || a.applicationId.localeC
 // Least flexible first, then earliest submission
 const byPriority = (a, b) => a.prefs.length - b.prefs.length || byCreated(a, b);
 
-const publicFields = ({ applicationId, fullName, email }) => ({ applicationId, fullName, email });
+const publicFields = ({ applicationId, fullName, email, studentYear }) => ({ applicationId, fullName, email, studentYear });
+
+// Year order for keeping years together; anything else (or blank) sorts last
+const YEAR_ORDER = ["1st", "2nd", "3rd", "4th", "5th+"];
+const yearRank = (year) => {
+  const i = YEAR_ORDER.indexOf(year);
+  return i === -1 ? YEAR_ORDER.length : i;
+};
+const byYear = (a, b) => yearRank(a.studentYear) - yearRank(b.studentYear) || byCreated(a, b);
+
+// How badly a group mixes years: 0 if one year, otherwise 1000 plus the gap between its years
+// (so the fewest mixed groups wins first, then mixing neighbouring years over distant ones)
+const yearMixCost = (people) => {
+  const ranks = people.map((p) => yearRank(p.studentYear));
+  const spread = Math.max(...ranks) - Math.min(...ranks);
+  return spread === 0 ? 0 : 1000 + spread;
+};
+
+// Splits a slot's people into groups of the given sizes.
+// Without groupByYear: submission order, 4s first. With it: sorted by year, and the order of
+// 4s and 3s chosen (dynamic programming over how many of each are used) to mix years least.
+const arrangeGroups = (people, sizes, groupByYear) => {
+  if (!groupByYear) {
+    const sorted = [...people].sort(byCreated);
+    let start = 0;
+    return sizes.map((size) => sorted.slice((start += size) - size, start));
+  }
+
+  const sorted = [...people].sort(byYear);
+  const fours = sizes.filter((size) => size === 4).length;
+  const threes = sizes.length - fours;
+  // best[f][t] = { cost, prev } for the first 4f + 3t people split into f fours and t threes
+  const best = Array.from({ length: fours + 1 }, () => new Array(threes + 1).fill(null));
+  best[0][0] = { cost: 0, prev: null };
+  for (let f = 0; f <= fours; f++) {
+    for (let t = 0; t <= threes; t++) {
+      if (!best[f][t]) continue;
+      const start = 4 * f + 3 * t;
+      for (const [size, nf, nt] of [[4, f + 1, t], [3, f, t + 1]]) {
+        if (nf > fours || nt > threes) continue;
+        const cost = best[f][t].cost + yearMixCost(sorted.slice(start, start + size));
+        if (!best[nf][nt] || cost < best[nf][nt].cost) best[nf][nt] = { cost, prev: [f, t, size] };
+      }
+    }
+  }
+
+  const order = [];
+  for (let f = fours, t = threes; best[f][t].prev; ) {
+    const [pf, pt, size] = best[f][t].prev;
+    order.unshift(size);
+    [f, t] = [pf, pt];
+  }
+  let start = 0;
+  return order.map((size) => sorted.slice((start += size) - size, start));
+};
+
+const mixesYears = (members) => new Set(members.map((m) => yearRank(m.studentYear))).size > 1;
 
 const groupsAllowedPerSlot = (config, slotKeys) =>
   Object.fromEntries(
@@ -138,7 +194,8 @@ const assignToSlots = (candidates, slotKeys, counts) => {
   return { members, unplaced };
 };
 
-const buildCaseGroupPlan = (applications, config) => {
+// options.groupByYear: keep the same year together inside each time slot (doesn't change slot sizes)
+const buildCaseGroupPlan = (applications, config, { groupByYear = false } = {}) => {
   const slotKeys = Object.keys(config.slots).sort();
   const excluded = [];
   const candidatesByTrack = Object.fromEntries(TRACKS.map((track) => [track, []]));
@@ -152,6 +209,7 @@ const buildCaseGroupPlan = (applications, config) => {
       applicationId: String(app._id),
       fullName: app.fullName,
       email: app.email,
+      studentYear: app.studentYear || "",
       createdAt: new Date(app.createdAt || 0).getTime(),
     };
 
@@ -174,6 +232,7 @@ const buildCaseGroupPlan = (applications, config) => {
   const groupsLeft = groupsAllowedPerSlot(config, slotKeys);
   const tracks = {};
   let placed = 0;
+  let mixedYearGroups = 0;
 
   for (const track of TRACKS) {
     const candidates = candidatesByTrack[track].sort(byPriority);
@@ -193,22 +252,19 @@ const buildCaseGroupPlan = (applications, config) => {
     let groupsOf3 = 0;
 
     for (const slot of slotKeys) {
-      const people = members[slot].sort(byCreated);
+      const people = members[slot];
       const sizes = splitIntoGroups(people.length);
-      let start = 0;
+      const groups = arrangeGroups(people, sizes, groupByYear);
+      mixedYearGroups += groups.filter(mixesYears).length;
 
       slots[slot] = {
         label: config.slots[slot],
         count: people.length,
-        groups: sizes.map((size, i) => {
-          const group = {
-            groupNumber: i + 1,
-            groupId: makeGroupId(track, slot, i + 1),
-            members: people.slice(start, start + size).map(publicFields),
-          };
-          start += size;
-          return group;
-        }),
+        groups: groups.map((groupMembers, i) => ({
+          groupNumber: i + 1,
+          groupId: makeGroupId(track, slot, i + 1),
+          members: groupMembers.map(publicFields),
+        })),
       };
 
       groupsLeft[slot] -= sizes.length;
@@ -223,7 +279,7 @@ const buildCaseGroupPlan = (applications, config) => {
 
   excluded.sort((a, b) => a.applicationId.localeCompare(b.applicationId));
 
-  return { tracks, excluded, summary: { eligible, placed, excluded: excluded.length } };
+  return { tracks, excluded, summary: { eligible, placed, excluded: excluded.length, mixedYearGroups } };
 };
 
 // Every group placement in a plan, as flat rows
