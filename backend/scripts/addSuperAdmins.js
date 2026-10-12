@@ -29,6 +29,7 @@ const addSuperAdmins = async () => {
       canViewAnalytics: true,
       canChangeStatus: true,
       canAddComments: true,
+      canDeleteComments: true,
       canDragDrop: true
     };
 

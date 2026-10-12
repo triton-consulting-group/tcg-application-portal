@@ -128,6 +128,7 @@ const basicPermissions = {
   canViewAnalytics: true,
   canChangeStatus: false,
   canAddComments: true,
+  canDeleteComments: true,
   canDragDrop: false
 };
 
@@ -139,6 +140,7 @@ const superAdminPermissions = {
   canViewAnalytics: true,
   canChangeStatus: true,
   canAddComments: true,
+  canDeleteComments: true,
   canDragDrop: true
 };
 

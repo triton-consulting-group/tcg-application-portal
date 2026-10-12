@@ -23,6 +23,7 @@ const createRegularAdmin = async (email, name) => {
         canViewAnalytics: true,
         canChangeStatus: false, // Cannot change status
         canAddComments: false, // Cannot add comments
+        canDeleteComments: false, // Cannot delete comments
         canDragDrop: false // Cannot drag and drop
       },
       isActive: true,

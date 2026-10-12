@@ -1,11 +1,12 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
 const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
-const { requireStatusChangePermission, requireCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
+const { requireStatusChangePermission, requireCommentPermission, requireDeleteCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
 const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
@@ -770,6 +771,7 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
     }
 
     const commentEntry = {
+      _id: new mongoose.Types.ObjectId(),
       comment: comment.trim(),
       commentedBy: req.admin.email,
       commentedAt: new Date(),
@@ -790,6 +792,49 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
   } catch (error) {
     console.error("❌ Error adding comment:", error);
     res.status(500).json({ error: "❌ Failed to add comment." });
+  }
+});
+
+// Removes one comment with a single atomic $pull. Resolves to { application } on success,
+// or { missing: "application" | "comment" } saying which half of the lookup failed.
+async function deleteCommentById(applicationId, commentId) {
+  const updated = await Application.findOneAndUpdate(
+    { _id: applicationId, "comments._id": commentId },
+    { $pull: { comments: { _id: commentId } } },
+    { new: true }
+  );
+  if (updated) return { application: updated };
+
+  const exists = await Application.findById(applicationId);
+  return { missing: exists ? "comment" : "application" };
+}
+
+router.delete("/:id/comments/:commentId", requireDeleteCommentPermission, async (req, res) => {
+  try {
+    addNoStore(res);
+    const { id, commentId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(commentId)) {
+      return res.status(400).json({ error: "❌ Invalid application or comment id." });
+    }
+
+    const result = await deleteCommentById(id, commentId);
+    if (result.missing === "application") {
+      return res.status(404).json({ error: "❌ Application not found" });
+    }
+    if (result.missing === "comment") {
+      return res.status(404).json({ error: "❌ Comment not found" });
+    }
+
+    console.log("Comment deleted", { applicationId: id, commentId, deletedBy: req.admin.email });
+
+    res.json({
+      message: "✅ Comment deleted successfully",
+      totalComments: result.application.comments.length
+    });
+  } catch (error) {
+    console.error("❌ Error deleting comment:", error);
+    res.status(500).json({ error: "❌ Failed to delete comment." });
   }
 });
 

@@ -23,6 +23,7 @@ const testRegularAdminPermissions = async () => {
       console.log(`   - Edit Applications: ${admin.permissions.canEditApplications ? '✅' : '❌'}`);
       console.log(`   - Change Status: ${admin.permissions.canChangeStatus ? '✅' : '❌'}`);
       console.log(`   - Add Comments: ${admin.permissions.canAddComments ? '✅' : '❌'}`);
+      console.log(`   - Delete Comments: ${admin.permissions.canDeleteComments ? '✅' : '❌'}`);
       console.log(`   - Drag & Drop: ${admin.permissions.canDragDrop ? '✅' : '❌'}`);
       console.log(`   - Manage Admins: ${admin.permissions.canManageAdmins ? '✅' : '❌'}`);
       console.log(`   - View Analytics: ${admin.permissions.canViewAnalytics ? '✅' : '❌'}`);

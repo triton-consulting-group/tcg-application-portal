@@ -23,6 +23,7 @@ const AdminSchema = new mongoose.Schema({
     canViewAnalytics: { type: Boolean, default: true },
     canChangeStatus: { type: Boolean, default: true },
     canAddComments: { type: Boolean, default: true },
+    canDeleteComments: { type: Boolean, default: true },
     canDragDrop: { type: Boolean, default: true }
   },
   isActive: { 
