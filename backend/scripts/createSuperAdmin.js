@@ -9,10 +9,11 @@ const createSuperAdmin = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
 
+    // Usage: node scripts/createSuperAdmin.js <email> "<Full Name>"
     // Super admin details
     const superAdminData = {
-      email: "canbrian59@gmail.com",
-      name: "Brian Can",
+      email: (process.argv[2] || "").trim().toLowerCase(),
+      name: (process.argv[3] || "").trim(),
       role: "super_admin",
       permissions: {
         canViewApplications: true,
@@ -24,6 +25,11 @@ const createSuperAdmin = async () => {
       isActive: true,
       createdBy: "system"
     };
+
+    if (!superAdminData.email || !superAdminData.name) {
+      console.error('Usage: node scripts/createSuperAdmin.js <email> "<Full Name>"');
+      process.exit(1);
+    }
 
     // Check if super admin already exists
     const existingAdmin = await Admin.findOne({ email: superAdminData.email });

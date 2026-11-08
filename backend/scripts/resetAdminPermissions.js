@@ -2,6 +2,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const Admin = require('../models/Admin');
 const User = require('../models/User');
+const { loadAdminRoster } = require('./lib/adminRoster');
 
 // Rebuilds the admin list from scratch:
 //   1. Deletes every admin except KEEP_EMAILS.
@@ -16,102 +17,12 @@ const User = require('../models/User');
 // Use a specific env file (defaults to .env):
 //   node scripts/resetAdminPermissions.js --env production.env --apply
 
-const KEEP_EMAILS = [
-  'sbhatnagar@ucsd.edu',
-  'nkerudi@ucsd.edu',
-  'mihwang@ucsd.edu'
-];
+// Rosters come from the gitignored admin-roster.local.json (see admin-roster.example.json)
+const { keepEmails: KEEP_EMAILS, board: BOARD, otherSuperAdmins: OTHER_SUPER_ADMIN, associates: ASSOCIATES } = loadAdminRoster();
 
 // Each person gets one name: the super admin entry if they are a super admin.
-const BOARD = [
-  { email: 'aparthan@ucsd.edu', name: 'Aditi Parthan' },
-  { email: 'htakken@ucsd.edu', name: 'Harrison Takken' },
-  { email: 'jgajiwala@ucsd.edu', name: 'Jessica Gajiwala' },
-  { email: 'jjukita@ucsd.edu', name: 'Josephine (Josie) Jukita' },
-  { email: 'lphamnguyen@ucsd.edu', name: 'Lana Pham-Nguyen' },
-  { email: 'l5herrera@ucsd.edu', name: 'Leslie Herrera' },
-  { email: 'l6lau@ucsd.edu', name: 'Lianna Lau' },
-  { email: 'miz051@ucsd.edu', name: 'Mia Zhang' },
-  { email: 'nkerudi@ucsd.edu', name: 'Nikitha Kerudi' },
-  { email: 'satadepalli@ucsd.edu', name: 'Sadhana Tadepalli' },
-  { email: 'schaurasiya@ucsd.edu', name: 'Suhani Chaurasiya' },
-  { email: 'sbhatnagar@ucsd.edu', name: 'Sweekrit Bhatnagar' },
-  { email: 'was002@ucsd.edu', name: 'Wanhan Sun' },
-  { email: 'wisong@ucsd.edu', name: 'Wilson Song' },
-  { email: 'mihwang@ucsd.edu', name: 'Mirabelle Hwang' }
-];
 
 // Super admins who are not on the board
-const OTHER_SUPER_ADMIN = [
-  { email: 'amuthu@ucsd.edu', name: 'Aathi Muthu' }
-];
-
-const ASSOCIATES = [
-  { email: 'schaurasiya@ucsd.edu', name: 'Suhani Chaurasiya' },
-  { email: 's2bui@ucsd.edu', name: 'Sarah Bui' },
-  { email: 'spjha@ucsd.edu', name: 'Sparsh Jha' },
-  { email: 'aphuang@ucsd.edu', name: 'April Huang' },
-  { email: 'jol171@ucsd.edu', name: 'Joanne Liang' },
-  { email: 'm2dao@ucsd.edu', name: 'Mattie Dao' },
-  { email: 'mihwang@ucsd.edu', name: 'Mirabelle Hwang' },
-  { email: 'ngolder@ucsd.edu', name: 'Noah Golder' },
-  { email: 'tbalamurugan@ucsd.edu', name: 'Tanisha Bala' },
-  { email: 'dramu@ucsd.edu', name: 'Dhruv Ramu' },
-  { email: 'fyurkov@ucsd.edu', name: 'Feodor Yurkov' },
-  { email: 'miz051@ucsd.edu', name: 'Mia Zhang' },
-  { email: 'ery002@ucsd.edu', name: 'Erika Yu' },
-  { email: 'tmalpeddi@ucsd.edu', name: 'Tejal Malpeddi' },
-  { email: 'jjukita@ucsd.edu', name: 'Josephine (Josie) Jukita' },
-  { email: 'r4ravi@ucsd.edu', name: 'Rishvik Ravi' },
-  { email: 'l6lau@ucsd.edu', name: 'Lianna Lau' },
-  { email: 'nkerudi@ucsd.edu', name: 'Nikitha Kerudi' },
-  { email: 'lphamnguyen@ucsd.edu', name: 'Lana Pham-Nguyen' },
-  { email: 'lrothe@ucsd.edu', name: 'Logan Rothe' },
-  { email: 'tjoehren@ucsd.edu', name: 'Toshiyuki Joehren' },
-  { email: 'nsuri@ucsd.edu', name: 'Nikhil Suri' },
-  { email: 'brcan@ucsd.edu', name: 'Brian Can' },
-  { email: 'mel070@ucsd.edu', name: 'Melody Liu' },
-  { email: 'mih045@ucsd.edu', name: 'Mei Huang' },
-  { email: 'a1gong@ucsd.edu', name: 'Alyssa Gong' },
-  { email: 'wisong@ucsd.edu', name: 'Wilson Song' },
-  { email: 'soqin@ucsd.edu', name: 'Sophia Qin' },
-  { email: 'a3wan@ucsd.edu', name: 'Angel Wan' },
-  { email: 'ceqian@ucsd.edu', name: 'Cecilia Qian' },
-  { email: 'gema@ucsd.edu', name: 'George Ma' },
-  { email: 'aanarayanan@ucsd.edu', name: 'Aarush Narayanan' },
-  { email: 'ksameer@ucsd.edu', name: 'Krish Sameer' },
-  { email: 'satadepalli@ucsd.edu', name: 'Sadhana Tadepalli' },
-  { email: 'akanyal@ucsd.edu', name: 'Arav Kanyal' },
-  { email: 'artyagi@ucsd.edu', name: 'Aryav Tyagi' },
-  { email: 'ntandon@ucsd.edu', name: 'Namrata Tandon' },
-  { email: 'vkaranth@ucsd.edu', name: 'Veyna Karanth' },
-  { email: 'dtparekh@ucsd.edu', name: 'Devam Parekh' },
-  { email: 'was002@ucsd.edu', name: 'Wanhan Sun' },
-  { email: 'mdasgupta@ucsd.edu', name: 'Mallika Dasgupta' },
-  { email: 'rpp003@ucsd.edu', name: 'Rushi Patel' },
-  { email: 'kag040@ucsd.edu', name: 'Kabeer Gupta' },
-  { email: 'h4gupta@ucsd.edu', name: 'Himansi Gupta' },
-  { email: 'mdmello@ucsd.edu', name: "Matthew D'Mello" },
-  { email: 'amuthu@ucsd.edu', name: 'Aathi Muthu' },
-  { email: 'msaari@ucsd.edu', name: 'Max Saari' },
-  { email: 'dsw001@ucsd.edu', name: 'Deiter Williams' },
-  { email: 'jgajiwala@ucsd.edu', name: 'Jessica Gajiwala' },
-  { email: 'r1malhotra@ucsd.edu', name: 'Riyana Malhotra' },
-  { email: 'tlendler@ucsd.edu', name: 'Theo Lendler' },
-  { email: 'lucorona@ucsd.edu', name: 'Luis Corona' },
-  { email: 'jzlu@ucsd.edu', name: 'Justin Lu' },
-  { email: 'htakken@ucsd.edu', name: 'Harrison Takken' },
-  { email: 'mdreben@ucsd.edu', name: 'Max Dreben' },
-  { email: 'vchowdhary@ucsd.edu', name: 'Varun Chowdhary' },
-  { email: 'sbhatnagar@ucsd.edu', name: 'Sweekrit Bhatnagar' },
-  { email: 'jmfernando@ucsd.edu', name: 'Jamera Mellyn Fernando' },
-  { email: 'adhole@ucsd.edu', name: 'Arnav Dhole' },
-  { email: 'fiwanaka@ucsd.edu', name: 'Faith Iwanaka' },
-  { email: 'smahadkar@ucsd.edu', name: 'Saaz Mahadkar' },
-  { email: 'sosahu@ucsd.edu', name: 'Sonia Sahu' },
-  { email: 's1dhawan@ucsd.edu', name: 'Sidhant Dhawan' },
-  { email: 'i6wu@ucsd.edu', name: 'Isabelle Wu' }
-];
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');

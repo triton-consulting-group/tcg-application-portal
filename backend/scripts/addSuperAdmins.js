@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Admin = require('../models/Admin');
 const User = require('../models/User');
+const { loadAdminRoster } = require('./lib/adminRoster');
 require('dotenv').config();
 
 // Script to add multiple super admins
@@ -11,12 +12,7 @@ const addSuperAdmins = async () => {
     console.log("✅ Connected to MongoDB");
 
     // List of super admins to add
-    const superAdminsToAdd = [
-      { email: "justinzelu@gmail.com", name: "Justin Zelu" },
-      { email: "aanarayanan@ucsd.edu", name: "A A Narayanan" },
-      { email: "lanaphamnguy@gmail.com", name: "Lana Pham Nguyen" },
-      { email: "sbhatnagar@ucsd.edu", name: "S Bhatnagar" }
-    ];
+    const superAdminsToAdd = loadAdminRoster().superAdmins; // from the gitignored admin-roster.local.json
 
     console.log(`\n📋 Adding ${superAdminsToAdd.length} super admins...\n`);
 
