@@ -84,3 +84,6 @@ Thumbs.db
 uploads/ 
 # Backups written by cleanup scripts (contain applicant data)
 backups/
+
+# Real admin rosters (member names and emails) for scripts/; see scripts/admin-roster.example.json
+scripts/admin-roster.local.json

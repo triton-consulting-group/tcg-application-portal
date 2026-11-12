@@ -1,0 +1,21 @@
+{
+  "_readme": "Copy to admin-roster.local.json (gitignored) and replace with real members. Used by resetAdminPermissions.js (keepEmails, board, otherSuperAdmins, associates), addAdmins.js (admins) and addSuperAdmins.js (superAdmins).",
+  "keepEmails": ["vp.technology@ucsd.example"],
+  "board": [
+    { "email": "president@ucsd.example", "name": "Board Member One" },
+    { "email": "vp.technology@ucsd.example", "name": "Board Member Two" }
+  ],
+  "otherSuperAdmins": [
+    { "email": "advisor@ucsd.example", "name": "Other Super Admin" }
+  ],
+  "associates": [
+    { "email": "associate1@ucsd.example", "name": "Associate One" },
+    { "email": "associate2@ucsd.example", "name": "Associate Two" }
+  ],
+  "admins": [
+    { "email": "associate1@ucsd.example", "name": "Associate One" }
+  ],
+  "superAdmins": [
+    { "email": "president@ucsd.example", "name": "Board Member One" }
+  ]
+}

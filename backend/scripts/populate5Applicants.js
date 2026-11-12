@@ -5,7 +5,7 @@ require('dotenv').config();
 // 5 realistic applicants with proper form field values
 const testApplications = [
   {
-    email: "sarah.chen@ucsd.edu",
+    email: "test.applicant858@example.com",
     fullName: "Sarah Chen",
     studentYear: "3rd",
     major: "Data Science",
@@ -34,7 +34,7 @@ const testApplications = [
     ]
   },
   {
-    email: "michael.rodriguez@ucsd.edu",
+    email: "test.applicant63@example.com",
     fullName: "Michael Rodriguez",
     studentYear: "2nd",
     major: "Business Administration",
@@ -75,7 +75,7 @@ const testApplications = [
     ]
   },
   {
-    email: "emily.wang@ucsd.edu",
+    email: "test.applicant463@example.com",
     fullName: "Emily Wang",
     studentYear: "4th",
     major: "Computer Science",
@@ -128,7 +128,7 @@ const testApplications = [
     ]
   },
   {
-    email: "james.kim@ucsd.edu",
+    email: "test.applicant23@example.com",
     fullName: "James Kim",
     studentYear: "1st",
     major: "Economics",
@@ -150,7 +150,7 @@ const testApplications = [
     comments: [] // No comments yet
   },
   {
-    email: "priya.patel@ucsd.edu",
+    email: "test.applicant683@example.com",
     fullName: "Priya Patel",
     studentYear: "5th+",
     major: "Cognitive Science",

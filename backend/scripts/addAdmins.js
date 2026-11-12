@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Admin = require('../models/Admin');
 const User = require('../models/User');
+const { loadAdminRoster } = require('./lib/adminRoster');
 require('dotenv').config();
 
 // Script to add multiple admins with standard admin permissions
@@ -11,13 +12,7 @@ const addAdmins = async () => {
     console.log("✅ Connected to MongoDB");
 
     // List of admins to add
-    const adminsToAdd = [
-      { email: "ngolder@ucsd.edu", name: "N Golder" },
-      { email: "spodugu@ucsd.edu", name: "S Podugu" },
-      { email: "georgema2020@gmail.com", name: "George Ma" },
-      { email: "justinzelu@gmail.com", name: "Justin Zelu" },
-      { email: "sbhatnagar@ucsd.edu", name: "S Bhatnagar" }
-    ];
+    const adminsToAdd = loadAdminRoster().admins; // from the gitignored admin-roster.local.json
 
     console.log(`\n📋 Adding ${adminsToAdd.length} admins...\n`);
 
