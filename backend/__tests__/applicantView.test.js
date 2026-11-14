@@ -1,64 +1,17 @@
-// S-1: the applicant-facing routes return only applicant-owned fields, never board comments or status history
-const mockVerifyIdToken = jest.fn();
-jest.mock("../config/firebaseAdmin", () => ({
-  getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
-}));
-jest.mock("../config/deadlineConfig", () => ({ isActive: false }));
-jest.mock("../models/Admin", () => ({ findOne: jest.fn() }));
-
-const mockSave = jest.fn();
-jest.mock("../models/Application", () => {
-  // Like a Mongoose document: array defaults are present on a new application
-  const Application = jest.fn(function (fields) {
-    Object.assign(this, { comments: [], statusHistory: [] }, fields, { _id: "64b000000000000000000002" });
-    this.save = mockSave;
-  });
-  Application.findOne = jest.fn();
-  Application.findOneAndUpdate = jest.fn();
-  return Application;
-});
-jest.mock("../config/s3Config", () => ({
-  s3: {}, S3_CONFIG: { uploadSettings: { maxFileSize: 1024, allowedMimeTypes: [] } }, getFileTypeAndPath: jest.fn(), getFileUrl: jest.fn(),
-  getSignedUrl: jest.fn(), isS3Configured: () => false
-}));
-
-const express = require("express");
+// Unit tests for the applicant-facing field allowlist (SOW S-1), using the real Application model
+const mongoose = require("mongoose");
 const Application = require("../models/Application");
-const applications = require("../routes/applications");
+const { APPLICANT_VISIBLE_FIELDS, toApplicantView } = require("../utils/applicantView");
 
-let server;
-let base;
+// Schema fields that only the board may read. Every schema field must be in exactly one of
+// APPLICANT_VISIBLE_FIELDS or this list, so a new field forces a deliberate choice.
+const BOARD_ONLY_FIELDS = ["comments", "statusHistory", "__v"];
 
-beforeAll((done) => {
-  const app = express();
-  app.use(express.json());
-  app.use("/api/applications", applications);
-  server = app.listen(0, () => {
-    base = `http://127.0.0.1:${server.address().port}/api/applications`;
-    done();
-  });
-});
+const APP_ID = new mongoose.Types.ObjectId("64b000000000000000000001");
+const COMMENT_ID = new mongoose.Types.ObjectId("64b0000000000000000000c1");
 
-afterAll((done) => {
-  server.close(done);
-});
-
-const EMAIL = "applicant@ucsd.edu";
-const signedIn = { Authorization: "Bearer applicant-token" };
-
-const send = (method, path, body) =>
-  fetch(base + path, {
-    method,
-    headers: { "Content-Type": "application/json", ...signedIn },
-    body: body === undefined ? undefined : JSON.stringify(body)
-  });
-
-const BOARD_ONLY_FIELDS = ["comments", "statusHistory"];
-
-// A stored application as the database returns it, including board-only data
-const storedApplication = () => ({
-  _id: "64b000000000000000000001",
-  email: EMAIL,
+const applicantFields = () => ({
+  email: "applicant@ucsd.edu",
   fullName: "Test Applicant",
   phoneNumber: "+18585550123",
   studentYear: "2nd",
@@ -67,90 +20,133 @@ const storedApplication = () => ({
   candidateType: "Tech",
   reason: "Because",
   zombieAnswer: "Run",
-  additionalInfo: "",
-  caseNightPreferences: ["A"],
+  additionalInfo: "Extra",
+  caseNightPreferences: ["A", "C"],
   resume: "/uploads/resume.pdf",
   transcript: null,
   image: null,
   status: "Case Night - Yes",
-  statusHistory: [{ status: "Case Night - Yes", changedBy: "board@ucsd.edu", notes: "strong reasoning" }],
-  comments: [{ comment: "internal note", commentedBy: "board@ucsd.edu", adminName: "Board Member" }],
-  createdAt: "2026-10-01T00:00:00.000Z",
-  updatedAt: "2026-10-02T00:00:00.000Z",
-  __v: 0
 });
 
-const expectApplicantView = (body) => {
-  for (const field of BOARD_ONLY_FIELDS) {
-    expect(body).not.toHaveProperty(field);
-  }
-  expect(body).not.toHaveProperty("__v");
-  const text = JSON.stringify(body);
+const boardFields = () => ({
+  statusHistory: [{ status: "Case Night - Yes", changedBy: "board@ucsd.edu", changedAt: new Date("2026-10-03"), notes: "strong reasoning" }],
+  comments: [{ _id: COMMENT_ID, comment: "internal note", commentedBy: "board@ucsd.edu", commentedAt: new Date("2026-10-03"), adminName: "Board Member" }],
+});
+
+// A document shaped exactly as Mongoose returns it from a query
+const storedDocument = () => Application.hydrate({
+  _id: APP_ID,
+  ...applicantFields(),
+  ...boardFields(),
+  createdAt: new Date("2026-10-01T00:00:00.000Z"),
+  updatedAt: new Date("2026-10-02T00:00:00.000Z"),
+  __v: 3,
+});
+
+const expectNoBoardData = (view) => {
+  for (const field of BOARD_ONLY_FIELDS) expect(view).not.toHaveProperty(field);
+  const text = JSON.stringify(view);
   expect(text).not.toContain("internal note");
   expect(text).not.toContain("strong reasoning");
   expect(text).not.toContain("board@ucsd.edu");
+  expect(text).not.toContain("Board Member");
+  expect(text).not.toContain(String(COMMENT_ID));
 };
 
-beforeEach(() => {
-  jest.clearAllMocks();
-  jest.spyOn(console, "log").mockImplementation(() => {});
-  jest.spyOn(console, "error").mockImplementation(() => {});
-  mockVerifyIdToken.mockResolvedValue({ email: EMAIL, email_verified: true });
-  mockSave.mockResolvedValue();
-});
-
-afterEach(() => {
-  console.log.mockRestore();
-  console.error.mockRestore();
-});
-
-test("GET /email/:email returns the applicant's fields without comments or status history", async () => {
-  Application.findOne.mockResolvedValue(storedApplication());
-  const res = await send("GET", `/email/${EMAIL}`);
-  expect(res.status).toBe(200);
-  const body = await res.json();
-  expectApplicantView(body);
-  expect(body).toEqual(expect.objectContaining({
-    email: EMAIL, fullName: "Test Applicant", phoneNumber: "+18585550123", major: "Economics",
-    reason: "Because", caseNightPreferences: ["A"], resume: "/uploads/resume.pdf", status: "Case Night - Yes"
-  }));
-});
-
-test("GET /email/:email strips board-only fields from a Mongoose document too", async () => {
-  const stored = storedApplication();
-  Application.findOne.mockResolvedValue({ ...stored, toObject: () => stored });
-  const res = await send("GET", `/email/${EMAIL}`);
-  expect(res.status).toBe(200);
-  const body = await res.json();
-  expectApplicantView(body);
-  expect(body).not.toHaveProperty("toObject");
-  expect(body.fullName).toBe("Test Applicant");
-});
-
-test("GET /email/:email does not pass through fields that are not on the allowlist", async () => {
-  Application.findOne.mockResolvedValue({ ...storedApplication(), reviewerScore: 4 });
-  const body = await (await send("GET", `/email/${EMAIL}`)).json();
-  expect(body).not.toHaveProperty("reviewerScore");
-});
-
-test("PUT /email/:email returns the updated application without comments or status history", async () => {
-  Application.findOne.mockResolvedValue(storedApplication());
-  Application.findOneAndUpdate.mockResolvedValue({ ...storedApplication(), major: "Math" });
-  const res = await send("PUT", `/email/${EMAIL}`, { major: "Math" });
-  expect(res.status).toBe(200);
-  const body = await res.json();
-  expectApplicantView(body.application);
-  expect(body.application.major).toBe("Math");
-});
-
-test("POST / returns the new application without comments or status history", async () => {
-  const res = await send("POST", "/", {
-    fullName: "Test Applicant", phoneNumber: "8585550123", studentYear: "2nd", major: "Economics",
-    appliedBefore: "No", candidateType: "Tech", reason: "Because"
+describe("allowlist", () => {
+  test("covers every Application schema field as either applicant-visible or board-only", () => {
+    const schemaFields = Object.keys(Application.schema.paths).filter((p) => !p.includes("."));
+    const classified = [...APPLICANT_VISIBLE_FIELDS, ...BOARD_ONLY_FIELDS];
+    expect(schemaFields.filter((f) => !classified.includes(f))).toEqual([]);
   });
-  expect(res.status).toBe(201);
-  const body = await res.json();
-  expectApplicantView(body.application);
-  expect(body.application).not.toHaveProperty("save");
-  expect(body.application).toEqual(expect.objectContaining({ email: EMAIL, fullName: "Test Applicant", status: "Under Review" }));
+
+  test("only names fields that exist on the schema", () => {
+    for (const field of APPLICANT_VISIBLE_FIELDS) {
+      expect(Application.schema.path(field)).toBeDefined();
+    }
+  });
+
+  test("never includes board-only fields", () => {
+    for (const field of BOARD_ONLY_FIELDS) {
+      expect(APPLICANT_VISIBLE_FIELDS).not.toContain(field);
+    }
+  });
+
+  test("cannot be changed at runtime", () => {
+    expect(Object.isFrozen(APPLICANT_VISIBLE_FIELDS)).toBe(true);
+  });
+});
+
+describe("toApplicantView", () => {
+  test("returns exactly the applicant-visible fields of a stored document", () => {
+    const view = toApplicantView(storedDocument());
+    expect(Object.keys(view).sort()).toEqual([...APPLICANT_VISIBLE_FIELDS].sort());
+    expectNoBoardData(view);
+  });
+
+  test("keeps the applicant's own values unchanged", () => {
+    const view = toApplicantView(storedDocument());
+    expect(view).toEqual(expect.objectContaining(applicantFields()));
+    expect(String(view._id)).toBe(String(APP_ID));
+    expect(view.createdAt).toEqual(new Date("2026-10-01T00:00:00.000Z"));
+    expect(view.updatedAt).toEqual(new Date("2026-10-02T00:00:00.000Z"));
+  });
+
+  test("returns a plain object, not a Mongoose document", () => {
+    const view = toApplicantView(storedDocument());
+    expect(view).not.toBeInstanceOf(mongoose.Document);
+    expect(typeof view.toObject).toBe("undefined");
+    expect(typeof view.save).toBe("undefined");
+    expect(Array.isArray(view.caseNightPreferences)).toBe(true);
+  });
+
+  test("serializes to the JSON the API sends, with string ids and ISO dates", () => {
+    const json = JSON.parse(JSON.stringify(toApplicantView(storedDocument())));
+    expect(json._id).toBe(String(APP_ID));
+    expect(json.createdAt).toBe("2026-10-01T00:00:00.000Z");
+    expect(json.caseNightPreferences).toEqual(["A", "C"]);
+    expectNoBoardData(json);
+  });
+
+  test("filters a freshly created document, whose comment and history arrays are defaulted", () => {
+    const fresh = new Application({ ...applicantFields(), status: "Under Review" });
+    expect(fresh.toObject()).toHaveProperty("comments");
+    const view = toApplicantView(fresh);
+    expectNoBoardData(view);
+    expect(view.status).toBe("Under Review");
+  });
+
+  test("filters a plain object such as a .lean() query result", () => {
+    const view = toApplicantView({ _id: APP_ID, ...applicantFields(), ...boardFields(), __v: 0 });
+    expect(view).toEqual(expect.objectContaining(applicantFields()));
+    expectNoBoardData(view);
+  });
+
+  test("drops fields that are not on the allowlist", () => {
+    const view = toApplicantView({ ...applicantFields(), reviewerScore: 4, internalFlag: true });
+    expect(view).not.toHaveProperty("reviewerScore");
+    expect(view).not.toHaveProperty("internalFlag");
+  });
+
+  test("keeps null file fields (the frontend checks them) and omits fields that are missing", () => {
+    const view = toApplicantView({ email: "applicant@ucsd.edu", resume: null });
+    expect(view).toEqual({ email: "applicant@ucsd.edu", resume: null });
+  });
+
+  test("does not modify the object it is given", () => {
+    const original = { ...applicantFields(), ...boardFields() };
+    const snapshot = JSON.stringify(original);
+    toApplicantView(original);
+    expect(JSON.stringify(original)).toBe(snapshot);
+
+    const doc = storedDocument();
+    toApplicantView(doc);
+    expect(doc.comments).toHaveLength(1);
+    expect(doc.statusHistory).toHaveLength(1);
+  });
+
+  test("passes null and undefined through", () => {
+    expect(toApplicantView(null)).toBeNull();
+    expect(toApplicantView(undefined)).toBeUndefined();
+  });
 });

@@ -14,29 +14,10 @@ const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { normalizePhone } = require("../utils/phone");
 const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
+const { toApplicantView } = require("../utils/applicantView");
 
 const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
 const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
-
-// Fields an applicant may read back about their own application. Board-only data
-// (comments, statusHistory) must never reach the applicant, so this is an allowlist:
-// a field added to the model later stays hidden until someone adds it here.
-// status stays for now because the view page uses it to lock editing; see SOW B-10.
-const APPLICANT_VISIBLE_FIELDS = [
-  "_id", "email", "fullName", "phoneNumber", "studentYear", "major", "appliedBefore",
-  "candidateType", "reason", "zombieAnswer", "additionalInfo", "caseNightPreferences",
-  "resume", "transcript", "image", "status", "createdAt", "updatedAt",
-];
-
-function toApplicantView(application) {
-  if (!application) return application;
-  const source = typeof application.toObject === "function" ? application.toObject() : application;
-  const view = {};
-  for (const field of APPLICANT_VISIBLE_FIELDS) {
-    if (source[field] !== undefined) view[field] = source[field];
-  }
-  return view;
-}
 
 /* =========================
    NEW: date helpers + no-cache
