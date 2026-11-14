@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signInWithPopup } from "firebase/auth";
+import { provider, getSignInErrorMessage } from "./Home/firebaseConfig";
 
- // ✅ Import useNavigate for redirection
+// ✅ Import useNavigate for redirection
 import axios from "axios";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
@@ -23,8 +24,8 @@ const ApplicationPage = () => {
     major: "",
     appliedBefore: "",
     candidateType: "",
-    resume: null, 
-    transcript: null, 
+    resume: null,
+    transcript: null,
     image: null,
     reason: "",
     zombieAnswer: "",
@@ -39,6 +40,10 @@ const ApplicationPage = () => {
   const [existingApplication, setExistingApplication] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [switching, setSwitching] = useState(false);
+
+  // Applicants must use a UCSD account (exact @ucsd.edu); the backend enforces the same rule
+  const isUcsdAccount = /@ucsd\.edu$/i.test(currentUser?.email || "");
 
   // Track authentication state
   useEffect(() => {
@@ -55,7 +60,7 @@ const ApplicationPage = () => {
       // Still loading auth state
       return;
     }
-    
+
     if (!currentUser) {
       // User is not authenticated, redirect to home
       navigate('/', { replace: true });
@@ -82,7 +87,7 @@ const ApplicationPage = () => {
   useEffect(() => {
     // Wait for auth to complete before checking applications
     if (authLoading) return;
-    
+
     if (id) {
       // If we have an ID, fetch application by ID
       fetchApplicationById(id);
@@ -126,7 +131,7 @@ const ApplicationPage = () => {
     setCheckingExisting(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/api/applications/${applicationId}`);
-      
+
       // Security check: Ensure user can only access their own application
       if (!currentUser) {
         console.log("User not authenticated, cannot access application by ID");
@@ -217,9 +222,25 @@ const ApplicationPage = () => {
     }
   };
 
+  const handleSwitchAccount = async () => {
+    if (switching) return;
+    setSwitching(true);
+    try {
+      // A successful popup replaces the current user; if it's cancelled, the old user stays signed in
+      const { user } = await signInWithPopup(auth, provider);
+      navigate(`/application?email=${encodeURIComponent(user.email)}`, { replace: true });
+    } catch (error) {
+      if (error.code !== "auth/popup-closed-by-user" && error.code !== "auth/cancelled-popup-request") {
+        alert(getSignInErrorMessage(error));
+      }
+    } finally {
+      setSwitching(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Authentication check
     if (!currentUser) {
       alert("You must be signed in to submit an application.");
@@ -227,18 +248,13 @@ const ApplicationPage = () => {
       return;
     }
 
-    // Verify the form email matches the authenticated user
-    if (formData.email !== currentUser.email) {
-      alert("You can only submit applications for your own email address.");
-      return;
-    }
-    
+
     // Check deadline before submission
     if (deadlineStatus && deadlineStatus.isDeadlinePassed) {
       alert(deadlineStatus.message || "Applications are now closed.");
       return;
     }
-    
+
     // Submissions are tied to the signed-in Google account (the backend takes the email from this token)
     let authHeaders;
     try {
@@ -249,7 +265,7 @@ const ApplicationPage = () => {
     }
 
     setSubmitting(true); // Start loading
-    
+
     const formDataToSend = new FormData();
 
     Object.keys(formData).forEach((key) => {
@@ -262,13 +278,13 @@ const ApplicationPage = () => {
         headers: { ...authHeaders, "Content-Type": "multipart/form-data" },
       });
       console.log("Application submitted successfully:", response.status);
-      
+
       // Redirect immediately after successful submission
       navigate("/application-submitted", { replace: true });
     } catch (error) {
       setSubmitting(false); // Stop loading on error
       console.error("Application submission error:", error);
-      
+
       // Check for specific error types and messages
       if (error.response?.data?.error) {
         // Backend returned a structured error message
@@ -363,16 +379,16 @@ const ApplicationPage = () => {
           }}>
             ℹ️ You already have an application submitted for this email address.
           </div>
-          
+
           <p style={{ fontSize: "18px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
             Application Status: {existingApplication.status}
           </p>
-          
+
           <p style={{ fontSize: "16px", textAlign: "center", color: "#4a5568", margin: "0" }}>
             Email: {existingApplication.email}
           </p>
-          
-          <button 
+
+          <button
             onClick={() => navigate(`/application/view?email=${encodeURIComponent(existingApplication.email)}`)}
             style={{
               backgroundColor: "#3182ce",
@@ -387,8 +403,8 @@ const ApplicationPage = () => {
           >
             View & Edit My Application
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigate("/")}
             style={{
               backgroundColor: "#718096",
@@ -410,7 +426,7 @@ const ApplicationPage = () => {
 
   return (
     <div style={{ backgroundColor: "#e2e8f0", minHeight: "100vh", padding: "24px" }}>
-      
+
       <div style={{
         display: "flex",
         flexDirection: "column",
@@ -445,25 +461,42 @@ const ApplicationPage = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Email */}
+          {/* Applying as (read-only: the application is tied to the signed-in Google account) */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Email (UCSD email required) *</p>
-            <input 
-              type="email" 
-              value={formData.email} 
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-              style={styles.input}
-              required
-            />
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Applying as (UCSD email required)</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+              <span style={{ color: "#222", fontSize: "16px", wordBreak: "break-all" }}>{currentUser?.email}</span>
+              <button
+                type="button"
+                onClick={handleSwitchAccount}
+                disabled={switching}
+                style={{
+                  backgroundColor: "white",
+                  color: "#3182ce",
+                  border: "1px solid #3182ce",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  cursor: switching ? "not-allowed" : "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                {switching ? "Switching..." : "Switch account"}
+              </button>
+            </div>
+            {!isUcsdAccount && (
+              <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#c53030" }}>
+                This isn't a UCSD account. Use Switch account to sign in with your @ucsd.edu email.
+              </p>
+            )}
           </div>
 
           {/* Full Name */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Full Name *</p>
-            <input 
-              type="text" 
-              value={formData.fullName} 
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+            <input
+              type="text"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               style={styles.input}
               required
             />
@@ -472,11 +505,11 @@ const ApplicationPage = () => {
           {/* Phone Number */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Phone Number *</p>
-            <input 
-              type="tel" 
+            <input
+              type="tel"
               autoComplete="tel"
-              value={formData.phoneNumber} 
-              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} 
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
               style={styles.input}
               required
             />
@@ -485,9 +518,9 @@ const ApplicationPage = () => {
           {/* Student Year */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What year are you? *</p>
-            <select 
-              value={formData.studentYear} 
-              onChange={(e) => setFormData({ ...formData, studentYear: e.target.value })} 
+            <select
+              value={formData.studentYear}
+              onChange={(e) => setFormData({ ...formData, studentYear: e.target.value })}
               style={styles.input}
               required
             >
@@ -503,10 +536,10 @@ const ApplicationPage = () => {
           {/* Major */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What is your major? *</p>
-            <input 
-              type="text" 
-              value={formData.major} 
-              onChange={(e) => setFormData({ ...formData, major: e.target.value })} 
+            <input
+              type="text"
+              value={formData.major}
+              onChange={(e) => setFormData({ ...formData, major: e.target.value })}
               style={styles.input}
               required
             />
@@ -515,9 +548,9 @@ const ApplicationPage = () => {
           {/* Have You Applied Before? */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Have you applied to TCG before? *</p>
-            <select 
-              value={formData.appliedBefore}  
-              onChange={(e) => setFormData({ ...formData, appliedBefore: e.target.value })}  
+            <select
+              value={formData.appliedBefore}
+              onChange={(e) => setFormData({ ...formData, appliedBefore: e.target.value })}
               style={styles.input}
               required
             >
@@ -530,9 +563,9 @@ const ApplicationPage = () => {
           {/* Tech or Non-Tech */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Are you applying as a tech candidate or non-tech candidate?*</p>
-            <select 
-              value={formData.candidateType}  
-              onChange={(e) => setFormData({ ...formData, candidateType: e.target.value })}  
+            <select
+              value={formData.candidateType}
+              onChange={(e) => setFormData({ ...formData, candidateType: e.target.value })}
               style={styles.input}
               required
             >
@@ -545,9 +578,9 @@ const ApplicationPage = () => {
           {/* Resume Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your resume *</p>
-            <input 
-              type="file" 
-              onChange={(e) => handleFileChange(e, "resume")} 
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, "resume")}
               style={styles.fileInput}
               accept=".pdf,.doc,.docx"
               required
@@ -565,9 +598,9 @@ const ApplicationPage = () => {
             }}>
               If you are currently a freshman, please attach a copy of your high school transcript.
             </p>
-            <input 
-              type="file" 
-              onChange={(e) => handleFileChange(e, "transcript")} 
+            <input
+              type="file"
+              onChange={(e) => handleFileChange(e, "transcript")}
               style={styles.fileInput}
               accept=".pdf,.doc,.docx"
               required
@@ -577,10 +610,10 @@ const ApplicationPage = () => {
           {/* Profile Picture Upload */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (must be professional) (JPG/PNG) *</p>
-            <input 
-              type="file" 
+            <input
+              type="file"
               accept="image/png, image/jpeg"
-              onChange={(e) => handleFileChange(e, "image")} 
+              onChange={(e) => handleFileChange(e, "image")}
               style={styles.fileInput}
               required
             />
@@ -589,8 +622,8 @@ const ApplicationPage = () => {
           {/* Why Join TCG? */}
           <div style={{ marginBottom: "16px" }}>
             <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? (150 words max) *</p>
-            <textarea 
-              value={formData.reason} 
+            <textarea
+              value={formData.reason}
               onChange={handleReasonChange}
               style={styles.textarea}
               required
@@ -647,14 +680,14 @@ const ApplicationPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting}
+            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount}
             style={{
-              backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "#a0aec0" : "#3182ce",
+              backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount) ? "#a0aec0" : "#3182ce",
               color: "white",
               border: "none",
               padding: "12px 24px",
               borderRadius: "6px",
-              cursor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "not-allowed" : "pointer",
+              cursor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount) ? "not-allowed" : "pointer",
               fontSize: "16px",
               width: "100%",
               marginTop: "16px",
@@ -674,10 +707,10 @@ const ApplicationPage = () => {
                 animation: "spin 1s linear infinite"
               }} />
             )}
-            {submitting 
-              ? "Submitting..." 
-              : deadlineStatus && deadlineStatus.isDeadlinePassed 
-                ? "Applications Closed" 
+            {submitting
+              ? "Submitting..."
+              : deadlineStatus && deadlineStatus.isDeadlinePassed
+                ? "Applications Closed"
                 : "Submit Application"
             }
           </button>
