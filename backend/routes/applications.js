@@ -18,6 +18,26 @@ const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
 const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
 const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
 
+// Fields an applicant may read back about their own application. Board-only data
+// (comments, statusHistory) must never reach the applicant, so this is an allowlist:
+// a field added to the model later stays hidden until someone adds it here.
+// status stays for now because the view page uses it to lock editing; see SOW B-10.
+const APPLICANT_VISIBLE_FIELDS = [
+  "_id", "email", "fullName", "phoneNumber", "studentYear", "major", "appliedBefore",
+  "candidateType", "reason", "zombieAnswer", "additionalInfo", "caseNightPreferences",
+  "resume", "transcript", "image", "status", "createdAt", "updatedAt",
+];
+
+function toApplicantView(application) {
+  if (!application) return application;
+  const source = typeof application.toObject === "function" ? application.toObject() : application;
+  const view = {};
+  for (const field of APPLICANT_VISIBLE_FIELDS) {
+    if (source[field] !== undefined) view[field] = source[field];
+  }
+  return view;
+}
+
 /* =========================
    NEW: date helpers + no-cache
    ========================= */
@@ -380,7 +400,7 @@ router.post(
       const beforeResponse = Date.now();
       res.status(201).json({
         message: "✅ Application submitted successfully!",
-        application: newApplication,
+        application: toApplicantView(newApplication),
       });
       const afterResponse = Date.now();
       console.log(`⏱️ Response sent (${afterResponse - beforeResponse}ms)`);
@@ -529,7 +549,7 @@ router.get("/email/:email", verifyFirebaseOwner, generalApiLimiter, async (req, 
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
-    res.json(application);
+    res.json(toApplicantView(application));
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
     res.status(500).json({ error: "❌ Failed to fetch application." });
@@ -706,7 +726,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
 
     res.json({
       message: "✅ Application updated successfully!",
-      application: updatedApplication,
+      application: toApplicantView(updatedApplication),
     });
   } catch (error) {
     console.error("❌ Error updating application:", error);

@@ -137,8 +137,6 @@ const ApplicationViewEdit = () => {
         throw new Error("No application identifier provided (need ID, email param, or logged-in user)");
       }
 
-      console.log("Application data received:", applicationData);
-
       // Get signed URLs for files
       if (applicationData.resume) {
         applicationData.resumeUrl = await getFileUrl(applicationData.resume);
@@ -153,7 +151,6 @@ const ApplicationViewEdit = () => {
         applicationData.additionalFilesUrl = await getFileUrl(applicationData.additionalFiles);
       }
 
-      console.log("Setting application data:", applicationData);
       setApplication(applicationData);
       setFormData(applicationData);
     } catch (error) {
