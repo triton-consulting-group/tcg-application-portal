@@ -44,6 +44,7 @@ Thumbs.db
 .eslintcache
 .vscode/
 .idea/
+graphify-out/
 
 # Local planning docs
 /docs/

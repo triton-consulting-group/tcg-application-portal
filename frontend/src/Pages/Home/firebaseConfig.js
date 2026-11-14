@@ -16,6 +16,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
+// Always show Google's account picker, so "Switch account" can't silently reuse the current account
+provider.setCustomParameters({ prompt: "select_account" });
 
 // User-facing message for a failed Google sign-in
 export const getSignInErrorMessage = (error) => {
