@@ -42,6 +42,9 @@ const ApplicationPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [switching, setSwitching] = useState(false);
 
+  // Applicants must use a UCSD account (exact @ucsd.edu); the backend enforces the same rule
+  const isUcsdAccount = /@ucsd\.edu$/i.test(currentUser?.email || "");
+
   // Track authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -460,7 +463,7 @@ const ApplicationPage = () => {
         <form onSubmit={handleSubmit}>
           {/* Applying as (read-only: the application is tied to the signed-in Google account) */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Applying as</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Applying as (UCSD email required)</p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <span style={{ color: "#222", fontSize: "16px", wordBreak: "break-all" }}>{currentUser?.email}</span>
               <button
@@ -480,6 +483,11 @@ const ApplicationPage = () => {
                 {switching ? "Switching..." : "Switch account"}
               </button>
             </div>
+            {!isUcsdAccount && (
+              <p style={{ margin: "8px 0 0 0", fontSize: "14px", color: "#c53030" }}>
+                This isn't a UCSD account. Use Switch account to sign in with your @ucsd.edu email.
+              </p>
+            )}
           </div>
 
           {/* Full Name */}
@@ -672,14 +680,14 @@ const ApplicationPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting}
+            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount}
             style={{
-              backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "#a0aec0" : "#3182ce",
+              backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount) ? "#a0aec0" : "#3182ce",
               color: "white",
               border: "none",
               padding: "12px 24px",
               borderRadius: "6px",
-              cursor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "not-allowed" : "pointer",
+              cursor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting || !isUcsdAccount) ? "not-allowed" : "pointer",
               fontSize: "16px",
               width: "100%",
               marginTop: "16px",

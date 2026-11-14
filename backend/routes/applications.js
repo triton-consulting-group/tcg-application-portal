@@ -271,11 +271,17 @@ const requireApplicationWindow = (req, res, next) => {
   next();
 };
 
+// Applicants must apply with a UCSD account (exact @ucsd.edu, no subdomains)
+const UCSD_EMAIL = /@ucsd\.edu$/i;
+
 // Submissions must come from a signed-in Google account; its verified email is the application's email
 const requireSignedInApplicant = async (req, res, next) => {
   const email = await getVerifiedEmail(req);
   if (!email) {
     return res.status(401).json({ error: "❌ Please sign in with Google before submitting your application." });
+  }
+  if (!UCSD_EMAIL.test(email)) {
+    return res.status(403).json({ error: "❌ Please sign in with your UCSD Google account (@ucsd.edu) to apply." });
   }
   req.applicantEmail = email.toLowerCase();
   next();
