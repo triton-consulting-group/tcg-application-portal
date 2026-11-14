@@ -14,6 +14,7 @@ const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { normalizePhone } = require("../utils/phone");
 const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
+const { toApplicantView } = require("../utils/applicantView");
 
 const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
 const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
@@ -380,7 +381,7 @@ router.post(
       const beforeResponse = Date.now();
       res.status(201).json({
         message: "✅ Application submitted successfully!",
-        application: newApplication,
+        application: toApplicantView(newApplication),
       });
       const afterResponse = Date.now();
       console.log(`⏱️ Response sent (${afterResponse - beforeResponse}ms)`);
@@ -529,7 +530,7 @@ router.get("/email/:email", verifyFirebaseOwner, generalApiLimiter, async (req, 
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
-    res.json(application);
+    res.json(toApplicantView(application));
   } catch (error) {
     console.error("❌ Error fetching application by email:", error);
     res.status(500).json({ error: "❌ Failed to fetch application." });
@@ -706,7 +707,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
 
     res.json({
       message: "✅ Application updated successfully!",
-      application: updatedApplication,
+      application: toApplicantView(updatedApplication),
     });
   } catch (error) {
     console.error("❌ Error updating application:", error);
