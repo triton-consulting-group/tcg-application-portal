@@ -8,7 +8,7 @@ const DEADLINE_CONFIG = {
 
   // Application deadline (ISO8601 with timezone)
   // Saturday, October 10, 2026 at 11:59 PM PDT
-  applicationDeadline: "2026-10-10T23:59:00-07:00", // TEMP for local testing - revert to "2026-10-10T23:59:00-07:00" before pushing
+  applicationDeadline: "2026-10-10T23:59:00-07:00",
 
   // Messages
   preStartMessage: "Applications are not open yet. Please check back later!",
