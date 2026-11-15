@@ -12,6 +12,7 @@ const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
+const { decodeUploadName, safeFileName, uploadMetadata } = require("../utils/uploadFilename");
 const { normalizePhone } = require("../utils/phone");
 const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
 
@@ -86,55 +87,15 @@ if (isS3Configured()) {
     key: function (req, file, cb) {
       try {
         const { fileType, s3Path } = getFileTypeAndPath(file.fieldname, file.mimetype);
-        const originalName = file.originalname || "file";
-        const normalized = originalName.normalize("NFC");
-        const ext = path.extname(normalized);
-        const nameWithoutExt = path.basename(normalized, ext);
-
-        // Special handling for images - more aggressive sanitization
-        if (file.fieldname === 'image') {
-          // For images, use an even more conservative approach
-          let safeName = nameWithoutExt
-            .replace(/[^\x00-\x7F]/g, "") // Remove all non-ASCII completely
-            .replace(/[^a-zA-Z0-9]/g, "") // Only allow alphanumeric
-            .substring(0, 20); // Limit length
-          
-          if (!safeName || safeName.length === 0) {
-            safeName = "profile_image";
-          }
-          
-          const finalName = `${safeName}${ext}`;
-          const s3Key = `${s3Path}${Date.now()}-${finalName}`; // No encoding for images
-          
-          cb(null, s3Key);
-          return;
-        }
-
-        // Regular handling for other files
-        let safeName = nameWithoutExt
-          .replace(/[^\x00-\x7F]/g, "_")
-          .replace(/[^a-zA-Z0-9._-]/g, "_")
-          .replace(/_{2,}/g, "_")
-          .replace(/^_+|_+$/g, "");
-
-        if (!safeName) safeName = `file_${fileType}`;
-
-        const finalName = `${safeName}${ext}`;
-        const s3Key = `${s3Path}${Date.now()}-${encodeURIComponent(finalName)}`;
-
-        
-        cb(null, s3Key);
+        const fallback = file.fieldname === "image" ? "profile_image" : `file_${fileType}`;
+        cb(null, `${s3Path}${Date.now()}-${safeFileName(decodeUploadName(file.originalname), fallback)}`);
       } catch (err) {
         console.error('❌ Error generating S3 key:', err);
         cb(err);
       }
     },
     metadata: function (req, file, cb) {
-      cb(null, { 
-        fieldName: file.fieldname,
-        originalName: file.originalname,
-        uploadedAt: new Date().toISOString()
-      });
+      cb(null, uploadMetadata(file));
     }
   });
 } else {
@@ -144,24 +105,7 @@ if (isS3Configured()) {
   storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "uploads/"),
     filename: (req, file, cb) => {
-      // IMPROVED local filename sanitization - same logic as S3
-      const originalName = file.originalname;
-      const fileExtension = path.extname(originalName);
-      const nameWithoutExt = originalName.replace(fileExtension, '');
-      
-      let sanitizedName = nameWithoutExt
-        .replace(/[^\x00-\x7F]/g, '_') // Replace all non-ASCII with underscore
-        .replace(/[^a-zA-Z0-9._-]/g, '_') // Replace remaining special chars
-        .replace(/_{2,}/g, '_') // Replace multiple underscores with single
-        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
-      
-      // If name becomes empty (all Chinese), use a fallback
-      if (!sanitizedName || sanitizedName.length === 0) {
-        sanitizedName = 'file';
-      }
-      
-      const finalFilename = `${Date.now()}-${sanitizedName}${fileExtension}`;
-      cb(null, finalFilename);
+      cb(null, `${Date.now()}-${safeFileName(decodeUploadName(file.originalname), "file")}`);
     },
   });
 }
@@ -284,41 +228,29 @@ const requireSignedInApplicant = async (req, res, next) => {
 /* ===================================================
    File Upload Error Handler Middleware
    =================================================== */
+const UPLOAD_FAILED_MESSAGE =
+  "❌ We couldn't upload your files. Please try again in a few minutes. If it keeps failing, contact the TCG tech team.";
+
 const handleUploadError = (error, req, res, next) => {
-  console.error('❌ Upload error:', error);
-  console.error('📍 Error region:', error.region);
-  console.error('🔧 Expected region:', process.env.AWS_REGION || 'us-west-1');
-  
-  if (error.code === 'SignatureDoesNotMatch') {
-    console.error('🔐 S3 Signature error - likely caused by special characters in filename');
-    console.error('🔍 Debugging info:');
-    console.error('   - AWS_REGION env var:', process.env.AWS_REGION);
-    console.error('   - S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
-    console.error('   - Error region:', error.region);
-    
-    // Check if this is likely an image upload issue
-    const isImageError = req.files && req.files.image;
-    const errorMessage = isImageError 
-      ? "❌ Profile picture upload failed. Please rename your image file using only English letters and numbers (e.g., 'profile.jpg' instead of '照片.jpg')."
-      : "❌ File upload failed. Please make sure your file names don't contain special characters.";
-    
-    return res.status(400).json({ error: errorMessage });
-  }
-  
+  console.error(`❌ Upload error: ${error.code || error.name}: ${error.message}`);
+
   if (error.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ 
       error: "❌ File too large. Maximum file size is 10MB." 
     });
   }
-  
+
   if (error.message && error.message.includes('File type')) {
     return res.status(400).json({ error: error.message });
   }
-  
-  // Default error
-  return res.status(500).json({ 
-    error: "❌ File upload error. Please try again." 
-  });
+
+  if (error.name === 'MulterError') {
+    return res.status(400).json({
+      error: "❌ File upload error. Please check your files and try again."
+    });
+  }
+
+  return res.status(500).json({ error: UPLOAD_FAILED_MESSAGE });
 };
 
 /* ===================================================
@@ -398,17 +330,9 @@ router.post(
         res.status(409).json({ error: DUPLICATE_APPLICATION_ERROR });
       } else if (error.name === 'ValidationError') {
         res.status(400).json({ error: `❌ ${Object.values(error.errors).map(e => e.message).join(', ')}` });
-      } else if (error.message && error.message.includes('signature')) {
-        // Check for specific S3 signature errors
-        console.error("🔐 S3 Signature Error - likely caused by special characters in filename");
-        res.status(400).json({ 
-          error: "❌ File upload failed. Please make sure your file names don't contain special characters."
-        });
-      } else if (error.code === 'SignatureDoesNotMatch') {
-        console.error("🔐 S3 SignatureDoesNotMatch - likely caused by special characters in filename");
-        res.status(400).json({ 
-          error: "❌ File upload failed. Please make sure your file names don't contain special characters." 
-        });
+      } else if ((error.message && error.message.includes('signature')) || error.code === 'SignatureDoesNotMatch') {
+        console.error("🔐 S3 signature error:", error.code || error.message);
+        res.status(500).json({ error: UPLOAD_FAILED_MESSAGE });
       } else if (error.message && error.message.includes('Access Denied')) {
         console.error("🚫 S3 Access Denied - Check bucket permissions");
         res.status(500).json({ 
@@ -657,7 +581,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },
-]), async (req, res) => {
+]), handleUploadError, async (req, res) => {
   try {
     addNoStore(res);
     const { email } = req.params;
