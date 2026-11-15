@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./associatePage.css";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./Home/firebaseConfig";
+import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
+import { auth, provider, getSignInErrorMessage } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
 import { replaceApplication } from "../utils/applications";
@@ -44,6 +44,8 @@ const AssociatePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [adminInfo, setAdminInfo] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [signInError, setSignInError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [applicationsPerPage] = useState(30);
   const [exporting, setExporting] = useState(false);
@@ -77,7 +79,10 @@ const AssociatePage = () => {
     // Check authentication state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setError(null);
+      setIsAdmin(false);
       if (user) {
+        setLoading(true);
         checkAdminStatus(user.email);
       } else {
         setIsAdmin(false);
@@ -87,6 +92,20 @@ const AssociatePage = () => {
 
     return () => unsubscribe();
   }, [checkAdminStatus]);
+
+  const handleAssociateSignIn = async () => {
+    if (isSigningIn) return;
+    setIsSigningIn(true);
+    setSignInError(null);
+    try {
+      // The auth listener above checks permissions before showing the dashboard.
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      setSignInError(getSignInErrorMessage(error));
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
 
   // Fetch case night configuration
   useEffect(() => {
@@ -239,8 +258,23 @@ const AssociatePage = () => {
   };
 
   if (loading) return <p>Loading applications...</p>;
+  if (!isAdmin) {
+    return (
+      <main className="associate-access" aria-labelledby="associate-access-title">
+        <section className="associate-access-card">
+          <h1 id="associate-access-title">Associate Login</h1>
+          <p>Sign in with an authorized account to access the Associate Portal.</p>
+          {currentUser && <p>This account has not been granted associate access. Try an authorized account.</p>}
+          {signInError && <p role="alert">{signInError}</p>}
+          <button type="button" className="associate-access-sign-in" onClick={handleAssociateSignIn} disabled={isSigningIn}>
+            {isSigningIn ? "Signing in..." : "Sign in with Google"}
+          </button>
+          <a className="associate-access-home" href="/">Return to home</a>
+        </section>
+      </main>
+    );
+  }
   if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!isAdmin) return <p style={{ color: "red" }}>Access denied. Admin privileges required.</p>;
 
   return (
     <div className="associate-page">
