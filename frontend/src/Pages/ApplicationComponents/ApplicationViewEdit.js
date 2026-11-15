@@ -262,7 +262,7 @@ const ApplicationViewEdit = () => {
         setSubmitting(false);
       }
     } catch (error) {
-      alert("Error updating application: " + (error.response?.data?.message || error.message));
+      alert("Error updating application: " + (error.response?.data?.message || error.response?.data?.error || error.message));
       console.error(error);
       setSubmitting(false);
     }
