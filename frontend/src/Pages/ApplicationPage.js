@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./Home/firebaseConfig";
 
  // ✅ Import useNavigate for redirection
 import axios from "axios";
@@ -13,7 +14,6 @@ const ApplicationPage = () => {
   const { id } = useParams(); // ✅ Get ID from URL params
   const emailParam = searchParams.get('email');
   const [currentUser, setCurrentUser] = useState(null);
-  const auth = getAuth();
 
   const [formData, setFormData] = useState({
     email: emailParam || "",
@@ -71,12 +71,12 @@ const ApplicationPage = () => {
     }
   }, [authLoading, currentUser, emailParam, navigate]);
 
-  // Update form data when user logs in (if no email param provided)
+  // The application email is always the signed-in account's email (read-only in the form)
   useEffect(() => {
-    if (!emailParam && currentUser && currentUser.email) {
+    if (currentUser && currentUser.email) {
       setFormData(prev => ({ ...prev, email: currentUser.email }));
     }
-  }, [currentUser, emailParam]);
+  }, [currentUser]);
 
   // Check for existing application when ID, email is provided, or user is logged in
   useEffect(() => {
