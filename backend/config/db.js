@@ -1,5 +1,27 @@
 const mongoose = require("mongoose");
 
+// Build every index the schemas declare. Mongoose only does this implicitly when
+// a model initializes, which can be skipped or lost when bufferCommands is off
+// and the model loads before the connection is ready (e.g. a fresh database).
+// A failure here (say, duplicate emails blocking a unique index) is logged but
+// must not stop the server from starting.
+const ensureIndexes = async () => {
+    // Register every model so none is missed, whatever order the app loads them in.
+    ["Admin", "Application", "CaseGroupAssignment", "CaseGroupBackup", "CaseGroupEditLog", "User"]
+        .forEach((file) => require(`../models/${file}`));
+    const names = mongoose.modelNames();
+    const results = await Promise.allSettled(
+        names.map((name) => mongoose.model(name).createIndexes())
+    );
+    results.forEach((result, i) => {
+        if (result.status === "rejected") {
+            console.error(`Index creation failed for ${names[i]}:`, result.reason.message);
+        }
+    });
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    console.log(`MongoDB indexes ensured for ${ok}/${names.length} models`);
+};
+
 const connectDB = async () => {
     try {
         console.log("Connecting to MongoDB with optimized settings...");
@@ -18,7 +40,9 @@ const connectDB = async () => {
         });
         
         console.log(`MongoDB Connected: ${conn.connection.host}`);
-        
+
+        await ensureIndexes();
+
         // Set up connection event handlers
         mongoose.connection.on('error', (err) => {
             console.error('MongoDB connection error:', err);
@@ -40,3 +64,4 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+module.exports.ensureIndexes = ensureIndexes;
