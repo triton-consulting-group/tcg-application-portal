@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signInWithPopup } from "firebase/auth";
+import { auth, accountPickerProvider, getSignInErrorMessage } from "./Home/firebaseConfig";
 
  // ✅ Import useNavigate for redirection
 import axios from "axios";
@@ -13,7 +14,7 @@ const ApplicationPage = () => {
   const { id } = useParams(); // ✅ Get ID from URL params
   const emailParam = searchParams.get('email');
   const [currentUser, setCurrentUser] = useState(null);
-  const auth = getAuth();
+  const [switchingAccount, setSwitchingAccount] = useState(false);
 
   const [formData, setFormData] = useState({
     email: emailParam || "",
@@ -71,12 +72,12 @@ const ApplicationPage = () => {
     }
   }, [authLoading, currentUser, emailParam, navigate]);
 
-  // Update form data when user logs in (if no email param provided)
+  // The application email is always the signed-in account's email (read-only in the form)
   useEffect(() => {
-    if (!emailParam && currentUser && currentUser.email) {
+    if (currentUser && currentUser.email) {
       setFormData(prev => ({ ...prev, email: currentUser.email }));
     }
-  }, [currentUser, emailParam]);
+  }, [currentUser]);
 
   // Check for existing application when ID, email is provided, or user is logged in
   useEffect(() => {
@@ -180,6 +181,22 @@ const ApplicationPage = () => {
       setExistingApplication(null);
     } finally {
       setCheckingExisting(false);
+    }
+  };
+
+  // Lets the applicant switch their account.
+  const handleSwitchAccount = async () => {
+    if (switchingAccount) return;
+    setSwitchingAccount(true);
+    navigate("/application", { replace: true });
+    try {
+      await signInWithPopup(auth, accountPickerProvider);
+    } catch (error) {
+      if (error.code !== "auth/cancelled-popup-request" && error.code !== "auth/popup-closed-by-user") {
+        alert(getSignInErrorMessage(error));
+      }
+    } finally {
+      setSwitchingAccount(false);
     }
   };
 
@@ -447,14 +464,21 @@ const ApplicationPage = () => {
         <form onSubmit={handleSubmit}>
           {/* Email */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Email (UCSD email required) *</p>
-            <input 
-              type="email" 
-              value={formData.email} 
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-              style={styles.input}
-              required
-            />
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Applying as</p>
+            <div style={styles.applyingAs}>
+              <span style={{ color: "#222", fontSize: "16px", wordBreak: "break-all" }}>{formData.email}</span>
+              <button
+                type="button"
+                onClick={handleSwitchAccount}
+                disabled={switchingAccount || submitting}
+                style={styles.switchButton}
+              >
+                {switchingAccount ? "Switching..." : "Switch account"}
+              </button>
+            </div>
+            <p style={{ fontSize: "13px", color: "#4a5568", margin: "6px 0 0 0" }}>
+              Your application is tied to the Google account you're signed in with. Please use your UCSD email.
+            </p>
           </div>
 
           {/* Full Name */}
@@ -709,6 +733,27 @@ const styles = {
     cursor: "pointer",
     transition: "all 0.2s ease-in-out",
     color: "#4a5568"
+  },
+  applyingAs: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: "8px",
+    padding: "10px 12px",
+    borderRadius: "5px",
+    border: "1px solid #e2e8f0",
+    backgroundColor: "#f7fafc"
+  },
+  switchButton: {
+    backgroundColor: "white",
+    color: "#3182ce",
+    border: "1px solid #3182ce",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "14px",
+    whiteSpace: "nowrap"
   },
   textarea: {
     width: "100%",
