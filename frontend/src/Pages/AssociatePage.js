@@ -1173,6 +1173,11 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       color: "#c21807"
     },
     {
+      title: "Final Interview - Maybe",
+      statuses: ["Final Interview - Maybe"],
+      color: "#ffc107"
+    },
+    {
       title: "Final Interview-Yes",
       statuses: ["Final Interview - Yes"],
       color: "#3bb143"
@@ -1328,6 +1333,9 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       case "Final Interview - No":
         newStatus = "Final Interview - No";
         break;
+      case "Final Interview - Maybe":
+        newStatus = "Final Interview - Maybe";
+        break;
       case "Final Interview-Yes":
         newStatus = "Final Interview - Yes";
         break;
@@ -1368,7 +1376,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
     }
   };
   //creating two seperate 'phase groups' to show each page in phasesView
-  const phasestoShow = phaseGroup === 1 ? phases.slice(0, 3) : phases.slice(3, 7)
+  const phasestoShow = phaseGroup === 1 ? phases.slice(0, 4) : phases.slice(4, 8)
   return (
     <div>
       {/* Search Bar and Tech Filter */}
@@ -1754,7 +1762,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               transition: "all 0.2s ease"
             }}
           >
-            Next View (Categories 4-7) →
+            Next View (Categories 5-8) →
           </button>
         ) : (
           <button
@@ -1775,7 +1783,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
               transition: "all 0.2s ease"
             }}
           >
-            ← Back to First View (Categories 1-3)
+            ← Back to First View (Categories 1-4)
           </button>
         )}
       </div>
