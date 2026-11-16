@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
+import { getErrorMessage } from "../../utils/caseGroups";
 import { 
   Box
 } from "@chakra-ui/react";
@@ -174,7 +175,7 @@ const ApplicationViewEdit = () => {
         return;
       }
       
-      setError(error.response?.data?.message || error.message || "Failed to fetch application data");
+      setError(await getErrorMessage(error, error.message || "Failed to fetch application data"));
     } finally {
       setLoading(false);
     }
@@ -262,7 +263,8 @@ const ApplicationViewEdit = () => {
         setSubmitting(false);
       }
     } catch (error) {
-      alert("Error updating application: " + (error.response?.data?.message || error.message));
+      // The server sends its reason in `error`; without one, fall back to axios's message
+      alert("Error updating application: " + (await getErrorMessage(error, error.message)));
       console.error(error);
       setSubmitting(false);
     }
