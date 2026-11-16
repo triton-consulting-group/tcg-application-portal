@@ -1,4 +1,4 @@
-import { replaceApplication } from "./applications";
+import { replaceApplication, isApplicationLocked, LOCKED_STATUSES } from "./applications";
 
 const list = [
   { _id: "a", fullName: "Ada", status: "Under Review", comments: [{ comment: "hi" }] },
@@ -26,4 +26,11 @@ test("ignores a response without an _id", () => {
 
 test("leaves the list unchanged when the id isn't present", () => {
   expect(replaceApplication(list, { _id: "zzz", status: "Accepted" })).toEqual(list);
+});
+
+test("decided applications are locked; undecided ones are not", () => {
+  expect(LOCKED_STATUSES.every(isApplicationLocked)).toBe(true);
+  expect(isApplicationLocked("Under Review")).toBe(false);
+  expect(isApplicationLocked("Final Interview - Maybe")).toBe(false);
+  expect(isApplicationLocked(undefined)).toBe(false);
 });
