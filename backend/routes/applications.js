@@ -14,7 +14,9 @@ const DEADLINE_CONFIG = require("../config/deadlineConfig");
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { normalizePhone } = require("../utils/phone");
 const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
+const { LOCKED_STATUSES, isApplicationLocked } = require("../utils/applicationStatus");
 
+const LOCKED_APPLICATION_ERROR = "❌ Your application can't be edited after a decision has been made.";
 const INVALID_PHONE_ERROR = "❌ Please enter a valid phone number (10-digit US number, or international starting with +).";
 const DUPLICATE_APPLICATION_ERROR = "❌ You've already submitted an application. Use View My Application to edit it.";
 
@@ -279,6 +281,25 @@ const requireSignedInApplicant = async (req, res, next) => {
   }
   req.applicantEmail = email.toLowerCase();
   next();
+};
+
+// Rejects edits to an application the board has decided on, before any new files reach S3.
+// Also sends the 404 for a missing application, so the route doesn't look it up again.
+const rejectLockedApplication = async (req, res, next) => {
+  try {
+    addNoStore(res);
+    const application = await Application.findOne({ email: req.params.email.toLowerCase() });
+    if (!application) {
+      return res.status(404).json({ error: "❌ No application found for this email." });
+    }
+    if (isApplicationLocked(application.status)) {
+      return res.status(403).json({ error: LOCKED_APPLICATION_ERROR });
+    }
+    next();
+  } catch (error) {
+    console.error("❌ Error checking application lock:", error);
+    res.status(500).json({ error: "❌ Failed to update application." });
+  }
 };
 
 /* ===================================================
@@ -653,18 +674,14 @@ router.get("/:id", requireAdminAuth, generalApiLimiter, async (req, res) => {
 });
 
 // Update by email
-router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireApplicationWindow, upload.fields([
+router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireApplicationWindow, rejectLockedApplication, upload.fields([
   { name: "resume", maxCount: 1 },
   { name: "transcript", maxCount: 1 },
   { name: "image", maxCount: 1 },
 ]), async (req, res) => {
   try {
     addNoStore(res);
-    const { email } = req.params;
-    const existingApplication = await Application.findOne({ email: email.toLowerCase() });
-    if (!existingApplication) {
-      return res.status(404).json({ error: "❌ No application found for this email." });
-    }
+    const { email } = req.params; // rejectLockedApplication already sent 404 / 403 if needed
 
     // Phone is optional on edit (only validated when sent)
     let phoneNumber;
@@ -698,11 +715,15 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
       updateData.image = isS3Configured() ? req.files["image"][0].location : `/uploads/${req.files["image"][0].filename}`;
     }
 
+    // Only matches while still unlocked, so a decision made during the upload isn't overwritten
     const updatedApplication = await Application.findOneAndUpdate(
-      { email: email.toLowerCase() },
+      { email: email.toLowerCase(), status: { $nin: LOCKED_STATUSES } },
       updateData,
       { new: true, runValidators: true }
     );
+    if (!updatedApplication) {
+      return res.status(403).json({ error: LOCKED_APPLICATION_ERROR });
+    }
 
     res.json({
       message: "✅ Application updated successfully!",
