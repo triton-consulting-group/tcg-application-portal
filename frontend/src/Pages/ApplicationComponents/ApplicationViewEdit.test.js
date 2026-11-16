@@ -68,7 +68,7 @@ const renderPage = () => render(<ApplicationViewEdit />);
 // Opens the edit form and submits it
 const submitEdit = async () => {
   fireEvent.click(await screen.findByRole("button", { name: "Edit Application" }));
-  fireEvent.submit(document.querySelector("form"));
+  fireEvent.click(screen.getByRole("button", { name: "Update Application" }));
 };
 
 beforeEach(() => {
