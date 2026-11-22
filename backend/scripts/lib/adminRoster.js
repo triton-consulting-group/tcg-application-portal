@@ -14,10 +14,6 @@ const loadAdminRoster = () => {
   const roster = JSON.parse(fs.readFileSync(ROSTER_PATH, 'utf8'));
   const list = (key) => (Array.isArray(roster[key]) ? roster[key] : []);
   return {
-    keepEmails: list('keepEmails'),
-    board: list('board'),
-    otherSuperAdmins: list('otherSuperAdmins'),
-    associates: list('associates'),
     admins: list('admins'),
     superAdmins: list('superAdmins'),
   };
