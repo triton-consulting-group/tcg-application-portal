@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Home/firebaseConfig";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
-import { replaceApplication } from "../utils/applications";
+import { formatPhone, replaceApplication } from "../utils/applications";
 import { getErrorMessage } from "../utils/caseGroups";
 import BuildCaseGroupsModal from "./ApplicationComponents/BuildCaseGroupsModal";
 import ModalErrorBoundary from "./ApplicationComponents/ModalErrorBoundary";
@@ -238,6 +238,12 @@ const AssociatePage = () => {
     setSelectedApplication((prev) => (prev && prev._id === applicationId ? withComments(prev) : prev));
   };
 
+  // Keeps the list and the open modal in sync after an admin corrects a phone number
+  const handlePhoneChange = (applicationId, phoneNumber) => {
+    setApplications((prev) => replaceApplication(prev, { _id: applicationId, phoneNumber }));
+    setSelectedApplication((prev) => (prev && prev._id === applicationId ? { ...prev, phoneNumber } : prev));
+  };
+
   if (loading) return <p>Loading applications...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!isAdmin) return <p style={{ color: "red" }}>Access denied. Admin privileges required.</p>;
@@ -383,6 +389,7 @@ const AssociatePage = () => {
           onClose={() => setSelectedApplication(null)}
           updateStatus={updateStatus}
           onCommentsChange={handleCommentsChange}
+          onPhoneChange={handlePhoneChange}
           caseNightConfig={caseNightConfig}
           adminInfo={adminInfo}
         />
@@ -664,8 +671,9 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus, onCommentsChange }) => {
+const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus, onCommentsChange, onPhoneChange }) => {
   const [comments, setComments] = useState(application.comments || []);
+  const canEditApplications = adminInfo?.role === "super_admin" || !!adminInfo?.permissions?.canEditApplications;
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
   const canDeleteComments = adminInfo?.role === "super_admin" || !!adminInfo?.permissions?.canDeleteComments;
 
@@ -754,6 +762,24 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
     }
   };
 
+  const handleEditPhone = async () => {
+    const input = window.prompt("New phone number:", application.phoneNumber || "");
+    if (input === null || input.trim() === "") return;
+
+    try {
+      const authHeaders = await getAdminAuthHeaders();
+      const response = await axios.patch(`${API_BASE_URL}/api/applications/${application._id}/phone`, {
+        phoneNumber: input
+      }, {
+        headers: authHeaders
+      });
+      onPhoneChange?.(application._id, response.data.phoneNumber);
+    } catch (error) {
+      console.error("Error updating phone number:", error);
+      alert(error.response?.data?.error || "Failed to update phone number. Please try again.");
+    }
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal-content" style={{ maxWidth: "800px", maxHeight: "90vh", overflowY: "auto" }}>
@@ -773,6 +799,19 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
             />
             <p>
               <strong>Email:</strong> {application.email}
+            </p>
+            <p>
+              <strong>Phone:</strong>{" "}
+              {application.phoneNumber ? (
+                <a href={`tel:${application.phoneNumber}`}>{formatPhone(application.phoneNumber)}</a>
+              ) : (
+                formatPhone(application.phoneNumber)
+              )}
+              {canEditApplications && (
+                <button type="button" onClick={handleEditPhone} style={{ marginLeft: "8px" }}>
+                  Edit
+                </button>
+              )}
             </p>
             <p>
               <strong>Year:</strong> {application.studentYear}

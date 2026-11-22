@@ -14,6 +14,7 @@ jest.mock("../models/Application", () => {
   Application.findOne = jest.fn();
   Application.findOneAndUpdate = jest.fn();
   Application.find = jest.fn();
+  Application.findByIdAndUpdate = jest.fn();
   return Application;
 });
 jest.mock("../config/s3Config", () => ({
@@ -155,5 +156,51 @@ describe("GET /api/applications/export-by-status", () => {
     const [header, row] = (await res.text()).split("\n");
     expect(header.split(",").slice(0, 3)).toEqual(["Name", "Email", "Phone"]);
     expect(row).toContain("applicant@ucsd.edu,+18585550123,");
+  });
+});
+
+describe("PATCH /api/applications/:id/phone", () => {
+  const id = "64b000000000000000000001";
+  const asAdmin = { Authorization: "Bearer admin-token" };
+  const patch = (body) => send("PATCH", `/${id}/phone`, body, asAdmin);
+
+  beforeEach(() => {
+    mockVerifyIdToken.mockResolvedValue({ email: "member@ucsd.edu", email_verified: true });
+    Admin.findOne.mockResolvedValue({ email: "member@ucsd.edu", role: "admin", permissions: { canEditApplications: true } });
+    Application.findByIdAndUpdate.mockImplementation(async (_id, update) => ({ _id, ...update }));
+  });
+
+  test("normalizes and saves a corrected phone number", async () => {
+    const res = await patch({ phoneNumber: "(858) 555-0177" });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ phoneNumber: "+18585550177" });
+    expect(Application.findByIdAndUpdate).toHaveBeenCalledWith(id, { phoneNumber: "+18585550177" }, { new: true });
+  });
+
+  test("rejects an invalid phone number without writing", async () => {
+    const res = await patch({ phoneNumber: "555" });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/phone number/i);
+    expect(Application.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  test("returns 404 when the application doesn't exist", async () => {
+    Application.findByIdAndUpdate.mockResolvedValue(null);
+    const res = await patch({ phoneNumber: "8585550177" });
+    expect(res.status).toBe(404);
+  });
+
+  test("refuses admins without canEditApplications", async () => {
+    Admin.findOne.mockResolvedValue({ email: "member@ucsd.edu", role: "admin", permissions: { canEditApplications: false } });
+    const res = await patch({ phoneNumber: "8585550177" });
+    expect(res.status).toBe(403);
+    expect(Application.findByIdAndUpdate).not.toHaveBeenCalled();
+  });
+
+  test("refuses callers who aren't signed in", async () => {
+    mockVerifyIdToken.mockRejectedValue(new Error("invalid token"));
+    const res = await patch({ phoneNumber: "8585550177" });
+    expect(res.status).toBe(401);
+    expect(Application.findByIdAndUpdate).not.toHaveBeenCalled();
   });
 });

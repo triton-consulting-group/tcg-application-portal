@@ -1,4 +1,4 @@
-import { replaceApplication } from "./applications";
+import { formatPhone, replaceApplication } from "./applications";
 
 const list = [
   { _id: "a", fullName: "Ada", status: "Under Review", comments: [{ comment: "hi" }] },
@@ -26,4 +26,19 @@ test("ignores a response without an _id", () => {
 
 test("leaves the list unchanged when the id isn't present", () => {
   expect(replaceApplication(list, { _id: "zzz", status: "Accepted" })).toEqual(list);
+});
+
+describe("formatPhone", () => {
+  test("formats US numbers", () => {
+    expect(formatPhone("+18585550123")).toBe("(858) 555-0123");
+  });
+
+  test("leaves international numbers as stored", () => {
+    expect(formatPhone("+447911123456")).toBe("+447911123456");
+  });
+
+  test("says when there is no phone number", () => {
+    expect(formatPhone(undefined)).toBe("Not provided");
+    expect(formatPhone("")).toBe("Not provided");
+  });
 });
