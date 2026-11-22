@@ -6,7 +6,7 @@ const router = express.Router();
 const Application = require("../models/Application");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
-const { requireStatusChangePermission, requireCommentPermission, requireDeleteCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
+const { checkAdminPermission, requireStatusChangePermission, requireCommentPermission, requireDeleteCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
 const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 const { requireFileAccess } = require("../middleware/fileAccess");
 const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
@@ -753,6 +753,31 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
     console.error("❌ Error updating status:", error);
     res.status(500).json({ error: "❌ Failed to update application status." });
    }
+});
+
+// Admin correction of an applicant's phone number
+router.patch("/:id/phone", checkAdminPermission("canEditApplications"), async (req, res) => {
+  try {
+    addNoStore(res);
+    const phoneNumber = normalizePhone(req.body.phoneNumber);
+    if (!phoneNumber) {
+      return res.status(400).json({ error: INVALID_PHONE_ERROR });
+    }
+
+    const updatedApplication = await Application.findByIdAndUpdate(
+      req.params.id,
+      { phoneNumber },
+      { new: true }
+    );
+    if (!updatedApplication) {
+      return res.status(404).json({ error: "❌ Application not found" });
+    }
+
+    res.json({ phoneNumber: updatedApplication.phoneNumber });
+  } catch (error) {
+    console.error("❌ Error updating phone number:", error);
+    res.status(500).json({ error: "❌ Failed to update phone number." });
+  }
 });
 
 // Comments

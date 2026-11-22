@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
+import { formatPhone } from "../../utils/applications";
 import { 
   Box
 } from "@chakra-ui/react";
@@ -503,6 +504,13 @@ const ApplicationViewEdit = () => {
             </div>
 
             <div>
+              <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>Phone Number:</label>
+              <p style={{ margin: "0", padding: "8px", backgroundColor: "#f7fafc", borderRadius: "4px" }}>
+                {formatPhone(application.phoneNumber)}
+              </p>
+            </div>
+
+            <div>
               <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>Student Year:</label>
               <p style={{ margin: "0", padding: "8px", backgroundColor: "#f7fafc", borderRadius: "4px" }}>
                 {application.studentYear}
@@ -704,6 +712,22 @@ const ApplicationViewEdit = () => {
               name="fullName"
               value={formData.fullName || ''} 
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} 
+              style={styles.input}
+              required
+            />
+          </div>
+
+          {/* Phone Number */}
+          <div>
+            <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
+              Phone Number *
+            </label>
+            <input 
+              type="tel" 
+              name="phoneNumber"
+              value={formData.phoneNumber || ''} 
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })} 
+              placeholder="(858) 555-0123"
               style={styles.input}
               required
             />
