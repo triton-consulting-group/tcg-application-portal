@@ -112,3 +112,13 @@ describe("keep years together", () => {
     expect(axios.post.mock.calls[2][1]).toEqual({ fingerprint: "fp-off", groupByYear: false });
   });
 });
+
+test("preview and build stay within the selected cycle", async () => {
+  axios.post.mockResolvedValueOnce(preview("fp1")).mockResolvedValueOnce({ data: { created: 4 } });
+  render(<BuildCaseGroupsModal cycle="2027-winter" onClose={jest.fn()} onBuilt={jest.fn()} />);
+  await screen.findByText(/4 placed/);
+  expect(axios.post.mock.calls[0][2].params).toEqual({ cycle: "2027-winter" });
+  fireEvent.click(screen.getByText("Confirm and build"));
+  await waitFor(() => expect(axios.post).toHaveBeenCalledTimes(2));
+  expect(axios.post.mock.calls[1][2].params).toEqual({ cycle: "2027-winter" });
+});

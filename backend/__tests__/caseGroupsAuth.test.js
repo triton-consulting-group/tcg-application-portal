@@ -1,3 +1,5 @@
+jest.mock("../services/caseGroupStore", () => ({ listAssignments: jest.fn(), replaceAssignments: jest.fn(), getExistingStatus: jest.fn(), editAssignment: jest.fn() }));
+const { listAssignments } = require("../services/caseGroupStore");
 const mockVerifyIdToken = jest.fn();
 jest.mock("../config/firebaseAdmin", () => ({
   getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
@@ -43,6 +45,7 @@ const expectNoDbAccess = () => {
   expect(CaseGroupAssignment.aggregate).not.toHaveBeenCalled();
   expect(CaseGroupAssignment.distinct).not.toHaveBeenCalled();
   expect(Application.find).not.toHaveBeenCalled();
+  expect(listAssignments).not.toHaveBeenCalled();
 };
 
 test.each(paths)("GET %s without credentials is 401 and never queries the DB", async (path) => {
@@ -68,8 +71,8 @@ test.each(paths)("GET %s as a signed-in non-admin is 403", async (path) => {
 test("GET /summary as an active admin reaches the handler", async () => {
   mockVerifyIdToken.mockResolvedValue({ email: "member@ucsd.edu", email_verified: true });
   Admin.findOne.mockResolvedValue({ email: "member@ucsd.edu", role: "admin" });
-  CaseGroupAssignment.aggregate.mockResolvedValue([{ _id: { candidateType: "Tech" }, count: 3 }]);
+  listAssignments.mockResolvedValue([{ candidateType: "Tech", timeSlot: "A", groupNumber: 1 }]);
   const res = await fetch(base + "/summary", bearer);
   expect(res.status).toBe(200);
-  expect(await res.json()).toEqual([{ _id: { candidateType: "Tech" }, count: 3 }]);
+  expect(await res.json()).toEqual([{ _id: { candidateType: "Tech", timeSlot: "A" }, count: 1, groups: [1] }]);
 });

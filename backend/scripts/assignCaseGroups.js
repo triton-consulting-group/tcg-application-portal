@@ -24,6 +24,9 @@ const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
 const { ELIGIBLE_STATUS, buildCaseGroupPlan, toAssignmentDocs } = require("../services/caseGroupBuilder");
 const { replaceAssignments, getExistingStatus } = require("../services/caseGroupStore");
 
+const { getActiveCycle } = require("../config/cycleConfig");
+const cycle = getActiveCycle();
+
 const apply = process.argv.includes("--apply");
 const groupByYear = process.argv.includes("--by-year");
 
@@ -57,7 +60,7 @@ const assignCaseGroups = async () => {
     console.log(`✅ Connected to MongoDB (${envFile})`);
     console.log(apply ? "⚠️  APPLY mode: assignments will be replaced\n" : "🔍 DRY RUN: nothing will be written (add --apply)\n");
 
-    const applications = await Application.find({ status: ELIGIBLE_STATUS })
+    const applications = await Application.find({ cycle, status: ELIGIBLE_STATUS })
       .select("fullName email candidateType caseNightPreferences studentYear createdAt status")
       .lean();
     const plan = buildCaseGroupPlan(applications, CASE_NIGHT_CONFIG, { groupByYear });
@@ -66,7 +69,7 @@ const assignCaseGroups = async () => {
     console.log(`🎓 Keep years together: ${groupByYear ? "on" : "off (add --by-year)"}; ${plan.summary.mixedYearGroups} groups mix years`);
     printPlan(plan);
 
-    const existing = await getExistingStatus();
+    const existing = await getExistingStatus(cycle);
     if (existing.count > 0) {
       console.log(`\n⚠️  ${existing.count} current assignments will be replaced (backed up first).`);
       if (existing.emailsSent > 0) console.log(`⚠️  ${existing.emailsSent} of them were already emailed.`);
@@ -78,7 +81,7 @@ const assignCaseGroups = async () => {
       return;
     }
 
-    const created = await replaceAssignments(toAssignmentDocs(plan, CASE_NIGHT_CONFIG, "script"), "script");
+    const created = await replaceAssignments(toAssignmentDocs(plan, CASE_NIGHT_CONFIG, "script"), "script", cycle);
     console.log(`\n✅ Created ${created} case group assignments`);
   } catch (error) {
     console.error("❌ Error assigning case groups:", error);
