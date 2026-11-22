@@ -1,3 +1,4 @@
+jest.mock("../services/recruitmentRounds", () => ({ findRound: jest.fn().mockResolvedValue(null), httpError: (status, message) => Object.assign(new Error(message), { status }) }));
 const mockVerifyIdToken = jest.fn();
 jest.mock("../config/firebaseAdmin", () => ({
   getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
@@ -6,7 +7,7 @@ jest.mock("../models/Admin", () => ({ findOne: jest.fn() }));
 jest.mock("../models/Application", () => ({ find: jest.fn() }));
 jest.mock("../services/caseGroupStore", () => ({
   replaceAssignments: jest.fn(),
-  getExistingStatus: jest.fn()
+  getExistingStatus: jest.fn(), listAssignments: jest.fn(), editAssignment: jest.fn()
 }));
 
 const express = require("express");
@@ -74,7 +75,7 @@ test("preview returns the plan, a fingerprint and existing status, and writes no
   const res = await post("/preview");
   expect(res.status).toBe(200);
   const body = await res.json();
-  expect(Application.find).toHaveBeenCalledWith({ status: "Case Night - Yes" });
+  expect(Application.find).toHaveBeenCalledWith({ cycle: "2026-fall", status: "Case Night - Yes" });
   expect(body.plan.tracks.Tech.slots.A.count).toBe(4);
   expect(body.fingerprint).toMatch(/^[0-9a-f]{64}$/);
   expect(body.existing).toEqual({ count: 0, emailsSent: 0, handEditsSinceBuild: 0 });

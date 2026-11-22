@@ -156,3 +156,13 @@ test("each name shows a year tag", async () => {
   expect(within(chip("Bo")).getByText("2nd")).toBeInTheDocument();
   expect(within(chip("Ada")).getByText("1st")).toBeInTheDocument();
 });
+
+test("the selected cycle scopes reads and finalized rounds are read-only", async () => {
+  axios.get.mockImplementation(async (url) => ({ data: url.endsWith("/round") ? { round: { status: "finalized" } } : url.endsWith("/assignments") ? assignments : waiting }));
+  render(<CaseGroupsModal cycle="2027-winter" caseNightConfig={config} onClose={jest.fn()} />);
+  expect(await screen.findByText(/Groups are locked/)).toBeInTheDocument();
+  for (const [, options] of axios.get.mock.calls) expect(options.params).toEqual({ cycle: "2027-winter" });
+  fireEvent.click(screen.getByText("Bo"));
+  expect(screen.queryByText(/Moving Bo/)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /New group/ })).not.toBeInTheDocument();
+});

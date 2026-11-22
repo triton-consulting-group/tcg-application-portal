@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const CaseGroupAssignment = require("../models/CaseGroupAssignment");
+const { listAssignments } = require("../services/caseGroupStore");
+const { getActiveCycle } = require("../config/cycleConfig");
 const Application = require("../models/Application");
 const fs = require("fs");
 const path = require("path");
@@ -15,9 +16,7 @@ const exportCaseGroups = async () => {
     console.log("Connected to MongoDB");
 
     // Get all case group assignments
-    const assignments = await CaseGroupAssignment.find()
-      .populate('applicationId')
-      .sort({ candidateType: 1, timeSlot: 1, groupNumber: 1 });
+    const assignments = await listAssignments(getActiveCycle());
 
     console.log(`\n📊 Found ${assignments.length} case group assignments`);
 
@@ -78,26 +77,7 @@ const exportCaseGroups = async () => {
     // Generate summary
     console.log(`\n📈 Export Summary:`);
     
-    const summary = await CaseGroupAssignment.aggregate([
-      {
-        $group: {
-          _id: {
-            candidateType: "$candidateType",
-            timeSlot: "$timeSlot"
-          },
-          count: { $sum: 1 },
-          groups: { $addToSet: "$groupNumber" }
-        }
-      },
-      {
-        $sort: { "_id.candidateType": 1, "_id.timeSlot": 1 }
-      }
-    ]);
-
-    summary.forEach(stat => {
-      const groupCount = stat.groups.length;
-      console.log(`- ${stat._id.candidateType} ${stat._id.timeSlot}: ${stat.count} people in ${groupCount} groups`);
-    });
+    console.log(`Cycle: ${getActiveCycle()}`);
 
     // Show file size
     const stats = fs.statSync(filepath);

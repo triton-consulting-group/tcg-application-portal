@@ -2,7 +2,9 @@ const mongoose = require("mongoose");
 
 // One entry per case group change: a full build, or a hand edit (add / move / remove)
 const CaseGroupEditLogSchema = new mongoose.Schema({
-  action: { type: String, enum: ["build", "add", "move", "remove"], required: true },
+  cycle: { type: String, default: "2026-fall", index: true },
+  roundId: { type: mongoose.Schema.Types.ObjectId, ref: "RecruitmentRound" },
+  action: { type: String, enum: ["build", "add", "move", "remove", "migrate", "finalize"], required: true },
   applicationId: { type: mongoose.Schema.Types.ObjectId, ref: "Application" },
   applicantName: { type: String },
   from: { type: String }, // groupId before the change

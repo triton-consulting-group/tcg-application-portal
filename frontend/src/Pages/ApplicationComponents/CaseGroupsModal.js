@@ -23,8 +23,10 @@ const summarize = ({ slots, unassigned }) => {
 };
 
 // Current case groups as a board, with click-or-drag moves (super admins only)
-const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
+const CaseGroupsModal = ({ caseNightConfig, cycle, onClose }) => {
   const [assignments, setAssignments] = useState([]);
+  const [round, setRound] = useState(null);
+  const locked = round?.status === "finalized";
   const [unassigned, setUnassigned] = useState([]);
   const [track, setTrack] = useState(TRACKS[0]);
   const [query, setQuery] = useState("");
@@ -34,6 +36,7 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const choseTrack = useRef(false);
+  const requestId = useRef(0);
 
   const slotLabels = useMemo(() => caseNightConfig?.slots || {}, [caseNightConfig]);
   const slotKeys = useMemo(() => Object.keys(slotLabels).sort(), [slotLabels]);
@@ -42,25 +45,36 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
   const matchIds = useMemo(() => (query.trim() ? new Set(matches.map((m) => m.id)) : null), [matches, query]);
 
   const load = useCallback(async () => {
+    const id = ++requestId.current;
     setLoading(true);
+    setAssignments([]);
+    setUnassigned([]);
+    setRound(null);
     setError("");
     try {
       const headers = await getAdminAuthHeaders();
-      const [assigned, waiting] = await Promise.all([
-        axios.get(`${API}/assignments`, { headers }),
-        axios.get(`${API}/unassigned`, { headers })
+      const [assigned, waiting, metadata] = await Promise.all([
+        axios.get(`${API}/assignments`, { headers, params: { cycle } }),
+        axios.get(`${API}/unassigned`, { headers, params: { cycle } }),
+        axios.get(`${API}/round`, { headers, params: { cycle } })
       ]);
+      if (id !== requestId.current) return;
       setAssignments(assigned.data);
       setUnassigned(waiting.data);
+      setRound(metadata.data.round);
     } catch (err) {
-      setError(await getErrorMessage(err, "Failed to load case groups."));
+      if (id === requestId.current) setError(await getErrorMessage(err, "Failed to load case groups."));
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
-  }, []);
+  }, [cycle]);
 
   useEffect(() => {
+    setMoving(null);
+    setPending(null);
+    choseTrack.current = false;
     load();
+    return () => { requestId.current += 1; };
   }, [load]);
 
   // On first load, open the track with the most people
@@ -114,7 +128,7 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
   };
 
   const move = async (target, confirmWarnings = false) => {
-    if (!moving || saving) return;
+    if (!moving || saving || locked) return;
     const request = requestFor(target, confirmWarnings);
     if (!request) return cancelMove();
 
@@ -122,7 +136,7 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
     setError("");
     try {
       const headers = await getAdminAuthHeaders();
-      await axios({ ...request, headers });
+      await axios({ ...request, headers, params: { cycle } });
       cancelMove();
       await load();
     } catch (err) {
@@ -170,7 +184,7 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
           ) : (
             !loading && (
               <span style={styles.status}>
-                {summarize(board[track])}. Click or drag a name to move it.
+                {summarize(board[track])}. {locked ? "This round is finalized. Groups are locked." : "Click or drag a name to move it."}
               </span>
             )
           )}
@@ -184,7 +198,7 @@ const CaseGroupsModal = ({ caseNightConfig, onClose }) => {
             board={board}
             track={track}
             slotLabels={slotLabels}
-            editable
+            editable={!locked && !saving}
             moving={moving}
             matchIds={matchIds}
             onPick={pick}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
 import { getAdminAuthHeaders } from "../../config/adminAuth";
@@ -14,7 +14,7 @@ const labelsFromPlan = (plan) =>
 
 // Preview of automatic case groups on the same board as the Case Groups window, read-only,
 // with a button to build them (super admins only)
-const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
+const BuildCaseGroupsModal = ({ cycle, onClose, onBuilt }) => {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [building, setBuilding] = useState(false);
@@ -23,24 +23,30 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
   const [track, setTrack] = useState(TRACKS[0]);
   const [query, setQuery] = useState("");
   const [groupByYear, setGroupByYear] = useState(true);
+  const requestId = useRef(0);
 
   const loadPreview = useCallback(async () => {
+    const id = ++requestId.current;
     setLoading(true);
     setError("");
+    setPreview(null);
     try {
       const headers = await getAdminAuthHeaders();
-      const response = await axios.post(`${API_BASE_URL}/api/case-groups/preview`, { groupByYear }, { headers });
+      const response = await axios.post(`${API_BASE_URL}/api/case-groups/preview`, { groupByYear }, { headers, params: { cycle } });
+      if (id !== requestId.current) return;
       setPreview(response.data);
       setTrack(busiestTrack(boardFromPlan(response.data.plan)));
     } catch (err) {
-      setError(await getErrorMessage(err, "Failed to preview case groups."));
+      if (id === requestId.current) setError(await getErrorMessage(err, "Failed to preview case groups."));
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
-  }, [groupByYear]);
+  }, [groupByYear, cycle]);
 
   useEffect(() => {
+    setNotice("");
     loadPreview();
+    return () => { requestId.current += 1; };
   }, [loadPreview]);
 
   const build = async () => {
@@ -51,7 +57,7 @@ const BuildCaseGroupsModal = ({ onClose, onBuilt }) => {
       const response = await axios.post(
         `${API_BASE_URL}/api/case-groups/build`,
         { fingerprint: preview.fingerprint, groupByYear },
-        { headers }
+        { headers, params: { cycle } }
       );
       onBuilt(response.data.created);
     } catch (err) {
