@@ -7,7 +7,6 @@ const { errorHandler, notFound } = require("./middleware/errorHandler");
 const { isS3Configured } = require("./config/s3Config");
 
 dotenv.config(); // Load environment variables
-connectDB(); // Connect to MongoDB
 
 const app = express();
 
@@ -93,11 +92,11 @@ process.on('SIGINT', () => {
 });
 
 // Start server
-app.listen(PORT, () => {
+connectDB().then(() => app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-});
+}));
 
 // Export for Railway deployment
 if (process.env.NODE_ENV === 'production') {
