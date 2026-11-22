@@ -47,6 +47,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/applications", require("./routes/applications"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/case-groups", require("./routes/caseGroups"));
+app.use("/api/grades", require("./routes/grades"));
 
 // File serving - only serve local files if S3 is not configured
 if (!isS3Configured()) {
