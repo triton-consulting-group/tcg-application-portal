@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { Flex, Box, Link, Button, Image } from "@chakra-ui/react";
 import { auth, provider, getSignInErrorMessage } from "../../Pages/Home/firebaseConfig";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
+import { FiMenu, FiX } from "react-icons/fi";
 import TCGLogo from "../../assets/Images/TCGLogo.png";
 
 // Registers the signed-in user and returns their role. Both calls carry the Firebase ID token;
@@ -35,7 +36,14 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("applicant");
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Close the mobile menu whenever the page changes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -114,21 +122,30 @@ const Navbar = () => {
     }
   };
 
-  return (
-    <Flex as="nav" align="center" justify="space-between" padding="1.5rem" bg="gray.100" color="#20354a">
-      <Box>
-        <Link as={RouterLink} to="/">
-          <Image src={TCGLogo} alt="TCG Logo" height="40px" />
-        </Link>
-      </Box>
-      <Box>
+  // The same actions render in the desktop row and in the mobile menu.
+  // In the mobile menu they stack full width, and picking one closes the menu.
+  const renderActions = (isMobile) => {
+    const mobileProps = isMobile ? { width: "100%", marginRight: 0 } : {};
+    const run = (action) => () => {
+      if (isMobile) setIsMenuOpen(false);
+      action();
+    };
+    return (
+      <>
         {user && role === "associate" && (
-          <Link as={RouterLink} to="/associate" marginRight="1.5rem" color="#20354a">
+          <Link
+            as={RouterLink}
+            to="/associate"
+            marginRight="1.5rem"
+            color="#20354a"
+            onClick={() => setIsMenuOpen(false)}
+            {...mobileProps}
+          >
             Associate View
           </Link>
         )}
         <Button 
-          onClick={handleViewApplication}
+          onClick={run(handleViewApplication)}
           marginRight="1rem"
           backgroundColor="#3182ce"
           color="white"
@@ -141,12 +158,13 @@ const Navbar = () => {
           isLoading={isSigningIn && !user}
           loadingText="Signing in..."
           disabled={isSigningIn && !user}
+          {...mobileProps}
         >
           View My Application
         </Button>
         {user ? (
           <Button 
-            onClick={handleSignOut} 
+            onClick={run(handleSignOut)}
             backgroundColor="#718096"
             color="white"
             _hover={{ backgroundColor: "#5a6268" }}
@@ -154,12 +172,13 @@ const Navbar = () => {
             padding="12px 24px"
             borderRadius="6px"
             fontSize="16px"
+            {...mobileProps}
           >
             Logout
           </Button>
         ) : (
           <Button 
-            onClick={handleSignIn} 
+            onClick={run(handleSignIn)}
             backgroundColor="#3182ce"
             color="white"
             _hover={{ backgroundColor: "#2c5282" }}
@@ -170,12 +189,51 @@ const Navbar = () => {
             isLoading={isSigningIn}
             loadingText="Signing in..."
             disabled={isSigningIn}
+            {...mobileProps}
           >
             Sign in
           </Button>
         )}
-      </Box>
-    </Flex>
+      </>
+    );
+  };
+
+  return (
+    <Box as="nav" bg="gray.100" color="#20354a">
+      <Flex align="center" justify="space-between" padding={{ base: "1rem", md: "1.5rem" }}>
+        <Box>
+          <Link as={RouterLink} to="/">
+            <Image src={TCGLogo} alt="TCG Logo" height="40px" />
+          </Link>
+        </Box>
+        <Flex display={{ base: "none", md: "flex" }} align="center">
+          {renderActions(false)}
+        </Flex>
+        <Button
+          display={{ base: "flex", md: "none" }}
+          onClick={() => setIsMenuOpen((open) => !open)}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-nav-menu"
+          variant="ghost"
+          color="#20354a"
+          fontSize="24px"
+        >
+          {isMenuOpen ? <FiX /> : <FiMenu />}
+        </Button>
+      </Flex>
+      {isMenuOpen && (
+        <Flex
+          id="mobile-nav-menu"
+          display={{ base: "flex", md: "none" }}
+          direction="column"
+          gap="0.75rem"
+          padding="0 1rem 1rem"
+        >
+          {renderActions(true)}
+        </Flex>
+      )}
+    </Box>
   );
 };
 
