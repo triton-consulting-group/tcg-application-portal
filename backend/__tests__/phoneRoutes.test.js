@@ -25,6 +25,7 @@ const express = require("express");
 const Admin = require("../models/Admin");
 const Application = require("../models/Application");
 const applications = require("../routes/applications");
+const { LOCKED_STATUSES } = require("../utils/applicationStatus");
 
 let server;
 let base;
@@ -118,7 +119,7 @@ describe("PUT /api/applications/email/:email phone number", () => {
     const res = await send("PUT", `/email/${owner}`, { phoneNumber: "858-555-0199" }, asOwner);
     expect(res.status).toBe(200);
     const [filter, update, options] = Application.findOneAndUpdate.mock.calls[0];
-    expect(filter).toEqual({ email: owner });
+    expect(filter).toEqual({ email: owner, status: { $nin: LOCKED_STATUSES } });
     expect(update.phoneNumber).toBe("+18585550199");
     expect(options).toMatchObject({ runValidators: true });
   });

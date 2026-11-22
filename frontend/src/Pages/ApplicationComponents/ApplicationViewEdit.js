@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import axios from "axios";
 import API_BASE_URL from "../../config/api";
+import { isApplicationLocked } from "../../utils/applications";
 import { 
   Box
 } from "@chakra-ui/react";
@@ -622,19 +623,19 @@ const ApplicationViewEdit = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "20px" }}>
             <button 
               onClick={() => setIsEditing(true)}
-              disabled={application.status === "Accepted" || application.status === "Rejected" || application.status === "Final Interview - Yes"}
+              disabled={isApplicationLocked(application.status)}
               style={{
-                backgroundColor: application.status === "Accepted" || application.status === "Rejected" || application.status === "Final Interview - Yes" ? "#a0a0a0" : "#3182ce",
+                backgroundColor: isApplicationLocked(application.status) ? "#a0a0a0" : "#3182ce",
                 color: "white",
                 border: "none",
                 padding: "12px 24px",
                 borderRadius: "6px",
-                cursor: application.status === "Accepted" || application.status === "Rejected" || application.status === "Final Interview - Yes" ? "not-allowed" : "pointer",
+                cursor: isApplicationLocked(application.status) ? "not-allowed" : "pointer",
                 fontSize: "16px",
                 width: "100%"
               }}
             >
-              {application.status === "Accepted" || application.status === "Rejected" || application.status === "Final Interview - Yes" ? "Application Locked" : "Edit Application"}
+              {isApplicationLocked(application.status) ? "Application Locked" : "Edit Application"}
             </button>
             
             <button 
