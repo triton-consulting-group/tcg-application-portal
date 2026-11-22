@@ -19,6 +19,7 @@ jest.mock("../config/s3Config", () => ({
 
 const express = require("express");
 const scalingConfig = require("../config/scalingConfig");
+const { getTrustProxyHops } = require("../config/proxyConfig");
 const applications = require("../routes/applications");
 
 const LIMIT = scalingConfig.rateLimits.applicationSubmission.max;
@@ -27,7 +28,7 @@ let base;
 
 beforeAll((done) => {
   const app = express();
-  app.set("trust proxy", true); // same as server.js
+  app.set("trust proxy", getTrustProxyHops()); // same as server.js
   app.use(express.json());
   app.use("/api/applications", applications);
   server = app.listen(0, () => {
