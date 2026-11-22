@@ -5,14 +5,16 @@ const helmet = require("helmet");
 const connectDB = require("./config/db");
 const { errorHandler, notFound } = require("./middleware/errorHandler");
 const { isS3Configured } = require("./config/s3Config");
+const { getTrustProxyHops } = require("./config/proxyConfig");
 
 dotenv.config(); // Load environment variables
 connectDB(); // Connect to MongoDB
 
 const app = express();
 
-// Trust proxy for Railway deployment (enables proper rate limiting)
-app.set('trust proxy', true);
+// Trust only the configured number of reverse-proxy hops (1 for Railway).
+// Never use boolean `true`, which lets clients spoof X-Forwarded-For and bypass IP rate limits.
+app.set('trust proxy', getTrustProxyHops());
 
 // Security and performance middleware
 app.use(helmet());
