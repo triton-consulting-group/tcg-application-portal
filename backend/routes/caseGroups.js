@@ -7,6 +7,7 @@ const config = require("../config/caseNightConfig");
 const { ELIGIBLE_STATUS, buildCaseGroupPlan, planFingerprint, toAssignmentDocs } = require("../services/caseGroupBuilder");
 const { listAssignments, replaceAssignments, getExistingStatus, editAssignment } = require("../services/caseGroupStore");
 const { findRound, httpError } = require("../services/recruitmentRounds");
+const { loadPreview, finalizeRound, saveEvaluation } = require("../services/roundFinalization");
 
 router.use(requireAdminAuth, selectCycle);
 const handle = (fn) => async (req, res) => {
@@ -24,7 +25,22 @@ const requestedRound = async (req) => {
   if (!["case-night", "final-interview"].includes(kind)) throw httpError(400, "Unknown round kind.");
   return findRound(req.cycle, kind);
 };
+const requireRound = async (req) => {
+  const round = await requestedRound(req);
+  if (!round) throw httpError(404, "This round has not been created yet.");
+  return round;
+};
+
 router.get("/round", handle(async (req, res) => res.json({ round: await requestedRound(req) })));
+router.get("/round/finalization", requireSuperAdmin, handle(async (req, res) => {
+  const round = await requireRound(req);
+  const preview = await loadPreview(round, []);
+  res.json({ round, applicants: preview.changes.map((c) => ({ applicationId: c.applicationId, name: c.name, currentStatus: c.from, evaluations: c.evaluations, decision: null })) });
+}));
+router.post("/round/finalization/preview", requireSuperAdmin, handle(async (req, res) => res.json(await loadPreview(await requireRound(req), req.body.decisions))));
+router.post("/round/finalize", requireSuperAdmin, handle(async (req, res) => res.json(await finalizeRound(await requireRound(req), req.body.decisions, req.body.fingerprint, req.admin.email))));
+// Super-admin access is the existing board permission; Dev 2 can extend this with canGrade.
+router.put("/round/evaluations", requireSuperAdmin, handle(async (req, res) => res.json(await saveEvaluation(await requireRound(req), req.body, req.admin.email))));
 
 router.get("/assignments", handle(async (req, res) => res.json(await listAssignments(req.cycle))));
 router.get("/summary", handle(async (req, res) => {
