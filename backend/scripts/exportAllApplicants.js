@@ -1,3 +1,4 @@
+const { getActiveCycle } = require("../config/cycleConfig");
 const mongoose = require("mongoose");
 const Application = require("../models/Application");
 const fs = require("fs");
@@ -6,12 +7,14 @@ require("dotenv").config();
 
 const exportAllApplicants = async () => {
   try {
+    const cycle = getActiveCycle();
+    console.log(`Recruitment cycle: ${cycle}`);
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
 
     // Get all applications
-    const applications = await Application.find()
+    const applications = await Application.find({ cycle })
       .sort({ createdAt: -1 }); // Most recent first
 
     console.log(`\n📊 Found ${applications.length} applications in database`);
@@ -61,7 +64,7 @@ const exportAllApplicants = async () => {
 
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-    const filename = `all-applicants-${timestamp}.csv`;
+    const filename = `all-applicants-${cycle}-${timestamp}.csv`;
     const filepath = path.join(exportsDir, filename);
 
     // Write CSV file
@@ -72,6 +75,7 @@ const exportAllApplicants = async () => {
     console.log(`\n📈 Export Summary:`);
     
     const statusSummary = await Application.aggregate([
+      { $match: { cycle } },
       {
         $group: {
           _id: "$status",
@@ -89,6 +93,7 @@ const exportAllApplicants = async () => {
     });
 
     const candidateTypeSummary = await Application.aggregate([
+      { $match: { cycle } },
       {
         $group: {
           _id: "$candidateType",

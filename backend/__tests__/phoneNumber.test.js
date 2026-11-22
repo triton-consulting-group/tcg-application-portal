@@ -47,8 +47,8 @@ describe("Application schema", () => {
     expect(err.errors.phoneNumber).toBeDefined();
   });
 
-  test("declares a unique index on email", () => {
-    const emailIndex = Application.schema.indexes().find(([fields]) => fields.email === 1 && Object.keys(fields).length === 1);
+  test("declares a unique index on cycle and email", () => {
+    const emailIndex = Application.schema.indexes().find(([fields]) => fields.cycle === 1 && fields.email === 1 && Object.keys(fields).length === 2);
     expect(emailIndex).toBeDefined();
     expect(emailIndex[1].unique).toBe(true);
   });

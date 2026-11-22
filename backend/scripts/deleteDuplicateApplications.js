@@ -1,9 +1,12 @@
+const { getActiveCycle } = require("../config/cycleConfig");
 const mongoose = require('mongoose');
 const Application = require('../models/Application');
 require('dotenv').config();
 
 const deleteDuplicateApplications = async () => {
   try {
+    const cycle = getActiveCycle();
+    console.log(`Recruitment cycle: ${cycle}`);
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
@@ -18,7 +21,7 @@ const deleteDuplicateApplications = async () => {
     console.log(`Force mode: ${forceMode ? 'ENABLED (no confirmations)' : 'DISABLED'}\n`);
 
     // Find all applications grouped by email
-    const applications = await Application.find().sort({ email: 1, createdAt: 1 });
+    const applications = await Application.find({ cycle }).sort({ email: 1, createdAt: 1 });
     
     // Group applications by email
     const emailGroups = {};
@@ -104,7 +107,7 @@ const deleteDuplicateApplications = async () => {
       for (const appToDelete of appsToDelete) {
         console.log(`   🗑️  Deleting: ${appToDelete.fullName} (${appToDelete.createdAt.toISOString().split('T')[0]})`);
         
-        await Application.findByIdAndDelete(appToDelete._id);
+        await Application.findOneAndDelete({ _id: appToDelete._id, cycle });
         deletedCount++;
       }
       
@@ -120,7 +123,7 @@ const deleteDuplicateApplications = async () => {
 
     // Verify the cleanup
     console.log("\n🔍 Verifying cleanup...");
-    const remainingApps = await Application.find();
+    const remainingApps = await Application.find({ cycle });
     const remainingEmails = new Set(remainingApps.map(app => app.email));
     
     console.log(`📈 Final counts:`);

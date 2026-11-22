@@ -3,7 +3,7 @@ jest.mock("../config/firebaseAdmin", () => ({
   getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
 }));
 jest.mock("../models/Admin", () => ({ findOne: jest.fn() }));
-jest.mock("../models/Application", () => ({ findById: jest.fn(), findByIdAndUpdate: jest.fn(), findOneAndUpdate: jest.fn() }));
+jest.mock("../models/Application", () => ({ findOne: jest.fn(), findOneAndUpdate: jest.fn() }));
 jest.mock("../config/s3Config", () => ({
   s3: {}, S3_CONFIG: { uploadSettings: { maxFileSize: 1024, allowedMimeTypes: [] } }, getFileTypeAndPath: jest.fn(), getFileUrl: jest.fn(),
   getSignedUrl: jest.fn(), isS3Configured: () => false
@@ -53,17 +53,16 @@ const signedInAs = (admin) => {
 beforeEach(() => {
   jest.clearAllMocks();
   mockVerifyIdToken.mockRejectedValue(new Error("invalid token"));
-  Application.findById.mockResolvedValue({ _id: APP_ID });
-  Application.findByIdAndUpdate.mockImplementation(async (id, update) => ({
-    _id: id, comments: update.$push.comments ? [update.$push.comments] : []
+  Application.findOne.mockResolvedValue({ _id: APP_ID });
+  Application.findOneAndUpdate.mockImplementation(async (id, update) => ({
+    _id: id._id, comments: update.$push?.comments ? [update.$push.comments] : []
   }));
-  // Delete route: a $pull that matched a comment resolves to the updated application
-  Application.findOneAndUpdate.mockResolvedValue({ _id: APP_ID, comments: [] });
+
 });
 
 const expectNoApplicationAccess = () => {
-  expect(Application.findById).not.toHaveBeenCalled();
-  expect(Application.findByIdAndUpdate).not.toHaveBeenCalled();
+  expect(Application.findOne).not.toHaveBeenCalled();
+  expect(Application.findOneAndUpdate).not.toHaveBeenCalled();
   expect(Application.findOneAndUpdate).not.toHaveBeenCalled();
 };
 
@@ -98,7 +97,7 @@ test("PUT /:id records the verified admin as changedBy, not the body's claim", a
     { Authorization: "Bearer t" }
   );
   expect(res.status).toBe(200);
-  const update = Application.findByIdAndUpdate.mock.calls[0][1];
+  const update = Application.findOneAndUpdate.mock.calls[0][1];
   expect(update.status).toBe("Accepted");
   expect(update.$push.statusHistory).toEqual(
     expect.objectContaining({ status: "Accepted", changedBy: "member@ucsd.edu", notes: "via test" })
@@ -129,14 +128,14 @@ test("POST /:id/comment still requires a comment", async () => {
   signedInAs(member);
   const res = await send("POST", `/${APP_ID}/comment`, {}, { Authorization: "Bearer t" });
   expect(res.status).toBe(400);
-  expect(Application.findByIdAndUpdate).not.toHaveBeenCalled();
+  expect(Application.findOneAndUpdate).not.toHaveBeenCalled();
 });
 
 test("POST /:id/comment stores the comment with an _id and returns that same _id", async () => {
   signedInAs(member);
   const res = await send("POST", `/${APP_ID}/comment`, { comment: "ok" }, { Authorization: "Bearer t" });
   expect(res.status).toBe(200);
-  const pushed = Application.findByIdAndUpdate.mock.calls[0][1].$push.comments;
+  const pushed = Application.findOneAndUpdate.mock.calls[0][1].$push.comments;
   expect(pushed._id).toBeDefined();
   expect(String(pushed._id)).toMatch(/^[0-9a-f]{24}$/);
   const body = await res.json();
@@ -190,7 +189,7 @@ describe("DELETE /:id/comments/:commentId", () => {
   test("for an unknown application is 404", async () => {
     signedInAs(member);
     Application.findOneAndUpdate.mockResolvedValue(null);
-    Application.findById.mockResolvedValue(null);
+    Application.findOne.mockResolvedValue(null);
     const res = await send("DELETE", path, undefined, auth);
     expect(res.status).toBe(404);
     expect((await res.json()).error).toMatch(/application/i);
@@ -199,7 +198,7 @@ describe("DELETE /:id/comments/:commentId", () => {
   test("for an unknown comment on a real application is 404", async () => {
     signedInAs(member);
     Application.findOneAndUpdate.mockResolvedValue(null);
-    Application.findById.mockResolvedValue({ _id: APP_ID, comments: [] });
+    Application.findOne.mockResolvedValue({ _id: APP_ID, comments: [] });
     const res = await send("DELETE", path, undefined, auth);
     expect(res.status).toBe(404);
     expect((await res.json()).error).toMatch(/comment/i);

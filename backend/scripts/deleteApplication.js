@@ -1,9 +1,12 @@
+const { getActiveCycle } = require("../config/cycleConfig");
 const mongoose = require('mongoose');
 const Application = require('../models/Application');
 require('dotenv').config();
 
 const deleteApplication = async () => {
   try {
+    const cycle = getActiveCycle();
+    console.log(`Recruitment cycle: ${cycle}`);
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
@@ -20,7 +23,7 @@ const deleteApplication = async () => {
     const email = args[0];
     
     // Find application by email
-    const application = await Application.findOne({ email: email });
+    const application = await Application.findOne({ cycle, email: email.trim().toLowerCase() });
     
     if (!application) {
       console.log(`❌ No application found for email: ${email}`);
@@ -32,7 +35,7 @@ const deleteApplication = async () => {
     console.log(`📊 Status: ${application.status}`);
     
     // Delete the application
-    await Application.findByIdAndDelete(application._id);
+    await Application.findOneAndDelete({ _id: application._id, cycle });
     
     console.log(`✅ Application deleted successfully for: ${email}`);
     

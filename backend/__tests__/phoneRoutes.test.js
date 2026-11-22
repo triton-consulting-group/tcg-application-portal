@@ -118,7 +118,7 @@ describe("PUT /api/applications/email/:email phone number", () => {
     const res = await send("PUT", `/email/${owner}`, { phoneNumber: "858-555-0199" }, asOwner);
     expect(res.status).toBe(200);
     const [filter, update, options] = Application.findOneAndUpdate.mock.calls[0];
-    expect(filter).toEqual({ email: owner });
+    expect(filter).toEqual({ cycle: "2026-fall", email: owner });
     expect(update.phoneNumber).toBe("+18585550199");
     expect(options).toMatchObject({ runValidators: true });
   });
@@ -138,7 +138,7 @@ describe("PUT /api/applications/email/:email phone number", () => {
   test("looks up the application by lowercased email", async () => {
     mockVerifyIdToken.mockResolvedValue({ email: "Applicant@UCSD.edu", email_verified: true });
     await send("PUT", "/email/Applicant@UCSD.edu", { fullName: "New Name" }, { Authorization: "Bearer t" });
-    expect(Application.findOne).toHaveBeenCalledWith({ email: owner });
+    expect(Application.findOne).toHaveBeenCalledWith({ cycle: "2026-fall", email: owner });
   });
 });
 
