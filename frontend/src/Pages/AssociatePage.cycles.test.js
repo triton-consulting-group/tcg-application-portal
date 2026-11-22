@@ -8,6 +8,7 @@ jest.mock('./Home/firebaseConfig', () => ({ auth: {} }));
 jest.mock('../config/adminAuth', () => ({ getAdminAuthHeaders: async () => ({ Authorization: 'Bearer test' }) }));
 jest.mock('./ApplicationComponents/BuildCaseGroupsModal', () => () => null);
 jest.mock('./ApplicationComponents/CaseGroupsModal', () => () => null);
+jest.mock('./ApplicationComponents/RoundFinalizationModal', () => () => null);
 beforeEach(() => {
   jest.clearAllMocks();
   axios.post.mockResolvedValue({ data: { isAdmin: true, admin: { role: 'super_admin', name: 'Test Admin', permissions: {} } } });

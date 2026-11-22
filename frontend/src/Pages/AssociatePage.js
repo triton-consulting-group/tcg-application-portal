@@ -9,6 +9,7 @@ import { replaceApplication } from "../utils/applications";
 import { getErrorMessage } from "../utils/caseGroups";
 import BuildCaseGroupsModal from "./ApplicationComponents/BuildCaseGroupsModal";
 import ModalErrorBoundary from "./ApplicationComponents/ModalErrorBoundary";
+import RoundFinalizationModal from "./ApplicationComponents/RoundFinalizationModal";
 import CaseGroupsModal from "./ApplicationComponents/CaseGroupsModal";
 
 // Feature flag: if true, show an inline status <select> in the "View Applicant" modal
@@ -52,6 +53,7 @@ const AssociatePage = () => {
   const [exporting, setExporting] = useState(false);
   const [showBuildCaseGroups, setShowBuildCaseGroups] = useState(false);
   const [showCaseGroups, setShowCaseGroups] = useState(false);
+  const [showFinalization, setShowFinalization] = useState(false);
   const [caseNightConfig, setCaseNightConfig] = useState(null);
 
   const checkAdminStatus = useCallback(async (email) => {
@@ -132,6 +134,7 @@ const AssociatePage = () => {
     setSelectedImage(null);
     setShowBuildCaseGroups(false);
     setShowCaseGroups(false);
+    setShowFinalization(false);
     setApplications([]);
     setCurrentPage(1);
     fetchApplications(cycle);
@@ -324,6 +327,9 @@ const AssociatePage = () => {
                 </button>
               </>
             )}
+            {adminInfo?.role === "super_admin" && (
+              <button onClick={() => setShowFinalization(true)}>Finalize round</button>
+            )}
             <button
               onClick={() => fetchApplications(selectedCycle)}
               style={{
@@ -438,6 +444,12 @@ const AssociatePage = () => {
               alert(`Built ${created} case group assignments. You can export them now.`);
             }}
           />
+        </ModalErrorBoundary>
+      )}
+
+      {showFinalization && (
+        <ModalErrorBoundary onClose={() => setShowFinalization(false)}>
+          <RoundFinalizationModal cycle={selectedCycle} onClose={() => setShowFinalization(false)} onFinalized={() => fetchApplications(selectedCycle)} />
         </ModalErrorBoundary>
       )}
 
