@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
+const { getActiveCycle, CYCLE_PATTERN } = require("../config/cycleConfig");
 const { PHONE_PATTERN } = require("../utils/phone");
 
 const ApplicationSchema = new mongoose.Schema(
   {
-    // One application per email; stored lowercase so lookups don't depend on how it was typed
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    cycle: { type: String, required: true, default: getActiveCycle, match: CYCLE_PATTERN },
+    email: { type: String, required: true, lowercase: true, trim: true },
     fullName: { type: String, required: true },
     phoneNumber: { type: String, required: true, trim: true, match: PHONE_PATTERN }, // E.164, normalized by the routes
     studentYear: { type: String, required: true },
@@ -44,15 +45,11 @@ const ApplicationSchema = new mongoose.Schema(
       adminName: { type: String, required: true } // Admin name for display
     }],
   },
-  { 
-    timestamps: true,
-    // Compound index for common queries
-    indexes: [
-      { email: 1, status: 1 }, // For filtering by email and status
-      { status: 1, createdAt: -1 }, // For status-based queries with date sorting
-      { major: 1, status: 1 }, // For filtering by major and status
-    ]
-  }
+  { timestamps: true }
 );
+
+ApplicationSchema.index({ cycle: 1, email: 1 }, { unique: true });
+ApplicationSchema.index({ cycle: 1, status: 1, createdAt: -1 });
+ApplicationSchema.index({ cycle: 1, major: 1, status: 1 });
 
 module.exports = mongoose.model("Application", ApplicationSchema);

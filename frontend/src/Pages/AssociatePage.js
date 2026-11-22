@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import "./associatePage.css";
 import { onAuthStateChanged } from "firebase/auth";
@@ -31,6 +31,9 @@ const getFileUrl = async (filePath) => {
 
 const AssociatePage = () => {
   const [applications, setApplications] = useState([]);
+  const [selectedCycle, setSelectedCycle] = useState("");
+  const [cycles, setCycles] = useState([]);
+  const loadSequence = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState(0);
@@ -101,17 +104,37 @@ const AssociatePage = () => {
     fetchCaseNightConfig();
   }, []);
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (cycle) => {
+    const sequence = ++loadSequence.current;
+    setLoading(true);
+    setError(null);
     try {
       const headers = await getAdminAuthHeaders();
-      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, { headers });
+      if (!cycle) {
+        const { data } = await axios.get(`${API_BASE_URL}/api/applications/cycles`, { headers });
+        if (sequence !== loadSequence.current) return;
+        setCycles(data.cycles);
+        cycle = data.activeCycle;
+      }
+      const response = await axios.get(`${API_BASE_URL}/api/applications/all`, { headers, params: { cycle } });
+      if (sequence !== loadSequence.current) return;
+      setSelectedCycle(cycle);
       setApplications(response.data || []);
-      setLoading(false);
     } catch (error) {
-      console.error("❌ Error fetching applications:", error);
-      setError("Failed to fetch applications.");
-      setLoading(false);
+      if (sequence === loadSequence.current) setError("Failed to fetch applications.");
+    } finally {
+      if (sequence === loadSequence.current) setLoading(false);
     }
+  };
+
+  const changeCycle = (cycle) => {
+    setSelectedApplication(null);
+    setSelectedImage(null);
+    setShowBuildCaseGroups(false);
+    setShowCaseGroups(false);
+    setApplications([]);
+    setCurrentPage(1);
+    fetchApplications(cycle);
   };
 
   const requestSort = (key) => {
@@ -166,6 +189,7 @@ const AssociatePage = () => {
       const headers = await getAdminAuthHeaders();
       const response = await axios.get(`${API_BASE_URL}/api/case-groups/export`, {
         responseType: 'blob',
+        params: { cycle: selectedCycle },
         headers
       });
 
@@ -211,7 +235,8 @@ const AssociatePage = () => {
             status: newStatus,
             notes: notes
           }, {
-            headers: authHeaders
+            headers: authHeaders,
+            params: { cycle: selectedCycle }
           })
       )
       .then((response) => {
@@ -300,7 +325,7 @@ const AssociatePage = () => {
               </>
             )}
             <button
-              onClick={fetchApplications}
+              onClick={() => fetchApplications(selectedCycle)}
               style={{
                 backgroundColor: "#007bff",
                 color: "white",
@@ -332,6 +357,13 @@ const AssociatePage = () => {
           </div>
         </div>
       </div>
+
+      <label>
+        Recruitment cycle{" "}
+        <select value={selectedCycle} onChange={(event) => changeCycle(event.target.value)}>
+          {cycles.map((cycle) => <option key={cycle} value={cycle}>{cycle}</option>)}
+        </select>
+      </label>
 
       <div className="tab-container">
         <div className="tabs">
@@ -367,6 +399,7 @@ const AssociatePage = () => {
           />
         ) : (
           <PhasesView
+            cycle={selectedCycle}
             applications={applications}
             setSelectedApplication={setSelectedApplication}
             setApplications={setApplications}
@@ -398,6 +431,7 @@ const AssociatePage = () => {
       {showBuildCaseGroups && (
         <ModalErrorBoundary onClose={() => setShowBuildCaseGroups(false)}>
           <BuildCaseGroupsModal
+            cycle={selectedCycle}
             onClose={() => setShowBuildCaseGroups(false)}
             onBuilt={(created) => {
               setShowBuildCaseGroups(false);
@@ -409,7 +443,7 @@ const AssociatePage = () => {
 
       {showCaseGroups && (
         <ModalErrorBoundary onClose={() => setShowCaseGroups(false)}>
-          <CaseGroupsModal caseNightConfig={caseNightConfig} onClose={() => setShowCaseGroups(false)} />
+          <CaseGroupsModal cycle={selectedCycle} caseNightConfig={caseNightConfig} onClose={() => setShowCaseGroups(false)} />
         </ModalErrorBoundary>
       )}
     </div>
@@ -714,7 +748,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
 
     try {
       const authHeaders = await getAdminAuthHeaders();
-      const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment`, {
+      const response = await axios.post(`${API_BASE_URL}/api/applications/${application._id}/comment?cycle=${encodeURIComponent(application.cycle)}`, {
         comment: newComment
       }, {
         headers: authHeaders
@@ -742,7 +776,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
     setDeletingCommentIds(prev => [...prev, commentId]);
     try {
       const authHeaders = await getAdminAuthHeaders();
-      await axios.delete(`${API_BASE_URL}/api/applications/${application._id}/comments/${commentId}`, {
+      await axios.delete(`${API_BASE_URL}/api/applications/${application._id}/comments/${commentId}?cycle=${encodeURIComponent(application.cycle)}`, {
         headers: authHeaders
       });
       applyCommentsUpdate(prev => prev.filter(c => c._id !== commentId));
@@ -1145,7 +1179,7 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
 };
 
 // 🟢 **PhasesView Component**
-const PhasesView = ({ applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm, adminInfo }) => {
+const PhasesView = ({ cycle, applications, setSelectedApplication, setApplications, searchTerm, setSearchTerm, adminInfo }) => {
   const [phaseGroup, setPhaseGroup] = useState(1);
   const [phasePages, setPhasePages] = useState({});
   const [techFilter, setTechFilter] = useState("all"); // Tech filter state
@@ -1245,7 +1279,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       const statusesParam = phase.statuses.join(',');
       const headers = await getAdminAuthHeaders();
       const response = await axios.get(`${API_BASE_URL}/api/applications/export-by-status`, {
-        params: { statuses: statusesParam },
+        params: { statuses: statusesParam, cycle },
         responseType: 'blob',
         headers
       });
@@ -1345,7 +1379,7 @@ const PhasesView = ({ applications, setSelectedApplication, setApplications, sea
       const authHeaders = await getAdminAuthHeaders();
 
       // Update the application status
-      await axios.put(`${API_BASE_URL}/api/applications/${applicationId}`, {
+      await axios.put(`${API_BASE_URL}/api/applications/${applicationId}?cycle=${encodeURIComponent(cycle)}`, {
         status: newStatus,
         notes: `Moved from ${currentStatus} to ${newStatus} via drag and drop`
       }, {

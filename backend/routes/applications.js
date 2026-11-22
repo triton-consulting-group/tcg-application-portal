@@ -4,6 +4,7 @@ const multer = require("multer");
 const multerS3 = require("multer-s3");
 const router = express.Router();
 const Application = require("../models/Application");
+const { getActiveCycle, selectCycle } = require("../config/cycleConfig");
 const path = require("path");
 const { applicationSubmissionLimiter, generalApiLimiter } = require("../middleware/rateLimiter");
 const { requireStatusChangePermission, requireCommentPermission, requireDeleteCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
@@ -350,6 +351,7 @@ router.post(
 
       // Create application
       const newApplication = new Application({
+        cycle: getActiveCycle(),
         email: req.applicantEmail, // from the verified sign-in, never the form
         fullName: req.body.fullName,
         phoneNumber,
@@ -394,7 +396,7 @@ router.post(
       }
 
       if (error.code === 11000) {
-        // Unique index on email
+        // Unique index on cycle and email
         res.status(409).json({ error: DUPLICATE_APPLICATION_ERROR });
       } else if (error.name === 'ValidationError') {
         res.status(400).json({ error: `❌ ${Object.values(error.errors).map(e => e.message).join(', ')}` });
@@ -453,11 +455,22 @@ router.get("/deadline-status", (req, res) => {
   }
 });
 
-// All applications (array only)
-router.get("/all", requireAdminAuth, generalApiLimiter, async (req, res) => {
+router.get("/cycles", requireAdminAuth, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
-    const applications = await Application.find().sort({ createdAt: -1 }).lean();
+    const activeCycle = getActiveCycle();
+    const cycles = await Application.distinct("cycle");
+    res.json({ activeCycle, cycles: [...new Set([activeCycle, ...cycles.filter(Boolean)])].sort().reverse() });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch recruitment cycles." });
+  }
+});
+
+// All applications (array only)
+router.get("/all", requireAdminAuth, selectCycle, generalApiLimiter, async (req, res) => {
+  try {
+    addNoStore(res);
+    const applications = await Application.find({ cycle: req.cycle }).sort({ createdAt: -1 }).lean();
     res.json(applications);
   } catch (error) {
     console.error("❌ Error fetching all applications:", error);
@@ -466,7 +479,7 @@ router.get("/all", requireAdminAuth, generalApiLimiter, async (req, res) => {
 });
 
 // Paginated list
-router.get("/", requireAdminAuth, generalApiLimiter, async (req, res) => {
+router.get("/", requireAdminAuth, selectCycle, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const page = parseInt(req.query.page) || 1;
@@ -474,8 +487,8 @@ router.get("/", requireAdminAuth, generalApiLimiter, async (req, res) => {
     const maxLimit = 200;
     const actualLimit = Math.min(limit, maxLimit);
     const skip = (page - 1) * actualLimit;
-    const totalApplications = await Application.countDocuments();
-    const applications = await Application.find()
+    const totalApplications = await Application.countDocuments({ cycle: req.cycle });
+    const applications = await Application.find({ cycle: req.cycle })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(actualLimit)
@@ -525,7 +538,7 @@ router.get("/email/:email", verifyFirebaseOwner, generalApiLimiter, async (req, 
   try {
     addNoStore(res);
     const { email } = req.params;
-    const application = await Application.findOne({ email: email.toLowerCase() });
+    const application = await Application.findOne({ cycle: getActiveCycle(), email: email.toLowerCase() });
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
@@ -536,7 +549,7 @@ router.get("/email/:email", verifyFirebaseOwner, generalApiLimiter, async (req, 
   }
 });
 
-router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req, res) => {
+router.get("/export-by-status", requireAdminAuth, selectCycle, generalApiLimiter, async (req, res) => {
   try {
     let { statuses } = req.query;
     
@@ -550,6 +563,7 @@ router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req,
       : statuses.split(',').map(s => s.trim());
 
     const applications = await Application.find({ 
+      cycle: req.cycle,
       status: { $in: statusArray } 
     })
       .sort({ createdAt: -1 })
@@ -573,6 +587,7 @@ router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req,
       'Reason',
       'Zombie Answer',
       'Additional Info',
+      'Cycle',
       'Created Date',
       'Created Time',
       'Updated Date',
@@ -595,6 +610,7 @@ router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req,
         `"${(app.reason || '').replace(/"/g, '""')}"`,
         `"${(app.zombieAnswer || '').replace(/"/g, '""')}"`,
         `"${(app.additionalInfo || '').replace(/"/g, '""')}"`,
+        app.cycle || '',
         new Date(app.createdAt).toLocaleString(), // Splits across two cells due to comma
         new Date(app.updatedAt).toLocaleString()
       ];
@@ -620,7 +636,7 @@ router.get("/export-by-status", requireAdminAuth, generalApiLimiter, async (req,
 });
 
 // By ID - require admin authentication
-router.get("/:id", requireAdminAuth, generalApiLimiter, async (req, res) => {
+router.get("/:id", requireAdminAuth, selectCycle, generalApiLimiter, async (req, res) => {
   try {
     addNoStore(res);
     const { id } = req.params;
@@ -641,7 +657,7 @@ router.get("/:id", requireAdminAuth, generalApiLimiter, async (req, res) => {
       });
     }
     
-    const application = await Application.findById(id);
+    const application = await Application.findOne({ _id: id, cycle: req.cycle });
     if (!application) {
       return res.status(404).json({ error: "❌ No application found for this ID." });
     }
@@ -661,7 +677,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
   try {
     addNoStore(res);
     const { email } = req.params;
-    const existingApplication = await Application.findOne({ email: email.toLowerCase() });
+    const existingApplication = await Application.findOne({ cycle: getActiveCycle(), email: email.toLowerCase() });
     if (!existingApplication) {
       return res.status(404).json({ error: "❌ No application found for this email." });
     }
@@ -699,7 +715,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
     }
 
     const updatedApplication = await Application.findOneAndUpdate(
-      { email: email.toLowerCase() },
+      { cycle: getActiveCycle(), email: email.toLowerCase() },
       updateData,
       { new: true, runValidators: true }
     );
@@ -718,7 +734,7 @@ router.put("/email/:email", verifyFirebaseOwner, generalApiLimiter, requireAppli
 });
 
 // Status update
-router.put("/:id", requireStatusChangePermission, async (req, res) => {
+router.put("/:id", requireStatusChangePermission, selectCycle, async (req, res) => {
   try {
     addNoStore(res);
     const { status, notes } = req.body;
@@ -727,7 +743,7 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
       return res.status(400).json({ error: "❌ Invalid status value" });
     }
 
-    const currentApplication = await Application.findById(req.params.id);
+    const currentApplication = await Application.findOne({ _id: req.params.id, cycle: req.cycle });
     if (!currentApplication) {
       return res.status(404).json({ error: "❌ Application not found" });
     }
@@ -739,8 +755,8 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
       notes: notes || ""
     };
 
-    const updatedApplication = await Application.findByIdAndUpdate(
-      req.params.id,
+    const updatedApplication = await Application.findOneAndUpdate(
+      { _id: req.params.id, cycle: req.cycle },
       { 
         status,
         $push: { statusHistory: statusHistoryEntry }
@@ -756,7 +772,7 @@ router.put("/:id", requireStatusChangePermission, async (req, res) => {
 });
 
 // Comments
-router.post("/:id/comment", requireCommentPermission, async (req, res) => {
+router.post("/:id/comment", requireCommentPermission, selectCycle, async (req, res) => {
   try {
     addNoStore(res);
     const { comment } = req.body;
@@ -765,7 +781,7 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
       return res.status(400).json({ error: "❌ Comment is required." });
     }
 
-    const application = await Application.findById(req.params.id);
+    const application = await Application.findOne({ _id: req.params.id, cycle: req.cycle });
     if (!application) {
       return res.status(404).json({ error: "❌ Application not found" });
     }
@@ -778,8 +794,8 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
       adminName: req.admin.name
     };
 
-    const updatedApplication = await Application.findByIdAndUpdate(
-      req.params.id,
+    const updatedApplication = await Application.findOneAndUpdate(
+      { _id: req.params.id, cycle: req.cycle },
       { $push: { comments: commentEntry } },
       { new: true }
     );
@@ -797,19 +813,19 @@ router.post("/:id/comment", requireCommentPermission, async (req, res) => {
 
 // Removes one comment with a single atomic $pull. Resolves to { application } on success,
 // or { missing: "application" | "comment" } saying which half of the lookup failed.
-async function deleteCommentById(applicationId, commentId) {
+async function deleteCommentById(applicationId, commentId, cycle) {
   const updated = await Application.findOneAndUpdate(
-    { _id: applicationId, "comments._id": commentId },
+    { _id: applicationId, cycle, "comments._id": commentId },
     { $pull: { comments: { _id: commentId } } },
     { new: true }
   );
   if (updated) return { application: updated };
 
-  const exists = await Application.findById(applicationId);
+  const exists = await Application.findOne({ _id: applicationId, cycle });
   return { missing: exists ? "comment" : "application" };
 }
 
-router.delete("/:id/comments/:commentId", requireDeleteCommentPermission, async (req, res) => {
+router.delete("/:id/comments/:commentId", requireDeleteCommentPermission, selectCycle, async (req, res) => {
   try {
     addNoStore(res);
     const { id, commentId } = req.params;
@@ -818,7 +834,7 @@ router.delete("/:id/comments/:commentId", requireDeleteCommentPermission, async 
       return res.status(400).json({ error: "❌ Invalid application or comment id." });
     }
 
-    const result = await deleteCommentById(id, commentId);
+    const result = await deleteCommentById(id, commentId, req.cycle);
     if (result.missing === "application") {
       return res.status(404).json({ error: "❌ Application not found" });
     }
