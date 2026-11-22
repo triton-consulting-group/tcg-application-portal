@@ -10,6 +10,7 @@ import { getErrorMessage } from "../utils/caseGroups";
 import BuildCaseGroupsModal from "./ApplicationComponents/BuildCaseGroupsModal";
 import ModalErrorBoundary from "./ApplicationComponents/ModalErrorBoundary";
 import CaseGroupsModal from "./ApplicationComponents/CaseGroupsModal";
+import ProgressBoard, { ROUND_LABELS, roundForStatus } from "./ApplicationComponents/ProgressBoard";
 
 // Feature flag: if true, show an inline status <select> in the "View Applicant" modal
 // Set to false to revert to the original display (plain status badge/span).
@@ -50,6 +51,7 @@ const AssociatePage = () => {
   const [showBuildCaseGroups, setShowBuildCaseGroups] = useState(false);
   const [showCaseGroups, setShowCaseGroups] = useState(false);
   const [caseNightConfig, setCaseNightConfig] = useState(null);
+  const [gradeVersion, setGradeVersion] = useState(0); // bumped on each saved grade so the board refreshes
 
   const checkAdminStatus = useCallback(async (email) => {
     try {
@@ -238,6 +240,16 @@ const AssociatePage = () => {
     setSelectedApplication((prev) => (prev && prev._id === applicationId ? withComments(prev) : prev));
   };
 
+  // The progress board only has ids; open the full application this page already loaded
+  const openApplicantById = (applicationId) => {
+    const application = applications.find((app) => app._id === applicationId);
+    if (application) {
+      setSelectedApplication(application);
+    } else {
+      alert("This applicant isn't loaded on this page yet. Refresh the page to view them.");
+    }
+  };
+
   if (loading) return <p>Loading applications...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!isAdmin) return <p style={{ color: "red" }}>Access denied. Admin privileges required.</p>;
@@ -347,6 +359,12 @@ const AssociatePage = () => {
           >
             Application Phases
           </button>
+          <button
+            className={selectedTab === 2 ? "active" : ""}
+            onClick={() => setSelectedTab(2)}
+          >
+            Progress Board
+          </button>
         </div>
 
         {selectedTab === 0 ? (
@@ -365,7 +383,7 @@ const AssociatePage = () => {
             onPageChange={handlePageChange}
             adminInfo={adminInfo}
           />
-        ) : (
+        ) : selectedTab === 1 ? (
           <PhasesView
             applications={applications}
             setSelectedApplication={setSelectedApplication}
@@ -374,6 +392,8 @@ const AssociatePage = () => {
             setSearchTerm={setSearchTerm}
             adminInfo={adminInfo}
           />
+        ) : (
+          <ProgressBoard onOpenApplicant={openApplicantById} reloadSignal={gradeVersion} />
         )}
       </div>
 
@@ -383,6 +403,7 @@ const AssociatePage = () => {
           onClose={() => setSelectedApplication(null)}
           updateStatus={updateStatus}
           onCommentsChange={handleCommentsChange}
+          onGraded={() => setGradeVersion((v) => v + 1)}
           caseNightConfig={caseNightConfig}
           adminInfo={adminInfo}
         />
@@ -664,7 +685,7 @@ const ImageModal = ({ imageUrl, onClose }) => (
 );
 
 // 🟢 **ApplicationDetail Component (Updated)**
-const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus, onCommentsChange }) => {
+const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, updateStatus, onCommentsChange, onGraded }) => {
   const [comments, setComments] = useState(application.comments || []);
   const [deletingCommentIds, setDeletingCommentIds] = useState([]);
   const canDeleteComments = adminInfo?.role === "super_admin" || !!adminInfo?.permissions?.canDeleteComments;
@@ -681,6 +702,44 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
   useEffect(() => {
     setLocalStatus(application.status || "Under Review");
   }, [application.status]);
+
+  // Blind grading: this modal only ever loads and shows the signed-in reviewer's own grade
+  const gradeRound = roundForStatus(localStatus);
+  const [myGrade, setMyGrade] = useState({ round: null, decision: null });
+  const [savingGrade, setSavingGrade] = useState(false);
+  const myDecision = myGrade.round === gradeRound ? myGrade.decision : null;
+
+  useEffect(() => {
+    if (!gradeRound) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const headers = await getAdminAuthHeaders();
+        const response = await axios.get(`${API_BASE_URL}/api/grades/${application._id}/mine`, { headers });
+        if (!cancelled) setMyGrade(response.data);
+      } catch (error) {
+        console.error("Error loading your grade:", error);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [application._id, gradeRound]);
+
+  const handleGrade = async (decision) => {
+    setSavingGrade(true);
+    try {
+      const headers = await getAdminAuthHeaders();
+      // Sending the round shown here lets the server refuse if the applicant has moved rounds
+      const response = await axios.put(`${API_BASE_URL}/api/grades/${application._id}`, { decision, round: gradeRound }, { headers });
+      setMyGrade(response.data);
+      onGraded?.();
+    } catch (error) {
+      console.error("Error saving grade:", error);
+      alert(error.response?.data?.error || "Failed to save grade. Please try again.");
+    } finally {
+      setSavingGrade(false);
+    }
+  };
+
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -832,6 +891,41 @@ const ApplicationDetail = ({ application, onClose, caseNightConfig, adminInfo, u
                 </span>
               )}
             </p>
+
+            {/* Your grade for the current round (Case Study or Final Interview) */}
+            {gradeRound && (
+              <div style={{ marginTop: "15px" }}>
+                <p>
+                  <strong>Your Grade ({ROUND_LABELS[gradeRound]}):</strong>
+                </p>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {["Yes", "No", "Maybe"].map((decision) => (
+                    <button
+                      key={decision}
+                      type="button"
+                      aria-pressed={myDecision === decision}
+                      disabled={savingGrade}
+                      onClick={() => handleGrade(decision)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: "4px",
+                        border: "1px solid #20354a",
+                        backgroundColor: myDecision === decision ? "#20354a" : "white",
+                        color: myDecision === decision ? "white" : "#20354a",
+                        cursor: savingGrade ? "not-allowed" : "pointer"
+                      }}
+                    >
+                      {decision}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize: "12px", color: "#666", margin: "6px 0 0 0" }}>
+                  {myDecision
+                    ? `You graded ${myDecision}. Pick another option to change it.`
+                    : "Other reviewers' grades show on the Progress Board after you grade."}
+                </p>
+              </div>
+            )}
 
             {/* Case Night Availability Section */}
             {application.caseNightPreferences && application.caseNightPreferences.length > 0 && (
