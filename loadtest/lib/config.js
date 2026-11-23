@@ -23,6 +23,7 @@ module.exports = {
 
   STACK_FILE: path.join(TMP, "stack.json"),
   TOKENS_FILE: path.join(TMP, "tokens.json"),
+  USAGE_FILE: path.join(TMP, "backend-usage.json"),
   RESULTS_DIR: path.join(TMP, "results"),
   FIXTURES_DIR: path.join(TMP, "fixtures"),
   LOGS_DIR: path.join(TMP, "logs"),

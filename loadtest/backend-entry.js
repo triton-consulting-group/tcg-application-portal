@@ -17,6 +17,12 @@ process.env.FIREBASE_AUTH_EMULATOR_HOST = cfg.AUTH_EMULATOR_HOST;
 process.env.PORT = String(cfg.BACKEND_PORT);
 process.env.NODE_ENV = "production";
 
+// Report this process's CPU time and memory every second for monitor.js (Node's own numbers work on every OS; `ps` doesn't exist on Windows)
+setInterval(() => {
+  const { user, system } = process.cpuUsage();
+  fs.writeFileSync(cfg.USAGE_FILE, JSON.stringify({ t: Date.now(), cpuMicros: user + system, rssMb: process.memoryUsage().rss / 1024 / 1024 }));
+}, 1000).unref();
+
 // Run from an empty scratch dir so dotenv finds no .env and uploads land in .tmp/
 const cwd = path.join(cfg.TMP, "backend-cwd");
 fs.mkdirSync(cwd, { recursive: true });
