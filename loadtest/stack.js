@@ -52,7 +52,9 @@ const startChild = (name, cmd, args, opts) => {
   console.log(`[stack] MongoDB ready at ${mongoUri}`);
 
   console.log("[stack] starting Firebase Auth emulator...");
-  startChild("auth-emulator", "firebase", ["emulators:start", "--only", "auth", "--project", cfg.PROJECT_ID], { cwd: cfg.ROOT });
+  // Run the pinned firebase-tools dependency with Node: no global install, and no firebase.cmd shim on Windows
+  const firebaseCli = path.join(path.dirname(require.resolve("firebase-tools/package.json")), "lib", "bin", "firebase.js");
+  startChild("auth-emulator", process.execPath, [firebaseCli, "emulators:start", "--only", "auth", "--project", cfg.PROJECT_ID], { cwd: cfg.ROOT });
   await waitForPort(9099, "Auth emulator");
   console.log(`[stack] Auth emulator ready at ${cfg.AUTH_EMULATOR_HOST}`);
 

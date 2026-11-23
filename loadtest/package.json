@@ -10,6 +10,7 @@
     "clean": "node -e \"require('fs').rmSync('.tmp',{recursive:true,force:true})\""
   },
   "devDependencies": {
+    "firebase-tools": "^15.37.0",
     "mongodb-memory-server": "^10.1.4"
   }
 }
