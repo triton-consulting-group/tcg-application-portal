@@ -49,7 +49,7 @@ const pass = (ok) => (ok ? "PASS" : "FAIL");
     env: { ...process.env, BASE_URL: cfg.BACKEND_URL, SHARED_IP: sharedIp ? "1" : "0", LEGACY_REFETCH: legacyRefetch ? "1" : "0" },
   });
   const k6Code = await exitOf(k6);
-  monitor.kill("SIGINT");
+  monitor.send("stop"); // a message, not a signal: on Windows a signal kills the monitor before it saves
   await exitOf(monitor);
 
   const db = JSON.parse(fs.readFileSync(monFile, "utf8")).summary;

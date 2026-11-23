@@ -60,6 +60,7 @@ const backendUsage = () => {
   let stopping = false;
   process.on("SIGINT", () => { stopping = true; });
   process.on("SIGTERM", () => { stopping = true; });
+  process.on("message", (msg) => { if (msg === "stop") stopping = true; });
 
   while (!stopping) {
     await sleep(1000);
