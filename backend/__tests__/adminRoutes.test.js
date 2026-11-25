@@ -8,9 +8,16 @@ jest.mock("../models/Admin", () => {
   MockAdmin.find = jest.fn();
   MockAdmin.findOne = jest.fn();
   MockAdmin.findOneAndUpdate = jest.fn();
+  MockAdmin.countDocuments = jest.fn();
   return MockAdmin;
 });
 jest.mock("../models/User", () => ({ findOneAndUpdate: jest.fn() }));
+// Route validation tests use model mocks. Real transactions are exercised by
+// adminManagementConcurrency.test.js against an isolated replica set.
+jest.mock("../services/adminManagementWrite", () => async (email, operation) => {
+  const Admin = require("../models/Admin");
+  return operation(await Admin.findOne({ email, isActive: true }), null);
+});
 
 const http = require("http");
 const express = require("express");
@@ -42,6 +49,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockVerifyIdToken.mockRejectedValue(new Error("invalid token"));
   mockSave.mockResolvedValue();
+  Admin.countDocuments.mockResolvedValue(1);
 });
 
 // Signs the request in as `caller`; Admin.findOne answers the auth lookup first, then `target` (if any)
@@ -188,4 +196,64 @@ describe("/check", () => {
 test("the unauthenticated /permissions/:email lookup is gone", async () => {
   const res = await call("GET", "/permissions/super@ucsd.edu", null, false);
   expect(res.status).toBe(404);
+});
+
+test.each([
+  { email: "invalid", name: "Name" },
+  { email: "new@ucsd.edu", name: "   " },
+  { email: "new@ucsd.edu", name: "Name", permissions: null },
+  { email: "new@ucsd.edu", name: "Name", permissions: { canAddComments: "false" } }
+])("invalid creation details are rejected: %j", async body => {
+  signInAs(SUPER);
+  expect((await call("POST", "/", body)).status).toBe(400);
+  expect(mockSave).not.toHaveBeenCalled();
+});
+
+test("a super admin cannot demote themselves", async () => {
+  signInAs(SUPER, SUPER);
+  expect((await call("PUT", "/super@ucsd.edu", { role: "admin" })).status).toBe(400);
+  expect(Admin.findOneAndUpdate).not.toHaveBeenCalled();
+});
+
+test("a manager cannot revoke their own management permission", async () => {
+  signInAs(MANAGER, MANAGER);
+  expect((await call("PUT", "/mgr@ucsd.edu", { permissions: { canManageAdmins: false } })).status).toBe(400);
+  expect(Admin.findOneAndUpdate).not.toHaveBeenCalled();
+});
+
+test.each([ ["PUT", { role: "admin" }], ["PUT", { isActive: false }], ["DELETE", null] ])(
+  "%s cannot remove the final active super admin", async (method, body) => {
+    signInAs(SUPER, { ...SUPER, email: "last@ucsd.edu" });
+    Admin.countDocuments.mockResolvedValue(0);
+    expect((await call(method, "/last@ucsd.edu", body)).status).toBe(400);
+    expect(Admin.findOneAndUpdate).not.toHaveBeenCalled();
+  }
+);
+
+test("a super admin can demote another super admin when another active super admin remains", async () => {
+  const target = { ...SUPER, email: "other@ucsd.edu" };
+  signInAs(SUPER, target);
+  Admin.findOneAndUpdate.mockResolvedValue({ ...target, role: "admin" });
+  expect((await call("PUT", "/other@ucsd.edu", { role: "admin" })).status).toBe(200);
+  expect(Admin.countDocuments).toHaveBeenCalledWith({ role: "super_admin", isActive: true, email: { $ne: target.email } }, { session: null });
+});
+
+test("a manager can reactivate an ordinary admin", async () => {
+  signInAs(MANAGER, { ...REGULAR, isActive: false });
+  Admin.findOneAndUpdate.mockResolvedValue(REGULAR);
+  expect((await call("PUT", "/reg@ucsd.edu", { isActive: true })).status).toBe(200);
+  expect(Admin.findOneAndUpdate.mock.calls[0][1]).toEqual({ $set: { isActive: true } });
+});
+
+test.each([{ name: " " }, { isActive: "false" }, { permissions: [] }])("invalid updates are rejected: %j", async body => {
+  signInAs(SUPER, REGULAR);
+  expect((await call("PUT", "/reg@ucsd.edu", body)).status).toBe(400);
+  expect(Admin.findOneAndUpdate).not.toHaveBeenCalled();
+});
+
+test("names are trimmed when editing and email is immutable", async () => {
+  signInAs(SUPER, REGULAR);
+  Admin.findOneAndUpdate.mockResolvedValue({ ...REGULAR, name: "New Name" });
+  expect((await call("PUT", "/reg@ucsd.edu", { name: " New Name ", email: "different@ucsd.edu" })).status).toBe(200);
+  expect(Admin.findOneAndUpdate.mock.calls[0][1]).toEqual({ $set: { name: "New Name" } });
 });

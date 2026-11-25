@@ -313,7 +313,7 @@ const AssociatePage = () => {
             >
               Refresh Data
             </button>
-            {adminInfo?.permissions?.canManageAdmins && (
+            {(adminInfo?.role === "super_admin" || adminInfo?.permissions?.canManageAdmins) && (
               <button
                 onClick={() => window.location.href = "/admin"}
                 style={{
