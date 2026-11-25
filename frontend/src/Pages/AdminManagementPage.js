@@ -1,445 +1,150 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import API_BASE_URL from "../config/api";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./Home/firebaseConfig";
-import { getAdminAuthHeaders } from "../config/adminAuth";
+import adminApi from "./AdminManagement/api";
+import AdminDirectory from "./AdminManagement/AdminDirectory";
+import AdminEditor from "./AdminManagement/AdminEditor";
+import AdminDialog from "./AdminManagement/AdminDialog";
+import { canManage, errorMessage, roleLabel } from "./AdminManagement/permissions";
+import "./AdminManagement/adminManagement.css";
 
-const AdminManagementPage = () => {
-  const navigate = useNavigate();
-  const [showModal, setShowModal] = useState(false);
+export default function AdminManagementPage() {
   const [admins, setAdmins] = useState([]);
+  const [email, setEmail] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [newAdmin, setNewAdmin] = useState({
-    email: "",
-    name: "",
-    role: "admin",
-    permissions: {
-      canViewApplications: true,
-      canEditApplications: true,
-      canDeleteApplications: false,
-      canManageAdmins: false,
-      canViewAnalytics: true
-    }
-  });
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [editor, setEditor] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const session = useRef(0);
+  const mutation = useRef(false);
+  const invalidateSession = useCallback(() => ++session.current, []);
+  const caller = admins.find(admin => admin.email.toLowerCase() === email);
 
-  useEffect(() => {
-    // Firebase restores the session asynchronously; fetch only once a user exists
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        fetchAdmins();
-      } else {
-        setError("Please sign in as an admin");
-        setLoading(false);
+  const load = useCallback(async (version) => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await adminApi.list();
+      if (version === session.current) setAdmins(data);
+      return data;
+    } catch (failure) {
+      if (version === session.current) {
+        setAdmins([]);
+        setError(errorMessage(failure, "Could not load admins. Please try again."));
       }
-    });
-    return () => unsubscribe();
+      return null;
+    } finally {
+      if (version === session.current) setLoading(false);
+    }
   }, []);
 
-  const fetchAdmins = async () => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      const version = invalidateSession();
+      setEmail(user?.email?.toLowerCase() || null);
+      setAdmins([]);
+      setEditor(null);
+      setConfirmation(null);
+      setNotice("");
+      setActionError("");
+      setSaving(false);
+      if (user) load(version);
+      else { setLoading(false); setError(""); }
+    });
+    return () => { invalidateSession(); unsubscribe(); };
+  }, [load, invalidateSession]);
+
+  const saveAdmin = async (changes) => {
+    if (mutation.current) return;
+    mutation.current = true;
+    setSaving(true);
+    const version = session.current;
     try {
-      const headers = await getAdminAuthHeaders();
-      const response = await axios.get(`${API_BASE_URL}/api/admin`, { headers });
-      setAdmins(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching admins:", error);
-      setError("Failed to fetch admins");
-      setLoading(false);
+      if (editor.target) await adminApi.update(editor.target.email, changes);
+      else await adminApi.create(changes);
+      if (version !== session.current) return;
+      const message = editor.target ? "Admin changes saved." : "Admin created.";
+      setEditor(null);
+      setNotice(message);
+      await load(version);
+    } finally {
+      mutation.current = false;
+      setSaving(false);
     }
   };
 
-  const handleCreateAdmin = async () => {
+  const changeStatus = async () => {
+    if (mutation.current) return;
+    mutation.current = true;
+    setSaving(true);
+    setActionError("");
+    const version = session.current;
+    const target = confirmation;
     try {
-      // Send the form as-is (this previously overwrote the new admin's email with the caller's)
-      const headers = await getAdminAuthHeaders();
-      await axios.post(`${API_BASE_URL}/api/admin`, newAdmin, { headers });
-      
-      setNewAdmin({
-        email: "",
-        name: "",
-        role: "admin",
-        permissions: {
-          canViewApplications: true,
-          canEditApplications: true,
-          canDeleteApplications: false,
-          canManageAdmins: false,
-          canViewAnalytics: true
-        }
-      });
-      
-      setShowModal(false);
-      fetchAdmins();
-    } catch (error) {
-      console.error("Error creating admin:", error);
-      alert("Failed to create admin");
+      if (target.isActive) await adminApi.deactivate(target.email);
+      else await adminApi.update(target.email, { isActive: true });
+      if (version !== session.current) return;
+      setConfirmation(null);
+      setNotice(`${target.email} ${target.isActive ? "deactivated" : "reactivated"}.`);
+      await load(version);
+    } catch (failure) {
+      if (version === session.current) setActionError(errorMessage(failure, "Could not change account status. Please try again."));
+    } finally {
+      mutation.current = false;
+      setSaving(false);
     }
   };
 
-  const handleDeactivateAdmin = async (email) => {
-    if (window.confirm(`Are you sure you want to deactivate ${email}?`)) {
-      try {
-        const headers = await getAdminAuthHeaders();
-        await axios.delete(`${API_BASE_URL}/api/admin/${encodeURIComponent(email)}`, { headers });
-        fetchAdmins();
-      } catch (error) {
-        console.error("Error deactivating admin:", error);
-        alert("Failed to deactivate admin");
-      }
-    }
-  };
-
-  const handlePermissionChange = (permission, checked) => {
-    setNewAdmin(prev => ({
-      ...prev,
-      permissions: {
-        ...prev.permissions,
-        [permission]: checked
-      }
-    }));
-  };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", padding: "24px", marginTop: "40px" }}>
-        <p>Loading admin management...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={{ textAlign: "center", padding: "24px", marginTop: "40px" }}>
-        <div style={{ 
-          backgroundColor: "#fed7d7", 
-          color: "#c53030", 
-          padding: "12px", 
-          borderRadius: "6px", 
-          marginBottom: "16px",
-          border: "1px solid #feb2b2"
-        }}>
-          ❌ {error}
-        </div>
-        <button 
-          onClick={() => navigate("/associate")}
-          style={{
-            backgroundColor: "#3182ce",
-            color: "white",
-            border: "none",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
-          Return to Associate Page
-        </button>
-      </div>
-    );
-  }
-
+  const hasAccess = canManage(caller);
   return (
-    <div style={{ backgroundColor: "#f7fafc", minHeight: "100vh", padding: "24px" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px", maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1 style={{ fontSize: "32px", fontWeight: "bold", margin: "0" }}>
-            Admin Management
-          </h1>
-          <div style={{ display: "flex", gap: "12px" }}>
-            <button 
-              onClick={() => setShowModal(true)}
-              style={{
-                backgroundColor: "#3182ce",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                cursor: "pointer"
-              }}
-            >
-              Add New Admin
-            </button>
-            <button 
-              onClick={() => navigate("/associate")}
-              style={{
-                backgroundColor: "#718096",
-                color: "white",
-                border: "none",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                cursor: "pointer"
-              }}
-            >
-              Back to Associate Page
-            </button>
-          </div>
+    <main className="admin-management">
+      <header className="admin-heading">
+        <div><h1>Admin Management</h1><p className="admin-muted">Manage your team’s accounts and portal access.</p>
+          {caller && <p className="admin-muted">Signed in as {caller.name} · {roleLabel(caller.role)}</p>}</div>
+        <div className="admin-actions">
+          <Link className="admin-button admin-secondary" to="/associate">Back to Associate Portal</Link>
+          {hasAccess && <><button type="button" className="admin-button admin-secondary" disabled={loading || saving}
+            onClick={() => load(session.current)}>Refresh</button>
+            <button type="button" className="admin-button" disabled={loading || saving} onClick={() => setEditor({ target: null })}>Add admin</button></>}
         </div>
-
-        <div style={{ backgroundColor: "white", padding: "24px", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ borderBottom: "2px solid #e2e8f0" }}>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Name</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Email</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Role</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Status</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Last Login</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Permissions</th>
-                <th style={{ padding: "12px", textAlign: "left", fontWeight: "bold" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {admins.map((admin) => (
-                <tr key={admin.email} style={{ borderBottom: "1px solid #e2e8f0" }}>
-                  <td style={{ padding: "12px" }}>{admin.name}</td>
-                  <td style={{ padding: "12px" }}>{admin.email}</td>
-                  <td style={{ padding: "12px" }}>
-                    <span style={{
-                      backgroundColor: admin.role === "super_admin" ? "#e53e3e" : "#3182ce",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "12px",
-                      fontWeight: "bold"
-                    }}>
-                      {admin.role}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    <span style={{
-                      backgroundColor: admin.isActive ? "#38a169" : "#e53e3e",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      fontSize: "12px",
-                      fontWeight: "bold"
-                    }}>
-                      {admin.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    {admin.lastLogin 
-                      ? new Date(admin.lastLogin).toLocaleDateString()
-                      : "Never"
-                    }
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                      {Object.entries(admin.permissions).map(([key, value]) => (
-                        <p key={key} style={{ fontSize: "14px", margin: "0" }}>
-                          {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: {value ? "✅" : "❌"}
-                        </p>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    {admin.isActive && admin.role !== "super_admin" && (
-                      <button 
-                        onClick={() => handleDeactivateAdmin(admin.email)}
-                        style={{
-                          backgroundColor: "#e53e3e",
-                          color: "white",
-                          border: "none",
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px"
-                        }}
-                      >
-                        Deactivate
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      </header>
+      {notice && <p role="status" className="admin-message admin-notice">{notice}</p>}
+      {loading ? <p role="status" className="admin-empty">Loading admin management…</p> : !email ? (
+        <section className="admin-empty"><h2>Sign in to manage admins</h2><p>Use an account with admin-management access.</p><Link className="admin-button" to="/admin-login">Sign in with Google</Link></section>
+      ) : error ? (
+        <section className="admin-empty"><p role="alert" className="admin-message admin-error">{error}</p>
+          <button type="button" className="admin-button" onClick={() => load(session.current)}>Retry</button></section>
+      ) : !hasAccess ? (
+        <section className="admin-empty"><h2>Management access required</h2><p>Only super admins and admins with management permission can manage accounts.</p></section>
+      ) : <>
+        <section className="admin-overview" aria-label="Account overview">
+          {[["Total admins", admins.length], ["Active", admins.filter(admin => admin.isActive).length],
+            ["Inactive", admins.filter(admin => !admin.isActive).length],
+            ["Active super admins", admins.filter(admin => admin.isActive && admin.role === "super_admin").length]]
+            .map(([label, count]) => <div className="admin-stat" key={label}><span>{label}</span><strong>{count}</strong></div>)}
+        </section>
+        <AdminDirectory admins={admins} caller={caller} disabled={saving || loading}
+          onView={target => setEditor({ target, readOnly: true })}
+          onEdit={target => setEditor({ target })}
+          onStatus={target => { setConfirmation(target); setActionError(""); }} />
+        <p className="admin-muted admin-footer-note">Deactivation removes administrative access without deleting the account or its history.</p>
+      </>}
+      {editor && hasAccess && <AdminEditor target={editor.target} caller={caller} readOnly={editor.readOnly} onSave={saveAdmin} onClose={() => setEditor(null)} />}
+      {confirmation && hasAccess && <AdminDialog title={`${confirmation.isActive ? "Deactivate" : "Reactivate"} admin`} busy={saving} onClose={() => setConfirmation(null)}>
+        <p>{confirmation.isActive ? "Remove administrative access for" : "Restore administrative access for"} <strong>{confirmation.name}</strong> ({confirmation.email})?</p>
+        <p className="admin-muted">{confirmation.isActive ? "The account is kept and can be reactivated later." : "The account will regain its saved role and permissions."}</p>
+        {actionError && <p role="alert" className="admin-message admin-error">{actionError}</p>}
+        <div className="admin-actions admin-dialog-actions">
+          <button type="button" className="admin-button admin-secondary" disabled={saving} onClick={() => setConfirmation(null)}>Cancel</button>
+          <button type="button" className={`admin-button ${confirmation.isActive ? "admin-danger" : "admin-success"}`} disabled={saving} onClick={changeStatus}>
+            {saving ? "Saving…" : confirmation.isActive ? "Deactivate admin" : "Reactivate admin"}
+          </button>
         </div>
-
-        {/* Add New Admin Modal */}
-        {showModal && (
-          <div
-            style={{
-              position: "fixed",
-              top: "0",
-              left: "0",
-              right: "0",
-              bottom: "0",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              zIndex: "1000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
-          >
-            <div
-              style={{
-                backgroundColor: "white",
-                padding: "24px",
-                borderRadius: "8px",
-                maxWidth: "500px",
-                width: "90%",
-                maxHeight: "90vh",
-                overflowY: "auto"
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0" }}>Add New Admin</h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "none",
-                    fontSize: "18px",
-                    cursor: "pointer",
-                    padding: "4px"
-                  }}
-                >
-                  ✕
-                </button>
-              </div>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <div style={{ width: "100%" }}>
-                  <p style={{ fontWeight: "bold", marginBottom: "8px", margin: "0" }}>Email *</p>
-                  <input
-                    type="email"
-                    value={newAdmin.email}
-                    onChange={(e) => setNewAdmin({...newAdmin, email: e.target.value})}
-                    placeholder="admin@example.com"
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "6px",
-                      fontSize: "14px"
-                    }}
-                    required
-                  />
-                </div>
-
-                <div style={{ width: "100%" }}>
-                  <p style={{ fontWeight: "bold", marginBottom: "8px", margin: "0" }}>Name *</p>
-                  <input
-                    type="text"
-                    value={newAdmin.name}
-                    onChange={(e) => setNewAdmin({...newAdmin, name: e.target.value})}
-                    placeholder="Admin Name"
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "6px",
-                      fontSize: "14px"
-                    }}
-                    required
-                  />
-                </div>
-
-                <div style={{ width: "100%" }}>
-                  <p style={{ fontWeight: "bold", marginBottom: "8px", margin: "0" }}>Role</p>
-                  <select
-                    value={newAdmin.role}
-                    onChange={(e) => setNewAdmin({...newAdmin, role: e.target.value})}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "6px",
-                      fontSize: "14px"
-                    }}
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
-                  </select>
-                </div>
-
-                <div style={{ width: "100%" }}>
-                  <p style={{ fontWeight: "bold", marginBottom: "8px", margin: "0" }}>Permissions</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={newAdmin.permissions.canViewApplications}
-                        onChange={(e) => handlePermissionChange("canViewApplications", e.target.checked)}
-                        style={{ marginRight: "8px" }}
-                      />
-                      Can View Applications
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={newAdmin.permissions.canEditApplications}
-                        onChange={(e) => handlePermissionChange("canEditApplications", e.target.checked)}
-                        style={{ marginRight: "8px" }}
-                      />
-                      Can Edit Applications
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={newAdmin.permissions.canDeleteApplications}
-                        onChange={(e) => handlePermissionChange("canDeleteApplications", e.target.checked)}
-                        style={{ marginRight: "8px" }}
-                      />
-                      Can Delete Applications
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={newAdmin.permissions.canManageAdmins}
-                        onChange={(e) => handlePermissionChange("canManageAdmins", e.target.checked)}
-                        style={{ marginRight: "8px" }}
-                      />
-                      Can Manage Admins
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={newAdmin.permissions.canViewAnalytics}
-                        onChange={(e) => handlePermissionChange("canViewAnalytics", e.target.checked)}
-                        style={{ marginRight: "8px" }}
-                      />
-                      Can View Analytics
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
-                <button 
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    backgroundColor: "transparent",
-                    border: "1px solid #e2e8f0",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    cursor: "pointer"
-                  }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleCreateAdmin}
-                  style={{
-                    backgroundColor: "#3182ce",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    cursor: "pointer"
-                  }}
-                >
-                  Create Admin
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      </AdminDialog>}
+    </main>
   );
-};
-
-export default AdminManagementPage; 
+}

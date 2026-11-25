@@ -83,6 +83,30 @@ npm start
 
 The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:5002`.
 
+### Admin management database requirement
+
+Admin creation, editing, and deactivation use MongoDB transactions to prevent
+concurrent requests from removing all active super admins or using revoked
+management permissions. Configure the backend's `MONGO_URI` for a replica set
+or sharded cluster (for example, MongoDB Atlas). A standalone MongoDB instance
+can serve reads but cannot perform these admin changes; the API returns 503.
+The `adminmanagementguards` collection is created automatically for coordinating
+directory writes across server instances. Scripts or direct database edits bypass
+these API protections and should not run concurrently with directory management.
+
+The database-backed regression test uses an isolated, temporary local replica set
+and no Firebase credentials. After installing backend and loadtest dependencies:
+
+```bash
+node loadtest/test-admin-management.js
+```
+
+The test runner downloads a test MongoDB binary when needed. To use an installed
+binary, set `MONGOMS_SYSTEM_BINARY` to its absolute path and `MONGOMS_VERSION` to
+its version. It creates and removes only its own temporary test database/server.
+The six database tests are skipped by ordinary backend `npm test`; run this
+command separately. Route validation tests still run in the ordinary suite.
+
 ## Development
 
 ### Frontend Development
