@@ -46,3 +46,39 @@ jobs:
       # App.test.js is the unused Create React App starter test and can't pass, so CI skips it.
       - run: npm test -- --watchAll=false --testPathIgnorePatterns=src/App.test.js
       - run: npm run build
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            loadtest/package-lock.json
+            e2e/package-lock.json
+      # The test runs the real backend and frontend on the load test's local stack (see e2e/README.md)
+      - run: npm ci
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+        working-directory: loadtest
+      - run: npm ci
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npx playwright test
+        working-directory: e2e
+      # Screenshots, video and a step-by-step trace of what went wrong
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7
