@@ -7,7 +7,10 @@ import axios from "axios";
 import API_BASE_URL from "../config/api";
 import { getAdminAuthHeaders } from "../config/adminAuth";
 
+import usePortalSettings from "./PortalSettings/usePortalSettings";
+
 const ApplicationPage = () => {
+  const { settings, error: settingsError } = usePortalSettings();
   const navigate = useNavigate(); // ✅ Initialize useNavigate
   const [searchParams] = useSearchParams();
   const { id } = useParams(); // ✅ Get ID from URL params
@@ -219,6 +222,7 @@ const ApplicationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!settings) return;
     
     // Authentication check
     if (!currentUser) {
@@ -423,7 +427,7 @@ const ApplicationPage = () => {
         backgroundColor: "white"
       }}>
         <h1 style={{ fontSize: "24px", fontWeight: "bold", textAlign: "center", color: "black", margin: "0" }}>
-          APPLICATION - TCG FALL 2026 RECRUITMENT
+          APPLICATION - {settings?.cycleName || "TCG FALL 2026 RECRUITMENT"}
         </h1>
 
         {/* Deadline Status Display */}
@@ -447,7 +451,7 @@ const ApplicationPage = () => {
         <form onSubmit={handleSubmit}>
           {/* Email */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Email (UCSD email required) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.email || "Email (UCSD email required)"} *</p>
             <input 
               type="email" 
               value={formData.email} 
@@ -457,9 +461,10 @@ const ApplicationPage = () => {
             />
           </div>
 
+          {settingsError && <p role="alert">{settingsError}</p>}
           {/* Full Name */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Full Name *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.fullName || "Full Name"} *</p>
             <input 
               type="text" 
               value={formData.fullName} 
@@ -471,7 +476,7 @@ const ApplicationPage = () => {
 
           {/* Phone Number */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Phone Number *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.phoneNumber || "Phone Number"} *</p>
             <input 
               type="tel" 
               autoComplete="tel"
@@ -484,7 +489,7 @@ const ApplicationPage = () => {
 
           {/* Student Year */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What year are you? *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.studentYear || "What year are you?"} *</p>
             <select 
               value={formData.studentYear} 
               onChange={(e) => setFormData({ ...formData, studentYear: e.target.value })} 
@@ -502,7 +507,7 @@ const ApplicationPage = () => {
 
           {/* Major */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What is your major? *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.major || "What is your major?"} *</p>
             <input 
               type="text" 
               value={formData.major} 
@@ -514,7 +519,7 @@ const ApplicationPage = () => {
 
           {/* Have You Applied Before? */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Have you applied to TCG before? *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.appliedBefore || "Have you applied to TCG before?"} *</p>
             <select 
               value={formData.appliedBefore}  
               onChange={(e) => setFormData({ ...formData, appliedBefore: e.target.value })}  
@@ -529,7 +534,7 @@ const ApplicationPage = () => {
 
           {/* Tech or Non-Tech */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Are you applying as a tech candidate or non-tech candidate?*</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.candidateType || "Are you applying as a tech candidate or non-tech candidate?"} *</p>
             <select 
               value={formData.candidateType}  
               onChange={(e) => setFormData({ ...formData, candidateType: e.target.value })}  
@@ -544,7 +549,7 @@ const ApplicationPage = () => {
 
           {/* Resume Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your resume *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.resume || "Please submit your resume"} *</p>
             <input 
               type="file" 
               onChange={(e) => handleFileChange(e, "resume")} 
@@ -556,14 +561,14 @@ const ApplicationPage = () => {
 
           {/* Transcript Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please submit your most recent college transcript. *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.transcript || "Please submit your most recent college transcript."} *</p>
             <p style={{
               margin: "0 0 8px 0", fontSize: "14px", padding: "6px 10px", borderRadius: "4px",
               color: formData.studentYear === "1st" ? "#744210" : "#4a5568",
               backgroundColor: formData.studentYear === "1st" ? "#fefcbf" : "transparent",
               fontWeight: formData.studentYear === "1st" ? "bold" : "normal"
             }}>
-              If you are currently a freshman, please attach a copy of your high school transcript.
+              {settings?.wording.transcriptHelp || "If you are currently a freshman, please attach a copy of your high school transcript."}
             </p>
             <input 
               type="file" 
@@ -576,7 +581,7 @@ const ApplicationPage = () => {
 
           {/* Profile Picture Upload */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Please upload a profile picture (must be professional) (JPG/PNG) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.image || "Please upload a profile picture (must be professional) (JPG/PNG)"} *</p>
             <input 
               type="file" 
               accept="image/png, image/jpeg"
@@ -588,7 +593,7 @@ const ApplicationPage = () => {
 
           {/* Why Join TCG? */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Why do you want to join TCG? (150 words max) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.reason || "Why do you want to join TCG?"} (150 words max) *</p>
             <textarea 
               value={formData.reason} 
               onChange={handleReasonChange}
@@ -602,7 +607,7 @@ const ApplicationPage = () => {
 
           {/* Fun Question - Zombie Apocalypse */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>How are you surviving the zombie apocalypse? (15 words) *</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.zombieAnswer || "How are you surviving the zombie apocalypse?"} (15 words) *</p>
             <textarea
               value={formData.zombieAnswer}
               onChange={handleZombieChange}
@@ -616,7 +621,7 @@ const ApplicationPage = () => {
 
           {/* Additional Info - Optional */}
           <div style={{ marginBottom: "16px" }}>
-            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>Is there anything else that you think you should let us know?</p>
+            <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.additionalInfo || "Is there anything else that you think you should let us know?"}</p>
             <textarea
               value={formData.additionalInfo}
               onChange={(e) => setFormData({ ...formData, additionalInfo: e.target.value })}
@@ -627,7 +632,8 @@ const ApplicationPage = () => {
           {/* Case Night Availability */}
           {caseNightConfig && (
             <div style={{ marginBottom: "16px" }}>
-              <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>What is your availability for Case Night? *</p>
+              <p style={{ fontWeight: "bold", color: "#222", margin: "0 0 8px 0" }}>{settings?.wording.caseNightPreferences || "What is your availability for Case Night?"} *</p>
+              <p>Case Night: {caseNightConfig.date}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {Object.entries(caseNightConfig.slots).map(([slotId, timeSlot]) => (
                   <label key={slotId} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
@@ -647,7 +653,7 @@ const ApplicationPage = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={(deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting}
+            disabled={!settings || (deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting}
             style={{
               backgroundColor: ((deadlineStatus && deadlineStatus.isDeadlinePassed) || submitting) ? "#a0aec0" : "#3182ce",
               color: "white",

@@ -1,3 +1,9 @@
+jest.mock("../services/portalSettings", () => ({
+  loadSettings: (req, res, next) => {
+    req.portalSettings = { window: require("../config/deadlineConfig"), caseNight: require("../config/caseNightConfig") };
+    next();
+  }
+}));
 const mockVerifyIdToken = jest.fn();
 jest.mock("../config/firebaseAdmin", () => ({
   getFirebaseAuth: () => ({ verifyIdToken: mockVerifyIdToken })
@@ -86,6 +92,18 @@ test("build with a stale fingerprint is 409 and writes nothing", async () => {
   const res = await post("/build", { fingerprint: "stale" });
   expect(res.status).toBe(409);
   expect(replaceAssignments).not.toHaveBeenCalled();
+});
+
+test("changing slot settings after preview requires a fresh preview", async () => {
+  signInAs("super_admin");
+  const config = require("../config/caseNightConfig");
+  const original = config.slots.A;
+  const { fingerprint } = await (await post("/preview")).json();
+  try {
+    config.slots.A = "New time";
+    expect((await post("/build", { fingerprint })).status).toBe(409);
+    expect(replaceAssignments).not.toHaveBeenCalled();
+  } finally { config.slots.A = original; }
 });
 
 test("build with the preview's fingerprint replaces the assignments", async () => {

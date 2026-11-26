@@ -8,6 +8,7 @@ import ApplicationPage from "./Pages/ApplicationPage";
 import AssociatePage from "./Pages/AssociatePage";
 import ApplicationSubmitted from "./Pages/ApplicationComponents/ApplicationSubmitted";
 import ApplicationViewEdit from "./Pages/ApplicationComponents/ApplicationViewEdit";
+import PortalSettingsPage from "./Pages/PortalSettings/PortalSettingsPage";
 import AdminManagementPage from "./Pages/AdminManagementPage";
 import AdminLoginPage from "./Pages/AdminLoginPage";
 
@@ -34,6 +35,7 @@ const App = () => {
           <Route path="/application/view" element={<ApplicationViewEdit />} />
 
           {/*Admin Management Page Route*/}
+          <Route path="/admin/settings" element={<PortalSettingsPage />} />
           <Route path="/admin" element={<AdminManagementPage />} />
 
           {/*Admin Login Page Route*/}

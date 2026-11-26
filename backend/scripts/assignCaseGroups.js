@@ -20,7 +20,7 @@ const envFile = process.argv.includes("--production") ? "production.env" : ".env
 require("dotenv").config({ path: path.join(__dirname, "..", envFile) });
 
 const Application = require("../models/Application");
-const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const { readSettings } = require("../services/portalSettings");
 const { ELIGIBLE_STATUS, buildCaseGroupPlan, toAssignmentDocs } = require("../services/caseGroupBuilder");
 const { replaceAssignments, getExistingStatus } = require("../services/caseGroupStore");
 
@@ -54,6 +54,7 @@ const assignCaseGroups = async () => {
 
   try {
     await mongoose.connect(process.env.MONGO_URI);
+    const CASE_NIGHT_CONFIG = (await readSettings()).values.caseNight;
     console.log(`✅ Connected to MongoDB (${envFile})`);
     console.log(apply ? "⚠️  APPLY mode: assignments will be replaced\n" : "🔍 DRY RUN: nothing will be written (add --apply)\n");
 
