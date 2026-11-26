@@ -29,6 +29,10 @@ fs.mkdirSync(cwd, { recursive: true });
 process.chdir(cwd);
 
 // Keep the application window open for the test, whatever the real dates are
-require(path.join(cfg.BACKEND_DIR, "config", "deadlineConfig")).isActive = false;
+const deadlineConfig = require(path.join(cfg.BACKEND_DIR, "config", "deadlineConfig"));
+deadlineConfig.isActive = false;
+// /deadline-status reports a past deadline even when the window is off, which disables the form's Submit button
+deadlineConfig.applicationStart = null;
+deadlineConfig.applicationDeadline = null;
 
 require(path.join(cfg.BACKEND_DIR, "server.js"));
