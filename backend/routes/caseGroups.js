@@ -1,9 +1,10 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const CaseGroupAssignment = require("../models/CaseGroupAssignment");
 const Application = require("../models/Application");
 const { requireAdminAuth, requireSuperAdmin } = require("../middleware/adminPermissions");
-const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
+const { loadSettings } = require("../services/portalSettings");
 const {
   ELIGIBLE_STATUS,
   TRACKS,
@@ -17,9 +18,12 @@ const { checkEditWarnings } = require("../services/caseGroupEdits");
 const CaseGroupEditLog = require("../models/CaseGroupEditLog");
 const mongoose = require("mongoose");
 
+const settingsFingerprint = (plan, config) => crypto.createHash("sha256")
+  .update(planFingerprint(plan) + JSON.stringify(config)).digest("hex");
+
 // Builds the plan for the current Case Night - Yes applicants. "Keep years together" is on unless the request turns it off.
 const planFromRequest = async (req) =>
-  buildCaseGroupPlan(await loadEligibleApplications(), CASE_NIGHT_CONFIG, { groupByYear: req.body?.groupByYear !== false });
+  buildCaseGroupPlan(await loadEligibleApplications(), req.portalSettings.caseNight, { groupByYear: req.body?.groupByYear !== false });
 
 const loadEligibleApplications = () =>
   Application.find({ status: ELIGIBLE_STATUS })
@@ -27,7 +31,7 @@ const loadEligibleApplications = () =>
     .lean();
 
 // Every case-group route exposes applicant data — admins only
-router.use(requireAdminAuth);
+router.use(requireAdminAuth, loadSettings);
 
 // 🟢 Get all case group assignments
 router.get("/assignments", async (req, res) => {
@@ -165,7 +169,7 @@ router.get("/unassigned", async (req, res) => {
 router.post("/preview", requireSuperAdmin, async (req, res) => {
   try {
     const plan = await planFromRequest(req);
-    res.json({ plan, fingerprint: planFingerprint(plan), existing: await getExistingStatus() });
+    res.json({ plan, fingerprint: settingsFingerprint(plan, req.portalSettings.caseNight), existing: await getExistingStatus() });
   } catch (error) {
     console.error("Error previewing case groups:", error);
     res.status(500).json({ error: "Failed to preview case groups" });
@@ -176,14 +180,14 @@ router.post("/preview", requireSuperAdmin, async (req, res) => {
 router.post("/build", requireSuperAdmin, async (req, res) => {
   try {
     const plan = await planFromRequest(req);
-    if (!req.body?.fingerprint || req.body.fingerprint !== planFingerprint(plan)) {
-      return res.status(409).json({ error: "Applicants changed since the preview. Preview again before building." });
+    if (!req.body?.fingerprint || req.body.fingerprint !== settingsFingerprint(plan, req.portalSettings.caseNight)) {
+      return res.status(409).json({ error: "Applicants or settings changed since the preview. Preview again before building." });
     }
     if (plan.summary.placed === 0) {
       return res.status(400).json({ error: "Nobody would be placed in a group, so the current groups were left alone." });
     }
 
-    const created = await replaceAssignments(toAssignmentDocs(plan, CASE_NIGHT_CONFIG, req.admin.email), req.admin.email);
+    const created = await replaceAssignments(toAssignmentDocs(plan, req.portalSettings.caseNight, req.admin.email), req.admin.email);
     res.json({ created, summary: plan.summary });
   } catch (error) {
     console.error("Error building case groups:", error);
@@ -206,10 +210,10 @@ const sendError = (res, error, fallback) => {
 // A group is identified by track + slot + number (older assignments have groupIds without the track)
 const groupFilter = ({ candidateType, timeSlot, groupNumber }) => ({ candidateType, timeSlot, groupNumber });
 
-const groupFields = (target) => ({
+const groupFields = (target, req) => ({
   candidateType: target.track,
   timeSlot: target.slot,
-  timeSlotDisplay: CASE_NIGHT_CONFIG.slots[target.slot],
+  timeSlotDisplay: req.portalSettings.caseNight.slots[target.slot],
   groupNumber: target.groupNumber,
   groupId: target.groupId
 });
@@ -224,8 +228,8 @@ const loadAssignment = async (id) => {
 };
 
 // The group an admin picked, or the next free group number for "new"
-const resolveTargetGroup = async ({ track, slot, groupNumber }) => {
-  if (!TRACKS.includes(track) || !CASE_NIGHT_CONFIG.slots[slot]) {
+const resolveTargetGroup = async ({ track, slot, groupNumber }, req) => {
+  if (!TRACKS.includes(track) || !req.portalSettings.caseNight.slots[slot]) {
     throw httpError(400, "Pick a valid track and time slot.");
   }
 
@@ -258,13 +262,13 @@ router.post("/assignments", requireSuperAdmin, async (req, res) => {
     const existing = await CaseGroupAssignment.findOne({ applicationId }).lean();
     if (existing) throw httpError(409, `${application.fullName} is already in ${existing.groupId}.`);
 
-    const target = await resolveTargetGroup({ track, slot, groupNumber });
+    const target = await resolveTargetGroup({ track, slot, groupNumber }, req);
     const warnings = checkEditWarnings({
       application,
       target,
       source: null,
       emailsSent: target.members.some((m) => m.emailSent),
-      config: CASE_NIGHT_CONFIG
+      config: req.portalSettings.caseNight
     });
     if (needsConfirmation(res, warnings, confirmWarnings)) return;
 
@@ -277,7 +281,7 @@ router.post("/assignments", requireSuperAdmin, async (req, res) => {
           applicationId,
           applicantName: application.fullName,
           applicantEmail: application.email,
-          ...groupFields(target),
+          ...groupFields(target, req),
           assignedBy: req.admin.email,
           assignedAt: now,
           status: "Assigned",
@@ -317,7 +321,7 @@ router.patch("/assignments/:id", requireSuperAdmin, async (req, res) => {
   try {
     const { track, slot, groupNumber, confirmWarnings } = req.body || {};
     const assignment = await loadAssignment(req.params.id);
-    const target = await resolveTargetGroup({ track, slot, groupNumber });
+    const target = await resolveTargetGroup({ track, slot, groupNumber }, req);
     if (
       target.track === assignment.candidateType &&
       target.slot === assignment.timeSlot &&
@@ -335,14 +339,14 @@ router.patch("/assignments/:id", requireSuperAdmin, async (req, res) => {
       target: application ? target : null,
       source: { groupId: assignment.groupId, remaining: sourceSize - 1 },
       emailsSent: Boolean(assignment.emailSent) || target.members.some((m) => m.emailSent),
-      config: CASE_NIGHT_CONFIG
+      config: req.portalSettings.caseNight
     });
     if (needsConfirmation(res, warnings, confirmWarnings)) return;
 
     // Only matches if they're still in the group we read, so a concurrent edit isn't overwritten
     const result = await CaseGroupAssignment.updateOne(
       { _id: assignment._id, ...groupFilter(assignment) },
-      { $set: { ...groupFields(target), lastEditedBy: req.admin.email, lastEditedAt: new Date() } }
+      { $set: { ...groupFields(target, req), lastEditedBy: req.admin.email, lastEditedAt: new Date() } }
     );
     if (!result.modifiedCount) throw httpError(409, "This person was just changed by someone else. Refresh and try again.");
 
@@ -370,7 +374,7 @@ router.delete("/assignments/:id", requireSuperAdmin, async (req, res) => {
       target: null,
       source: { groupId: assignment.groupId, remaining: sourceSize - 1 },
       emailsSent: Boolean(assignment.emailSent),
-      config: CASE_NIGHT_CONFIG
+      config: req.portalSettings.caseNight
     });
     if (needsConfirmation(res, warnings, req.body?.confirmWarnings)) return;
 

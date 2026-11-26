@@ -9,8 +9,8 @@ const { applicationSubmissionLimiter, generalApiLimiter } = require("../middlewa
 const { requireStatusChangePermission, requireCommentPermission, requireDeleteCommentPermission, requireAdminAuth, getVerifiedEmail } = require("../middleware/adminPermissions");
 const { verifyFirebaseOwner } = require("../middleware/firebaseAuth");
 const { requireFileAccess } = require("../middleware/fileAccess");
-const CASE_NIGHT_CONFIG = require("../config/caseNightConfig");
-const DEADLINE_CONFIG = require("../config/deadlineConfig");
+const { loadSettings } = require("../services/portalSettings");
+router.use(loadSettings);
 const { s3, S3_CONFIG, getFileTypeAndPath, getFileUrl, isS3Configured } = require("../config/s3Config");
 const { normalizePhone } = require("../utils/phone");
 const { parseCaseNightPreferences } = require("../utils/caseNightPreferences");
@@ -193,7 +193,7 @@ upload = multer({
 router.get("/case-night-config", (req, res) => {
   try {
     addNoStore(res);
-    res.json(CASE_NIGHT_CONFIG);
+    res.json(req.portalSettings.caseNight);
   } catch (error) {
     console.error("❌ Error fetching case night config:", error);
     res.status(500).json({ error: "❌ Failed to fetch case night config." });
@@ -208,9 +208,9 @@ router.get("/window-status", (req, res) => {
   try {
     addNoStore(res);
 
-    const isActive = !!DEADLINE_CONFIG.isActive;
-    const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
-    const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+    const isActive = !!req.portalSettings.window.isActive;
+    const start = parseMaybeDate(req.portalSettings.window.applicationStart);
+    const deadline = parseMaybeDate(req.portalSettings.window.applicationDeadline);
 
     const now = nowUtc();
     const hasStart = !!start;
@@ -227,8 +227,8 @@ router.get("/window-status", (req, res) => {
       isAfterDeadline,
       start: hasStart ? start.toISOString() : null,
       deadline: hasDeadline ? deadline.toISOString() : null,
-      preStartMessage: DEADLINE_CONFIG.preStartMessage || "Applications are not open yet.",
-      deadlineMessage: DEADLINE_CONFIG.message || "Application deadline has passed.",
+      preStartMessage: req.portalSettings.window.preStartMessage || "Applications are not open yet.",
+      deadlineMessage: req.portalSettings.window.message || "Application deadline has passed.",
       serverTime: now.toISOString(),
       timeUntilStart: isActive && hasStart && now < start ? (start - now) : null,
       timeRemaining: isActive && hasDeadline && now < deadline ? (deadline - now) : null,
@@ -244,16 +244,16 @@ router.get("/window-status", (req, res) => {
    =================================================== */
 // Rejects submissions and edits outside the window in deadlineConfig, before files reach S3
 const requireApplicationWindow = (req, res, next) => {
-  if (!DEADLINE_CONFIG.isActive) return next();
+  if (!req.portalSettings.window.isActive) return next();
   const now = nowUtc();
-  const start = parseMaybeDate(DEADLINE_CONFIG.applicationStart);
-  const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
+  const start = parseMaybeDate(req.portalSettings.window.applicationStart);
+  const deadline = parseMaybeDate(req.portalSettings.window.applicationDeadline);
 
   if (start && now < start) {
     addNoStore(res);
     return res.status(400).json({
       error: "Applications are not open yet.",
-      message: DEADLINE_CONFIG.preStartMessage || "Please check back when the application opens.",
+      message: req.portalSettings.window.preStartMessage || "Please check back when the application opens.",
       start: start.toISOString(),
       serverTime: now.toISOString(),
       timeUntilStart: start - now
@@ -263,7 +263,7 @@ const requireApplicationWindow = (req, res, next) => {
     addNoStore(res);
     return res.status(400).json({
       error: "Application deadline has passed.",
-      message: DEADLINE_CONFIG.message,
+      message: req.portalSettings.window.message,
       deadline: deadline.toISOString(),
       serverTime: now.toISOString()
     });
@@ -437,14 +437,14 @@ router.get("/deadline-status", (req, res) => {
   try {
     addNoStore(res);
     const now = nowUtc();
-    const deadline = parseMaybeDate(DEADLINE_CONFIG.applicationDeadline);
-    const isDeadlinePassed = deadline ? now > deadline : false;
+    const deadline = parseMaybeDate(req.portalSettings.window.applicationDeadline);
+    const isDeadlinePassed = req.portalSettings.window.isActive && deadline ? now > deadline : false;
     
     res.json({
-      isActive: !!DEADLINE_CONFIG.isActive,
+      isActive: !!req.portalSettings.window.isActive,
       isDeadlinePassed,
       deadline: deadline ? deadline.toISOString() : null,
-      message: isDeadlinePassed ? DEADLINE_CONFIG.message : null,
+      message: isDeadlinePassed ? req.portalSettings.window.message : null,
       timeRemaining: (deadline && now < deadline) ? Math.max(0, deadline - now) : null
     });
   } catch (error) {

@@ -313,6 +313,7 @@ const AssociatePage = () => {
             >
               Refresh Data
             </button>
+            {adminInfo?.role === "super_admin" && <button onClick={() => window.location.href = "/admin/settings"} style={{ padding: "12px 20px", background: "#3182ce", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>Portal Settings</button>}
             {adminInfo?.permissions?.canManageAdmins && (
               <button
                 onClick={() => window.location.href = "/admin"}

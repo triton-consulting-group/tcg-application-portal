@@ -1,3 +1,4 @@
+import usePortalSettings from "../PortalSettings/usePortalSettings";
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -23,6 +24,7 @@ const getFileUrl = async (filePath) => {
 };
 
 const ApplicationViewEdit = () => {
+  const { settings, error: settingsError } = usePortalSettings();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { id } = useParams();
@@ -205,6 +207,7 @@ const ApplicationViewEdit = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!settings) return;
     
     // Security check: Ensure user can only update their own application
     if (!currentUser) {
@@ -496,7 +499,7 @@ const ApplicationViewEdit = () => {
           {/* Application Details */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
-              <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>Full Name:</label>
+              <label style={{ fontWeight: "bold", display: "block", marginBottom: "4px" }}>{settings?.wording.fullName || "Full Name"}:</label>
               <p style={{ margin: "0", padding: "8px", backgroundColor: "#f7fafc", borderRadius: "4px" }}>
                 {application.fullName}
               </p>
@@ -680,11 +683,12 @@ const ApplicationViewEdit = () => {
           </p>
         </div>
 
+        {settingsError && <p role="alert">{settingsError}</p>}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Email (read-only) */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Email *
+              {settings?.wording.email || "Email"} *
             </label>
             <input 
               type="email" 
@@ -697,7 +701,7 @@ const ApplicationViewEdit = () => {
           {/* Full Name */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Full Name *
+              {settings?.wording.fullName || "Full Name"} *
             </label>
             <input 
               type="text" 
@@ -712,7 +716,7 @@ const ApplicationViewEdit = () => {
           {/* Student Year */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              What year are you? *
+              {settings?.wording.studentYear || "What year are you?"} *
             </label>
             <select 
               name="studentYear"
@@ -733,7 +737,7 @@ const ApplicationViewEdit = () => {
           {/* Major */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              What is your major? *
+              {settings?.wording.major || "What is your major?"} *
             </label>
             <input 
               type="text" 
@@ -748,7 +752,7 @@ const ApplicationViewEdit = () => {
           {/* Applied Before */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Have you applied to TCG before? *
+              {settings?.wording.appliedBefore || "Have you applied to TCG before?"} *
             </label>
             <select 
               name="appliedBefore"
@@ -766,7 +770,7 @@ const ApplicationViewEdit = () => {
           {/* Candidate Type */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Are you applying as a tech candidate or non-tech candidate? *
+              {settings?.wording.candidateType || "Are you applying as a tech candidate or non-tech candidate?"} *
             </label>
             <select 
               name="candidateType"
@@ -784,7 +788,7 @@ const ApplicationViewEdit = () => {
           {/* Reason */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Why do you want to join TCG? (150 words max) *
+              {settings?.wording.reason || "Why do you want to join TCG?"} (150 words max) *
             </label>
             <textarea 
               name="reason"
@@ -802,7 +806,7 @@ const ApplicationViewEdit = () => {
           {/* Resume Upload */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Please submit your resume *
+              {settings?.wording.resume || "Please submit your resume"} *
             </label>
             <input 
               type="file" 
@@ -815,7 +819,7 @@ const ApplicationViewEdit = () => {
           {/* Transcript Upload */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Please submit your most recent college transcript *
+              {settings?.wording.transcript || "Please submit your most recent college transcript"} *
             </label>
             <p style={{
               margin: "0 0 8px 0", fontSize: "14px", padding: "6px 10px", borderRadius: "4px",
@@ -823,7 +827,7 @@ const ApplicationViewEdit = () => {
               backgroundColor: formData.studentYear === "1st" ? "#fefcbf" : "transparent",
               fontWeight: formData.studentYear === "1st" ? "bold" : "normal"
             }}>
-              If you are currently a freshman, please attach a copy of your high school transcript.
+              {settings?.wording.transcriptHelp || "If you are currently a freshman, please attach a copy of your high school transcript."}
             </p>
             <input 
               type="file" 
@@ -836,7 +840,7 @@ const ApplicationViewEdit = () => {
           {/* Profile Picture Upload */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Please upload a profile picture (JPG/PNG) *
+              {settings?.wording.image || "Please upload a profile picture (JPG/PNG)"} *
             </label>
             <input 
               type="file" 
@@ -849,7 +853,7 @@ const ApplicationViewEdit = () => {
           {/* Fun Question - Zombie Apocalypse */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              How are you surviving the zombie apocalypse? (15 words) *
+              {settings?.wording.zombieAnswer || "How are you surviving the zombie apocalypse?"} (15 words) *
             </label>
             <textarea
               name="zombieAnswer"
@@ -867,7 +871,7 @@ const ApplicationViewEdit = () => {
           {/* Additional Info - Optional */}
           <div>
             <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-              Is there anything else that you think you should let us know?
+              {settings?.wording.additionalInfo || "Is there anything else that you think you should let us know?"}
             </label>
             <textarea
               name="additionalInfo"
@@ -882,8 +886,9 @@ const ApplicationViewEdit = () => {
           {caseNightConfig && (
             <div>
               <label style={{ fontSize: "16px", fontWeight: "bold", color: "#2d3748", display: "block", marginBottom: "8px" }}>
-                What is your availability for Case Night? *
+                {settings?.wording.caseNightPreferences || "What is your availability for Case Night?"} *
               </label>
+              <p>Case Night: {caseNightConfig.date}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {Object.entries(caseNightConfig.slots).map(([slotId, timeSlot]) => (
                   <label key={slotId} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
@@ -902,7 +907,7 @@ const ApplicationViewEdit = () => {
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !settings}
             style={{
               backgroundColor: submitting ? "#a0a0a0" : "#3182ce",
               color: "white",

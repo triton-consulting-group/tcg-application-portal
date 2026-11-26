@@ -1,3 +1,9 @@
+jest.mock("../services/portalSettings", () => ({
+  loadSettings: (req, res, next) => {
+    req.portalSettings = { window: require("../config/deadlineConfig"), caseNight: require("../config/caseNightConfig") };
+    next();
+  }
+}));
 // Signed-in API requests are rate-limited per verified user, not per IP
 const mockVerifyIdToken = jest.fn();
 jest.mock("../config/firebaseAdmin", () => ({

@@ -1,3 +1,9 @@
+jest.mock("../services/portalSettings", () => ({
+  loadSettings: (req, res, next) => {
+    req.portalSettings = { window: require("../config/deadlineConfig"), caseNight: require("../config/caseNightConfig") };
+    next();
+  }
+}));
 // Submissions are rate-limited per signed-in account, not per IP
 const mockVerifyIdToken = jest.fn();
 jest.mock("../config/firebaseAdmin", () => ({

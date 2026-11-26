@@ -1,0 +1,26 @@
+.portal-settings { max-width: 1000px; margin: 32px auto; padding: 24px; color: #2d3748; }
+.portal-settings header, .settings-actions, .settings-slot { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.portal-settings h1 { font-size: 28px; font-weight: bold; }
+.portal-settings h2 { font-size: 22px; font-weight: bold; margin-bottom: 16px; }
+.portal-settings section { background: white; border-radius: 8px; box-shadow: 0 2px 8px #00000012; padding: 24px; margin: 20px 0; }
+.portal-settings label { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; flex: 1; }
+.portal-settings input { padding: 10px; border: 1px solid #a0aec0; border-radius: 4px; color: #1a202c; background: white; width: 100%; }
+.portal-settings .settings-check { flex-direction: row; align-items: center; }
+.portal-settings input[type=checkbox] { width: auto; }
+.portal-settings button { background: #3182ce; color: white; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; }
+.portal-settings button:hover { background: #2c5282; }
+.portal-settings button:disabled { background: #718096; cursor: default; }
+.portal-settings a { color: #2b6cb0; text-decoration: underline; }
+.portal-settings p { margin: 10px 0; }
+.portal-settings fieldset { border: 0; padding: 0; min-width: 0; }
+.portal-settings :focus-visible { outline: 3px solid #2b6cb0; outline-offset: 3px; }
+.portal-settings .settings-error { color: #9b2c2c; background: #fff5f5; padding: 12px; }
+.portal-settings.settings-login { max-width: none; margin: 0; min-height: 100vh; background: #e2e8f0; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.portal-settings .settings-login-card { width: 90%; max-width: 500px; padding: 24px; margin: 0; border-radius: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; gap: 20px; }
+.settings-login-card h1 { font-size: 24px; text-align: center; color: black; margin: 0; }
+.settings-login-card p { font-size: 16px; text-align: center; color: #4a5568; margin: 0; line-height: 1.5; }
+.portal-settings .settings-login-button { width: 100%; border-radius: 6px; padding: 12px 24px; font-size: 16px; }
+.portal-settings .settings-login-button:disabled { background: #3182ce; opacity: 0.7; cursor: not-allowed; }
+.portal-settings .settings-home-button { display: block; box-sizing: border-box; width: 100%; background: #718096; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; text-decoration: none; text-align: center; }
+.portal-settings .settings-home-button:hover { background: #4a5568; }
+@media (max-width: 600px) { .portal-settings { padding: 12px; margin: 12px auto; } .settings-slot { display: block; } .portal-settings section { padding: 16px; } }

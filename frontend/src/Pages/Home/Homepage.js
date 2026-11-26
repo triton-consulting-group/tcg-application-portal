@@ -67,14 +67,14 @@ function HomePage() {
                         const start = new Date(data.start);
                         const day = start.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
                         const time = start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-                        setApplyMessage(`Applications open ${day} at ${time}`);
+                        setApplyMessage(`${data.preStartMessage || "Applications are not open yet."} Applications open ${day} at ${time}`);
                     } else {
                         setApplyMessage("Applications are not open yet. Please check back later!");
                     }
                     return;
                 } 
                 if (data.isAfterDeadline) {
-                    setApplyMessage("The application deadline has passed.");
+                    setApplyMessage(data.deadlineMessage || "The application deadline has passed.");
                     return;
                 }
                 setApplyMessage("Applications are currently closed.");
