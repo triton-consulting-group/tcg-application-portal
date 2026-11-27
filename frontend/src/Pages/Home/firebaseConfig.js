@@ -17,6 +17,10 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 
+// Always shows Google's account chooser, so a signed-in user can pick a different account
+export const accountPickerProvider = new GoogleAuthProvider();
+accountPickerProvider.setCustomParameters({ prompt: "select_account" });
+
 // User-facing message for a failed Google sign-in
 export const getSignInErrorMessage = (error) => {
   if (error.code === "auth/popup-blocked") {
