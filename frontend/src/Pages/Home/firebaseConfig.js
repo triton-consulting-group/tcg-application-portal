@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, connectAuthEmulator } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -15,6 +15,10 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+// End-to-end tests only (e2e/): sign in against the local Firebase Auth emulator. Never set in production.
+if (process.env.REACT_APP_AUTH_EMULATOR_HOST) {
+  connectAuthEmulator(auth, `http://${process.env.REACT_APP_AUTH_EMULATOR_HOST}`, { disableWarnings: true });
+}
 export const provider = new GoogleAuthProvider();
 
 // User-facing message for a failed Google sign-in

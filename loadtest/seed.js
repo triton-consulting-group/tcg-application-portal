@@ -36,7 +36,7 @@ const buildApplication = (i, admins) => {
     };
   });
   return {
-    email: `applicant${i}@loadtest.ucsd.edu`,
+    email: `loadtest-applicant${i}@ucsd.edu`,
     fullName: `Applicant Number ${i}`,
     phoneNumber: `+1858555${String(i).padStart(4, "0")}`,
     studentYear: pick(["1st", "2nd", "3rd", "4th", "5th+"]),
@@ -68,7 +68,7 @@ const main = async () => {
   await col.createIndex({ status: 1 }, { name: "status_1" });
 
   if (!process.argv.includes("--empty")) {
-    const admins = Array.from({ length: cfg.ADMINS }, (_, i) => `admin${i}@loadtest.ucsd.edu`);
+    const admins = Array.from({ length: cfg.ADMINS }, (_, i) => `loadtest-admin${i}@ucsd.edu`);
     const docs = Array.from({ length: cfg.APPLICANTS }, (_, i) => buildApplication(i, admins));
     await col.insertMany(docs);
     const stats = await mongoose.connection.db.command({ collStats: "applications" });

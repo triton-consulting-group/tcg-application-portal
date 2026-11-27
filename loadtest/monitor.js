@@ -2,7 +2,6 @@
 //   node monitor.js <output.json>
 // Database ops and bytes are what Atlas's free tier limits (100 ops/s, 10 GB in + 10 GB out per 7 days).
 const fs = require("fs");
-const { execFileSync } = require("child_process");
 const cfg = require("./lib/config");
 const { MongoClient } = cfg.backendRequire("mongoose").mongo;
 
@@ -28,13 +27,20 @@ const sample = async (db) => {
     bytesOut: s.network.bytesOut,
   };
 };
-const backendUsage = (pid) => {
+// Backend CPU % (one core = 100) and memory, from the usage file backend-entry.js rewrites every second
+let lastReport = null;
+let lastUsage = { cpu: 0, rssMb: 0 };
+const backendUsage = () => {
   try {
-    const [cpu, rssKb] = execFileSync("ps", ["-o", "%cpu=,rss=", "-p", String(pid)]).toString().trim().split(/\s+/).map(Number);
-    return { cpu, rssMb: rssKb / 1024 };
+    const report = JSON.parse(fs.readFileSync(cfg.USAGE_FILE, "utf8"));
+    if (lastReport && report.t > lastReport.t) {
+      lastUsage = { cpu: ((report.cpuMicros - lastReport.cpuMicros) / 1000 / (report.t - lastReport.t)) * 100, rssMb: report.rssMb };
+    }
+    lastReport = report;
   } catch {
-    return { cpu: 0, rssMb: 0 };
+    // Caught the file mid-write: keep the previous reading
   }
+  return lastUsage;
 };
 
 (async () => {
@@ -54,12 +60,13 @@ const backendUsage = (pid) => {
   let stopping = false;
   process.on("SIGINT", () => { stopping = true; });
   process.on("SIGTERM", () => { stopping = true; });
+  process.on("message", (msg) => { if (msg === "stop") stopping = true; });
 
   while (!stopping) {
     await sleep(1000);
     const cur = await sample(db);
     const secs = (cur.t - prev.t) / 1000;
-    const usage = backendUsage(stack.backendPid);
+    const usage = backendUsage();
     rows.push({
       t: cur.t,
       opsPerSec: Math.max(0, (cur.ops - prev.ops) / secs - overhead.ops),

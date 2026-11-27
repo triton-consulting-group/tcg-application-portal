@@ -1,0 +1,12 @@
+{
+  "name": "tcg-e2e",
+  "private": true,
+  "description": "End-to-end browser test for the TCG application portal (local stack only, never touches production)",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1"
+  }
+}

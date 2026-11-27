@@ -43,11 +43,11 @@ const main = async () => {
   const auth = admin.auth(app);
 
   const applicants = Array.from({ length: cfg.APPLICANTS }, (_, i) => ({
-    email: `applicant${i}@loadtest.ucsd.edu`,
+    email: `loadtest-applicant${i}@ucsd.edu`,
     ip: `10.0.${Math.floor(i / 250)}.${(i % 250) + 1}`, // distinct simulated client IP per applicant
   }));
   const admins = Array.from({ length: cfg.ADMINS }, (_, i) => ({
-    email: `admin${i}@loadtest.ucsd.edu`,
+    email: `loadtest-admin${i}@ucsd.edu`,
     name: `Load Test Admin ${i}`,
     ip: `10.1.0.${i + 1}`,
   }));
@@ -57,7 +57,7 @@ const main = async () => {
   // Admin records the backend looks up after verifying the token
   await mongoose.connect(stack.mongoUri);
   const col = mongoose.connection.db.collection("admins");
-  await col.deleteMany({ email: /@loadtest\.ucsd\.edu$/ });
+  await col.deleteMany({ email: /^loadtest-admin\d+@ucsd\.edu$/ });
   const now = new Date();
   await col.insertMany(admins.map((a) => ({
     email: a.email, name: a.name, role: "admin", isActive: true, createdBy: "loadtest",

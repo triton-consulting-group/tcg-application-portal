@@ -4,13 +4,13 @@ Local load tests for the application portal. **Nothing here touches production**
 
 ## One-time setup
 
+Install k6 (`brew install k6` on Mac, `winget install k6` on Windows), then:
+
 ```bash
-brew install k6
-npm install -g firebase-tools
 cd backend && npm ci && cd ../loadtest && npm install
 ```
 
-Java must be installed for the Firebase emulator. The first `npm run stack` downloads a MongoDB server binary (about a minute).
+`npm install` also installs the Firebase CLI (`firebase-tools`) locally, so no global install is needed. Java isn't needed: only the Auth emulator is used, and it runs in Node. The first `npm run stack` downloads a MongoDB server binary (about a minute). Works on Mac, Linux and Windows.
 
 ## Running
 
@@ -42,7 +42,7 @@ Each run creates fresh test users (tokens last 1 hour) and fresh data, then prin
 | `backend-entry.js` | Runs `backend/server.js` with test-only settings: local DB only, no AWS, emulator sign-ins, window forced open, no `.env` |
 | `users.js` | Creates applicant and admin accounts in the emulator and their Admin records |
 | `seed.js` | 700 realistic applications (full-length answers, status history, comments), or an empty collection for the rush |
-| `monitor.js` | Samples DB operations/second, DB bytes in/out, backend CPU and memory every second |
+| `monitor.js` | Samples DB operations/second, DB bytes in/out, backend CPU and memory (reported by the backend itself) every second |
 | `k6/applicant-rush.js`, `k6/admin-review.js` | The traffic, mirroring the frontend's real request sequence |
 | `run.js` | Runs a scenario end to end and writes the report |
 
